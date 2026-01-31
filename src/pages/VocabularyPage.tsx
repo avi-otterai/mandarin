@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { ChevronUp, ChevronDown, ChevronsUpDown, Download, CheckSquare, Square, Filter } from 'lucide-react';
+import { ChevronUp, ChevronDown, ChevronsUpDown, Download, CheckSquare, Square, Filter, Layers, Plus, Minus, ChevronRight } from 'lucide-react';
 import type { VocabularyStore } from '../stores/vocabularyStore';
 import type { Concept } from '../types/vocabulary';
 import { VocabCard } from '../components/VocabCard';
@@ -15,8 +15,13 @@ export function VocabularyPage({ store }: VocabularyPageProps) {
   const [sortField, setSortField] = useState<SortField>('chapter');
   const [sortDir, setSortDir] = useState<SortDir>('asc');
   const [filterChapter, setFilterChapter] = useState<string>('all');
-  const [filterKnown, setFilterKnown] = useState<'all' | 'known' | 'learning'>('all');
+  const [filterMastery, setFilterMastery] = useState<'all' | 'mastered' | 'studying'>('all');
   const [selectedConcept, setSelectedConcept] = useState<Concept | null>(null);
+  
+  // Bulk chapter management
+  const [showBulkPanel, setShowBulkPanel] = useState(false);
+  const [fromChapter, setFromChapter] = useState(1);
+  const [toChapter, setToChapter] = useState(6);
   
   // Auto-import HSK1 if no vocab exists
   useEffect(() => {
@@ -39,10 +44,10 @@ export function VocabularyPage({ store }: VocabularyPageProps) {
       result = result.filter(c => c.chapter === parseInt(filterChapter));
     }
     
-    // Known/Learning filter
-    if (filterKnown === 'known') {
+    // Mastery filter
+    if (filterMastery === 'mastered') {
       result = result.filter(c => c.understanding >= 80);
-    } else if (filterKnown === 'learning') {
+    } else if (filterMastery === 'studying') {
       result = result.filter(c => c.understanding < 80);
     }
     
@@ -70,7 +75,7 @@ export function VocabularyPage({ store }: VocabularyPageProps) {
       }
       return sortDir === 'asc' ? comparison : -comparison;
     });
-  }, [store.concepts, filterChapter, filterKnown, sortField, sortDir]);
+  }, [store.concepts, filterChapter, filterMastery, sortField, sortDir]);
   
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -91,12 +96,35 @@ export function VocabularyPage({ store }: VocabularyPageProps) {
   };
 
   // Stats
-  const knownCount = store.concepts.filter(c => c.understanding >= 80).length;
-  const totalCount = store.concepts.length;
-  const filteredKnown = filteredConcepts.filter(c => c.understanding >= 80).length;
+  const masteredCount = store.concepts.filter(c => c.understanding >= 80).length;
+  const totalAdded = store.concepts.length;
+  const filteredMastered = filteredConcepts.filter(c => c.understanding >= 80).length;
   
-  // Mass select/unselect for filtered results
-  const handleSelectAll = () => {
+  // Bulk chapter stats
+  const bulkStats = useMemo(() => {
+    const inRange = store.hsk1Vocab.filter(w => w.chapter >= fromChapter && w.chapter <= toChapter);
+    const alreadyAdded = inRange.filter(w => store.addedWords.has(w.word));
+    const canAdd = inRange.length - alreadyAdded.length;
+    const conceptsInRange = store.concepts.filter(c => c.chapter >= fromChapter && c.chapter <= toChapter);
+    return {
+      totalInRange: inRange.length,
+      alreadyAdded: alreadyAdded.length,
+      canAdd,
+      canRemove: conceptsInRange.length,
+    };
+  }, [fromChapter, toChapter, store.hsk1Vocab, store.addedWords, store.concepts]);
+  
+  // Get chapter stats for quick buttons
+  const chapterStats = useMemo(() => {
+    return store.availableChapters.map(ch => {
+      const total = store.hsk1Vocab.filter(w => w.chapter === ch).length;
+      const added = store.concepts.filter(c => c.chapter === ch).length;
+      return { chapter: ch, total, added };
+    });
+  }, [store.availableChapters, store.hsk1Vocab, store.concepts]);
+  
+  // Mass mastery toggle for filtered results
+  const handleMarkAllMastered = () => {
     filteredConcepts.forEach(c => {
       if (c.understanding < 80) {
         store.toggleKnown(c.id);
@@ -104,12 +132,23 @@ export function VocabularyPage({ store }: VocabularyPageProps) {
     });
   };
   
-  const handleUnselectAll = () => {
+  const handleResetAllMastery = () => {
     filteredConcepts.forEach(c => {
       if (c.understanding >= 80) {
         store.toggleKnown(c.id);
       }
     });
+  };
+  
+  // Bulk chapter handlers
+  const handleAddChapters = () => {
+    store.importChapters(fromChapter, toChapter);
+  };
+  
+  const handleRemoveChapters = () => {
+    if (confirm(`Remove all ${bulkStats.canRemove} words from chapters ${fromChapter}-${toChapter}? This will reset your progress for these words.`)) {
+      store.removeChapters(fromChapter, toChapter);
+    }
   };
   
   return (
@@ -120,19 +159,118 @@ export function VocabularyPage({ store }: VocabularyPageProps) {
           <div>
             <h1 className="text-xl font-bold">Vocabulary</h1>
             <p className="text-sm text-base-content/60">
-              {knownCount} / {totalCount} known
+              {totalAdded} added · {masteredCount} mastered
             </p>
           </div>
-          {store.concepts.length === 0 && (
+          <div className="flex gap-2">
             <button 
-              className="btn btn-sm btn-primary"
-              onClick={store.importHSK1}
+              className={`btn btn-sm ${showBulkPanel ? 'btn-primary' : 'btn-ghost'}`}
+              onClick={() => setShowBulkPanel(!showBulkPanel)}
             >
-              <Download className="w-4 h-4" />
-              Import HSK1
+              <Layers className="w-4 h-4" />
+              Chapters
+              <ChevronRight className={`w-3 h-3 transition-transform ${showBulkPanel ? 'rotate-90' : ''}`} />
             </button>
-          )}
+            {store.concepts.length === 0 && (
+              <button 
+                className="btn btn-sm btn-primary"
+                onClick={store.importHSK1}
+              >
+                <Download className="w-4 h-4" />
+                Import All
+              </button>
+            )}
+          </div>
         </div>
+        
+        {/* Bulk Chapter Management Panel */}
+        {showBulkPanel && (
+          <div className="bg-base-200 rounded-lg p-3 mb-3 space-y-3">
+            <div className="text-sm font-medium text-base-content/80">Add or remove chapters in bulk</div>
+            
+            {/* Chapter Range Selector */}
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-sm">Chapters</span>
+              <select 
+                className="select select-sm select-bordered w-20"
+                value={fromChapter}
+                onChange={(e) => {
+                  const val = parseInt(e.target.value);
+                  setFromChapter(val);
+                  if (val > toChapter) setToChapter(val);
+                }}
+              >
+                {store.availableChapters.map(ch => (
+                  <option key={ch} value={ch}>{ch}</option>
+                ))}
+              </select>
+              <span className="text-sm">to</span>
+              <select 
+                className="select select-sm select-bordered w-20"
+                value={toChapter}
+                onChange={(e) => {
+                  const val = parseInt(e.target.value);
+                  setToChapter(val);
+                  if (val < fromChapter) setFromChapter(val);
+                }}
+              >
+                {store.availableChapters.map(ch => (
+                  <option key={ch} value={ch}>{ch}</option>
+                ))}
+              </select>
+              
+              {/* Stats badge */}
+              <span className="badge badge-sm badge-neutral ml-auto">
+                {bulkStats.alreadyAdded}/{bulkStats.totalInRange} added
+              </span>
+            </div>
+            
+            {/* Action buttons */}
+            <div className="flex flex-wrap gap-2">
+              <button
+                className="btn btn-sm btn-success"
+                onClick={handleAddChapters}
+                disabled={bulkStats.canAdd === 0}
+              >
+                <Plus className="w-3 h-3" />
+                Add {bulkStats.canAdd} words
+              </button>
+              <button
+                className="btn btn-sm btn-error btn-outline"
+                onClick={handleRemoveChapters}
+                disabled={bulkStats.canRemove === 0}
+              >
+                <Minus className="w-3 h-3" />
+                Remove {bulkStats.canRemove} words
+              </button>
+            </div>
+            
+            {/* Quick chapter toggles */}
+            <div className="pt-2 border-t border-base-300">
+              <div className="text-xs text-base-content/60 mb-2">Quick add by chapter:</div>
+              <div className="flex flex-wrap gap-1">
+                {chapterStats.map(({ chapter, total, added }) => (
+                  <button
+                    key={chapter}
+                    className={`btn btn-xs ${added === total ? 'btn-success' : added > 0 ? 'btn-warning' : 'btn-ghost'}`}
+                    onClick={() => {
+                      if (added < total) {
+                        store.importChapters(chapter, chapter);
+                      }
+                    }}
+                    disabled={added === total}
+                    title={`Chapter ${chapter}: ${added}/${total} words`}
+                  >
+                    Ch.{chapter}
+                    <span className="text-xs opacity-70">
+                      {added}/{total}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
         
         {/* Filters Row */}
         <div className="flex flex-wrap gap-2 items-center">
@@ -158,15 +296,15 @@ export function VocabularyPage({ store }: VocabularyPageProps) {
             })}
           </select>
           
-          {/* Known/Learning filter */}
+          {/* Mastery filter */}
           <select
             className="select select-sm select-bordered bg-base-200"
-            value={filterKnown}
-            onChange={e => setFilterKnown(e.target.value as 'all' | 'known' | 'learning')}
+            value={filterMastery}
+            onChange={e => setFilterMastery(e.target.value as 'all' | 'mastered' | 'studying')}
           >
             <option value="all">All</option>
-            <option value="known">Known only</option>
-            <option value="learning">Learning only</option>
+            <option value="mastered">Mastered</option>
+            <option value="studying">Studying</option>
           </select>
           
           {/* Showing count */}
@@ -180,19 +318,19 @@ export function VocabularyPage({ store }: VocabularyPageProps) {
           <div className="flex gap-2 mt-2 pt-2 border-t border-base-300">
             <button 
               className="btn btn-xs btn-outline btn-success"
-              onClick={handleSelectAll}
-              disabled={filteredKnown === filteredConcepts.length}
+              onClick={handleMarkAllMastered}
+              disabled={filteredMastered === filteredConcepts.length}
             >
               <CheckSquare className="w-3 h-3" />
-              Mark all as known ({filteredConcepts.length - filteredKnown})
+              Mark all mastered ({filteredConcepts.length - filteredMastered})
             </button>
             <button 
               className="btn btn-xs btn-outline btn-warning"
-              onClick={handleUnselectAll}
-              disabled={filteredKnown === 0}
+              onClick={handleResetAllMastery}
+              disabled={filteredMastered === 0}
             >
               <Square className="w-3 h-3" />
-              Reset all ({filteredKnown})
+              Reset mastery ({filteredMastered})
             </button>
           </div>
         )}
@@ -257,9 +395,10 @@ export function VocabularyPage({ store }: VocabularyPageProps) {
                   <th 
                     className="cursor-pointer hover:bg-base-300 text-center whitespace-nowrap"
                     onClick={() => handleSort('understanding')}
+                    title="Mastered - tick when you've fully learned this word"
                   >
                     <div className="flex items-center justify-center gap-1">
-                      ✓ <SortIcon field="understanding" />
+                      ⭐ <SortIcon field="understanding" />
                     </div>
                   </th>
                 </tr>

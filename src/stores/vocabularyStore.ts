@@ -16,9 +16,9 @@ import hsk1Data from '../data/hsk1_vocabulary.json';
 const STORAGE_KEY = 'langseed_progress';
 const LAST_SYNC_KEY = 'langseed_last_sync';
 
-// Generate unique ID
+// Generate UUID (compatible with Supabase)
 function generateId(): string {
-  return `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+  return crypto.randomUUID();
 }
 
 // Load progress from localStorage
@@ -58,9 +58,11 @@ export interface VocabularyStore {
   hsk1Vocab: VocabWord[];
   
   // Computed
-  knownWords: Set<string>;
+  addedWords: Set<string>;  // Words that have been introduced/added to study list
   dueCount: number;
   newCount: number;
+  availableChapters: number[];
+  masteredCount: number;    // Words with understanding >= 80%
   
   // Sync state
   isSyncing: boolean;
@@ -70,6 +72,8 @@ export interface VocabularyStore {
   
   // Actions
   importHSK1: () => void;
+  importChapters: (fromChapter: number, toChapter: number) => void;
+  removeChapters: (fromChapter: number, toChapter: number) => void;
   toggleKnown: (conceptId: string) => void;
   markAsKnown: (word: string) => void;
   initializeSRS: (conceptId: string) => void;
@@ -126,8 +130,15 @@ export function useVocabularyStore(): VocabularyStore {
   }, [lastLocalChangeTime, lastSyncTime, concepts.length, srsRecords.length]);
 
   // Computed values
-  const knownWords = useMemo(() => 
+  // Words that have been added to study list (introduced to user)
+  const addedWords = useMemo(() => 
     new Set(concepts.map(c => c.word)),
+    [concepts]
+  );
+  
+  // Words with high understanding (mastered)
+  const masteredCount = useMemo(() => 
+    concepts.filter(c => c.understanding >= 80).length,
     [concepts]
   );
 
@@ -141,13 +152,19 @@ export function useVocabularyStore(): VocabularyStore {
     [concepts, srsRecords]
   );
 
+  // Get all available chapters from HSK1 data
+  const availableChapters = useMemo(() => {
+    const vocab = hsk1Data as VocabWord[];
+    return [...new Set(vocab.map(w => w.chapter))].sort((a, b) => a - b);
+  }, []);
+
   // Actions
   const importHSK1 = useCallback(() => {
     const vocab = hsk1Data as VocabWord[];
     const newConcepts: Concept[] = [];
     
     vocab.forEach(word => {
-      if (!knownWords.has(word.word)) {
+      if (!addedWords.has(word.word)) {
         newConcepts.push({
           ...word,
           id: generateId(),
@@ -158,7 +175,38 @@ export function useVocabularyStore(): VocabularyStore {
     });
     
     setConcepts(prev => [...prev, ...newConcepts]);
-  }, [knownWords]);
+  }, [addedWords]);
+
+  // Import specific chapter range
+  const importChapters = useCallback((fromChapter: number, toChapter: number) => {
+    const vocab = hsk1Data as VocabWord[];
+    const newConcepts: Concept[] = [];
+    
+    vocab.forEach(word => {
+      if (word.chapter >= fromChapter && word.chapter <= toChapter && !addedWords.has(word.word)) {
+        newConcepts.push({
+          ...word,
+          id: generateId(),
+          understanding: 0,
+          paused: false,
+        });
+      }
+    });
+    
+    setConcepts(prev => [...prev, ...newConcepts]);
+  }, [addedWords]);
+
+  // Remove concepts from specific chapter range
+  const removeChapters = useCallback((fromChapter: number, toChapter: number) => {
+    setConcepts(prev => prev.filter(c => c.chapter < fromChapter || c.chapter > toChapter));
+    // Also remove associated SRS records
+    setSrsRecords(prev => {
+      const conceptIds = concepts
+        .filter(c => c.chapter >= fromChapter && c.chapter <= toChapter)
+        .map(c => c.id);
+      return prev.filter(r => !conceptIds.includes(r.conceptId));
+    });
+  }, [concepts]);
 
   const toggleKnown = useCallback((conceptId: string) => {
     setConcepts(prev => prev.map(c => {
@@ -206,7 +254,7 @@ export function useVocabularyStore(): VocabularyStore {
     const vocab = hsk1Data as VocabWord[];
     const wordData = vocab.find(v => v.word === word);
     
-    if (!wordData || knownWords.has(word)) return;
+    if (!wordData || addedWords.has(word)) return;
     
     const conceptId = generateId();
     const newConcept: Concept = {
@@ -230,7 +278,7 @@ export function useVocabularyStore(): VocabularyStore {
     }));
     
     setSrsRecords(prev => [...prev, ...newSRS]);
-  }, [knownWords]);
+  }, [addedWords]);
 
   const initializeSRS = useCallback((conceptId: string) => {
     // Check if SRS records already exist
@@ -384,9 +432,11 @@ export function useVocabularyStore(): VocabularyStore {
     concepts,
     srsRecords,
     hsk1Vocab: hsk1Data as VocabWord[],
-    knownWords,
+    addedWords,
     dueCount,
     newCount,
+    availableChapters,
+    masteredCount,
     // Sync state
     isSyncing,
     syncError,
@@ -394,6 +444,8 @@ export function useVocabularyStore(): VocabularyStore {
     hasUnsyncedChanges,
     // Actions
     importHSK1,
+    importChapters,
+    removeChapters,
     toggleKnown,
     markAsKnown,
     initializeSRS,

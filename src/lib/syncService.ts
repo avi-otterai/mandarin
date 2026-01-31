@@ -9,6 +9,41 @@ export interface SyncResult {
   srsRecordsUploaded?: number;
 }
 
+// Check if a string is a valid UUID
+function isValidUUID(str: string): boolean {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(str);
+}
+
+// Convert old-format IDs to UUIDs for sync
+// Returns a map of oldId -> newUUID for concept ID remapping
+function migrateIds(concepts: Concept[], srsRecords: SRSRecord[]): {
+  migratedConcepts: Concept[];
+  migratedSrsRecords: SRSRecord[];
+} {
+  // Create mapping from old concept IDs to new UUIDs
+  const conceptIdMap = new Map<string, string>();
+  
+  const migratedConcepts = concepts.map(c => {
+    if (isValidUUID(c.id)) {
+      conceptIdMap.set(c.id, c.id);
+      return c;
+    }
+    const newId = crypto.randomUUID();
+    conceptIdMap.set(c.id, newId);
+    return { ...c, id: newId };
+  });
+  
+  // Migrate SRS records with new IDs and remapped concept IDs
+  const migratedSrsRecords = srsRecords.map(r => {
+    const newId = isValidUUID(r.id) ? r.id : crypto.randomUUID();
+    const newConceptId = conceptIdMap.get(r.conceptId) || r.conceptId;
+    return { ...r, id: newId, conceptId: newConceptId };
+  });
+  
+  return { migratedConcepts, migratedSrsRecords };
+}
+
 // Convert local Concept to Supabase insert format
 function conceptToInsert(concept: Concept, userId: string) {
   return {
@@ -140,6 +175,9 @@ export async function saveToCloud(
   }
 
   try {
+    // Migrate any old-format IDs to valid UUIDs
+    const { migratedConcepts, migratedSrsRecords } = migrateIds(concepts, srsRecords);
+    
     // First, delete existing data for this user (clean sync)
     const { error: deleteConceptsError } = await supabase
       .from('srs_records')
@@ -160,8 +198,8 @@ export async function saveToCloud(
     }
 
     // Insert concepts
-    if (concepts.length > 0) {
-      const conceptInserts = concepts.map(c => conceptToInsert(c, userId));
+    if (migratedConcepts.length > 0) {
+      const conceptInserts = migratedConcepts.map(c => conceptToInsert(c, userId));
       const { error: insertConceptsError } = await supabase
         .from('concepts')
         .insert(conceptInserts);
@@ -172,8 +210,8 @@ export async function saveToCloud(
     }
 
     // Insert SRS records
-    if (srsRecords.length > 0) {
-      const srsInserts = srsRecords.map(r => srsRecordToInsert(r, userId));
+    if (migratedSrsRecords.length > 0) {
+      const srsInserts = migratedSrsRecords.map(r => srsRecordToInsert(r, userId));
       const { error: insertSrsError } = await supabase
         .from('srs_records')
         .insert(srsInserts);
@@ -185,8 +223,8 @@ export async function saveToCloud(
 
     return {
       success: true,
-      conceptsUploaded: concepts.length,
-      srsRecordsUploaded: srsRecords.length,
+      conceptsUploaded: migratedConcepts.length,
+      srsRecordsUploaded: migratedSrsRecords.length,
     };
   } catch (err) {
     return { 

@@ -43,17 +43,37 @@ The app uses **Supabase Auth** with email/password login.
 
 ---
 
+## Terminology
+
+Understanding these terms is key to how the app works:
+
+| Term | Meaning |
+|------|---------|
+| **Added** | A word has been introduced to your study list. You want to learn it. |
+| **Mastered** | You've demonstrated strong recall of a word (understanding ≥ 80%). It won't appear in SRS reviews. |
+| **Studying** | A word is added but not yet mastered. It will appear in SRS reviews. |
+
+**Important distinction:**
+- **Adding** a word = putting it in your study queue (chapters feature)
+- **Mastering** a word = marking it complete (star checkbox) - either through SRS practice or manually
+
+---
+
 ## Features
 
 ### Vocabulary Tab
-- **Table view** with sortable columns: Character, Pinyin, Meaning, Type, Chapter, Known
+- **Table view** with sortable columns: Character, Pinyin, Meaning, Type, Chapter, Mastered (⭐)
 - **Sticky header** - header stays visible while scrolling
 - **Filters**:
   - By chapter (Ch. 1-15)
-  - By status (All / Known only / Learning only)
+  - By mastery status (All / Mastered / Studying)
+- **Bulk chapter management**:
+  - Add words from chapter ranges (e.g., Ch. 1-6) to your study list
+  - Remove chapters you don't want to study yet
+  - Quick add buttons per chapter showing progress
 - **Mass actions**:
-  - "Mark all as known" - for current filtered view
-  - "Reset all" - unmark all as learning
+  - "Mark all mastered" - for current filtered view
+  - "Reset mastery" - put words back into study rotation
 - Click any character to see details + SRS progress
 
 ### Revise Tab (SRS)
@@ -209,7 +229,8 @@ Both tables have Row Level Security enabled:
 
 - [x] Vocabulary table with sorting
 - [x] Chapter filtering
-- [x] Mass select/unselect
+- [x] Bulk chapter add/remove
+- [x] Mass mastery toggle
 - [x] Sticky table header
 - [x] SRS practice (3 question types)
 - [x] localStorage persistence

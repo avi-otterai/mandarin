@@ -417,41 +417,41 @@
   },
   {
     "word": "二十五号",
-    "pinyin": "èrshíwǔ",
+    "pinyin": "èrshíwǔ hào",
     "part_of_speech": "other",
-    "meaning": "hào",
+    "meaning": "the 25th (of a month)",
     "chapter": 7,
     "source": "hsk1"
   },
   {
     "word": "中国菜",
-    "pinyin": "Zhōngguó",
-    "part_of_speech": "other",
-    "meaning": "cài",
+    "pinyin": "Zhōngguó cài",
+    "part_of_speech": "noun",
+    "meaning": "Chinese food, Chinese cuisine",
     "chapter": 7,
     "source": "hsk1"
   },
   {
     "word": "看书",
-    "pinyin": "kàn",
-    "part_of_speech": "other",
-    "meaning": "shū",
+    "pinyin": "kàn shū",
+    "part_of_speech": "verb",
+    "meaning": "to read (a book)",
     "chapter": 7,
     "source": "hsk1"
   },
   {
     "word": "看日历",
-    "pinyin": "kàn",
-    "part_of_speech": "other",
-    "meaning": "rìlì",
+    "pinyin": "kàn rìlì",
+    "part_of_speech": "verb",
+    "meaning": "to look at a calendar",
     "chapter": 7,
     "source": "hsk1"
   },
   {
     "word": "在银行",
-    "pinyin": "zài",
+    "pinyin": "zài yínháng",
     "part_of_speech": "other",
-    "meaning": "yínháng",
+    "meaning": "at the bank",
     "chapter": 7,
     "source": "hsk1"
   },
@@ -920,34 +920,26 @@
     "source": "hsk1"
   },
   {
-    "word": "她在学校。Tā",
-    "pinyin": "zài",
-    "part_of_speech": "other",
-    "meaning": "xuéxiào.",
+    "word": "中午",
+    "pinyin": "zhōngwǔ",
+    "part_of_speech": "noun",
+    "meaning": "noon, midday",
     "chapter": 11,
     "source": "hsk1"
   },
   {
-    "word": "王方中午去商店。Wáng",
-    "pinyin": "Fāng zhōngwǔ",
-    "part_of_speech": "other",
-    "meaning": "qù shāngdiàn.",
+    "word": "他们",
+    "pinyin": "tāmen",
+    "part_of_speech": "pronoun",
+    "meaning": "they, them",
     "chapter": 11,
     "source": "hsk1"
   },
   {
-    "word": "他们很忙（busy），星期六也工作。Tāmen",
-    "pinyin": "hěn",
-    "part_of_speech": "other",
-    "meaning": "áng, xīngqí liù yě gōngzuò.",
-    "chapter": 11,
-    "source": "hsk1"
-  },
-  {
-    "word": "她上午不喝茶，下午前喝茶。Tā",
-    "pinyin": "shàngwǔ bù",
-    "part_of_speech": "other",
-    "meaning": "hē chá, xiàwǔ qián hē chá.",
+    "word": "也",
+    "pinyin": "yě",
+    "part_of_speech": "adverb",
+    "meaning": "also, too",
     "chapter": 11,
     "source": "hsk1"
   },
@@ -1048,34 +1040,18 @@
     "source": "hsk1"
   },
   {
-    "word": "妈妈身体不太好。Māma",
-    "pinyin": "shēntǐ bù",
-    "part_of_speech": "other",
-    "meaning": "tài hǎo.",
+    "word": "身体",
+    "pinyin": "shēntǐ",
+    "part_of_speech": "noun",
+    "meaning": "body, health",
     "chapter": 12,
     "source": "hsk1"
   },
   {
-    "word": "明天天气很好，不会下雨。Míngtiān",
-    "pinyin": "tiānqì hěn",
-    "part_of_speech": "other",
-    "meaning": "hǎo, bù huì xià yǔ.",
-    "chapter": 12,
-    "source": "hsk1"
-  },
-  {
-    "word": "王小姐爱吃水果，不爱吃饭。Wáng",
-    "pinyin": "xiǎojiě ài",
-    "part_of_speech": "other",
-    "meaning": "chī shuǐguǒ, bù ài chī fàn.",
-    "chapter": 12,
-    "source": "hsk1"
-  },
-  {
-    "word": "今天天气太热了，你多喝水。Jīntiān",
-    "pinyin": "tiānqì tài",
-    "part_of_speech": "other",
-    "meaning": "rè le, nǐ duō hē shuǐ.",
+    "word": "饭",
+    "pinyin": "fàn",
+    "part_of_speech": "noun",
+    "meaning": "meal, cooked rice",
     "chapter": 12,
     "source": "hsk1"
   },

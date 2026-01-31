@@ -1,8 +1,8 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Navbar } from './components/Navbar';
 import { VocabularyPage } from './pages/VocabularyPage';
-import { RevisePage } from './pages/RevisePage';
+import { RevisePage, hasReviewedToday } from './pages/RevisePage';
 import { SettingsPage } from './pages/SettingsPage';
 import { LoginPage } from './pages/LoginPage';
 import { useVocabularyStore } from './stores/vocabularyStore';
@@ -89,6 +89,14 @@ function AppContent({
 }) {
   const location = useLocation();
   const showSyncButton = location.pathname === '/vocab';
+  
+  // Track if user reviewed today - re-check on route change
+  const [reviewedToday, setReviewedToday] = useState(hasReviewedToday);
+  
+  useEffect(() => {
+    // Re-check reviewed status when navigating (e.g., after completing a session)
+    setReviewedToday(hasReviewedToday());
+  }, [location.pathname]);
 
   return (
     <div className="h-screen flex flex-col bg-base-100 text-base-content overflow-hidden">
@@ -134,8 +142,7 @@ function AppContent({
       </main>
       
       <Navbar 
-        dueCount={store.dueCount} 
-        newCount={store.newCount}
+        reviewedToday={reviewedToday}
         hasUnsyncedSettings={settingsStore.hasUnsyncedChanges}
       />
     </div>

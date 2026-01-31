@@ -271,10 +271,13 @@ All tables have Row Level Security enabled:
 - [x] Configurable words per session
 - [x] Custom reveal weights
 - [x] 8 custom themes (light, dark, wooden, ocean, forest, sunset, sakura, ink)
+- [x] Confetti celebration on session completion
+- [x] Revise tab indicator (✓ if reviewed today, ! if not)
 - [ ] Add audio/TTS for pronunciation
 - [ ] Tone-specific practice mode
 - [ ] Import custom vocabulary lists
 - [ ] Progress stats / charts
+- [ ] **Session tracking in Supabase**: Record each revision session (timestamp, cards reviewed, per-card recall feedback - e.g., "knew it" vs "didn't know" for each hidden modality)
 
 ---
 

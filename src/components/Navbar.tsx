@@ -1,15 +1,13 @@
 import { Link, useLocation } from 'react-router-dom';
-import { BookOpen, GraduationCap, Settings } from 'lucide-react';
+import { BookOpen, GraduationCap, Settings, Check, AlertCircle } from 'lucide-react';
 
 interface NavbarProps {
-  dueCount: number;
-  newCount: number;
+  reviewedToday: boolean;
   hasUnsyncedSettings?: boolean;
 }
 
-export function Navbar({ dueCount, newCount, hasUnsyncedSettings }: NavbarProps) {
+export function Navbar({ reviewedToday, hasUnsyncedSettings }: NavbarProps) {
   const location = useLocation();
-  const totalPractice = dueCount + newCount;
   
   return (
     <nav className="flex-shrink-0 bg-base-200 border-t border-base-300 z-20">
@@ -36,9 +34,13 @@ export function Navbar({ dueCount, newCount, hasUnsyncedSettings }: NavbarProps)
         >
           <div className="relative">
             <GraduationCap className="w-6 h-6" />
-            {totalPractice > 0 && (
-              <span className="absolute -top-2 -right-3 min-w-5 h-5 flex items-center justify-center text-xs bg-primary text-primary-content rounded-full px-1">
-                {totalPractice > 99 ? '99+' : totalPractice}
+            {reviewedToday ? (
+              <span className="absolute -top-1.5 -right-1.5 w-4 h-4 flex items-center justify-center bg-success text-success-content rounded-full">
+                <Check className="w-3 h-3" strokeWidth={3} />
+              </span>
+            ) : (
+              <span className="absolute -top-1.5 -right-1.5 w-4 h-4 flex items-center justify-center bg-warning text-warning-content rounded-full">
+                <AlertCircle className="w-3 h-3" strokeWidth={3} />
               </span>
             )}
           </div>

@@ -1,9 +1,12 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Volume2, ChevronLeft, ChevronRight, Shuffle } from 'lucide-react';
+import confetti from 'canvas-confetti';
 import type { VocabularyStore } from '../stores/vocabularyStore';
 import type { SettingsStore } from '../stores/settingsStore';
 import type { Concept } from '../types/vocabulary';
 import type { FocusLevel } from '../types/settings';
+
+const LAST_REVIEW_KEY = 'langseed_last_review';
 
 interface RevisePageProps {
   store: VocabularyStore;
@@ -54,11 +57,61 @@ function shuffleArray<T>(array: T[]): T[] {
   return shuffled;
 }
 
+// Fire confetti celebration
+function fireConfetti() {
+  const duration = 3000;
+  const end = Date.now() + duration;
+
+  const frame = () => {
+    confetti({
+      particleCount: 3,
+      angle: 60,
+      spread: 55,
+      origin: { x: 0 },
+      colors: ['#ff6b6b', '#4ecdc4', '#ffe66d', '#95e1d3', '#f38181'],
+    });
+    confetti({
+      particleCount: 3,
+      angle: 120,
+      spread: 55,
+      origin: { x: 1 },
+      colors: ['#ff6b6b', '#4ecdc4', '#ffe66d', '#95e1d3', '#f38181'],
+    });
+
+    if (Date.now() < end) {
+      requestAnimationFrame(frame);
+    }
+  };
+  frame();
+}
+
+// Check if reviewed today
+export function hasReviewedToday(): boolean {
+  try {
+    const lastReview = localStorage.getItem(LAST_REVIEW_KEY);
+    if (!lastReview) return false;
+    
+    const lastDate = new Date(lastReview);
+    const today = new Date();
+    
+    return lastDate.toDateString() === today.toDateString();
+  } catch {
+    return false;
+  }
+}
+
+// Mark today as reviewed
+function markReviewedToday() {
+  localStorage.setItem(LAST_REVIEW_KEY, new Date().toISOString());
+}
+
 export function RevisePage({ store, settingsStore }: RevisePageProps) {
   // Session words - randomly selected from known words
   const [sessionWords, setSessionWords] = useState<Concept[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [cardStates, setCardStates] = useState<Map<string, FlashcardState>>(new Map());
+  const [sessionComplete, setSessionComplete] = useState(false);
+  const confettiFiredRef = useRef(false);
   
   // Get settings with defaults
   const settings = settingsStore?.settings;
@@ -222,8 +275,24 @@ export function RevisePage({ store, settingsStore }: RevisePageProps) {
     );
   }
 
-  // Session complete
-  if (sessionWords.length > 0 && currentIndex >= sessionWords.length) {
+  // Session complete - fire confetti and mark as reviewed today
+  useEffect(() => {
+    if (sessionComplete && !confettiFiredRef.current) {
+      confettiFiredRef.current = true;
+      markReviewedToday();
+      fireConfetti();
+    }
+  }, [sessionComplete]);
+  
+  // Detect session completion
+  useEffect(() => {
+    if (sessionWords.length > 0 && currentIndex >= sessionWords.length && !sessionComplete) {
+      setSessionComplete(true);
+    }
+  }, [currentIndex, sessionWords.length, sessionComplete]);
+
+  // Session complete screen
+  if (sessionComplete) {
     return (
       <div className="min-h-screen pb-20">
         <header className="sticky top-0 z-20 bg-base-100/95 backdrop-blur border-b border-base-300 px-4 py-3">
@@ -240,7 +309,11 @@ export function RevisePage({ store, settingsStore }: RevisePageProps) {
               </p>
               <button 
                 className="btn btn-primary mt-6"
-                onClick={startNewSession}
+                onClick={() => {
+                  confettiFiredRef.current = false;
+                  setSessionComplete(false);
+                  startNewSession();
+                }}
               >
                 <Shuffle className="w-5 h-5" />
                 Start New Session

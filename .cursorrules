@@ -1,0 +1,88 @@
+# Mandarin - Chinese Learning App
+
+## Project Context
+React/TypeScript webapp for learning Mandarin Chinese using spaced repetition (SRS).
+See README.md for full feature list and setup.
+
+## Repository
+- **GitHub**: https://github.com/avi-otterai/mandarin.git
+- **Remote**: `origin` using `github.com-avi` SSH alias (personal key)
+
+## User's Learning Goals
+- **Target**: Learn Mandarin Chinese from HSK 1 level
+- **Learning priority** (in order):
+  1. **Pinyin** - Foundation, already comfortable
+  2. **Pronunciation** - Speaking practice, listening comprehension
+  3. **Reading** - Character recognition
+  4. **Tones** - Currently struggling, needs focused practice
+  5. **Writing** - Lowest priority, optional
+- **Learning style**: Audio/speaking first, reading second, SRS-based retention
+
+## Tech Stack
+- React 19 + TypeScript
+- Vite (build tool)
+- Tailwind CSS v4 + daisyUI v5
+- localStorage (current storage)
+- Supabase (planned for cloud sync)
+
+## Running Locally
+```bash
+npm install
+npm run dev
+```
+Open http://localhost:5173/
+
+---
+
+## Git Workflow
+
+### Branch Strategy
+- **main**: Production-ready code only
+- **Feature branches**: Create a new branch for every feature/fix
+
+### Creating a Feature Branch
+```bash
+git checkout -b feature/your-feature-name
+# or
+git checkout -b fix/your-fix-name
+```
+
+### Committing
+If GPG signing fails, use:
+```bash
+git commit --no-gpg-sign -m "your message"
+```
+
+### Pushing to GitHub
+This repo uses the `github.com-avi` SSH alias (personal key, not work key):
+```bash
+git push -u origin feature/your-feature-name
+```
+
+**Important for Cursor terminal**: Always use `required_permissions: ["all"]` when pushing to access SSH keys.
+
+### Merging to Main
+1. Push feature branch
+2. Create PR on GitHub (or merge locally)
+3. After review/approval:
+```bash
+git checkout main
+git merge feature/your-feature-name
+git push origin main
+```
+
+### SSH Configuration
+The repo uses `github.com-avi` alias which maps to personal SSH key (`~/.ssh/id_ed25519`), not the work Teleport certificate.
+
+---
+
+## Key Files
+- `src/pages/VocabularyPage.tsx` - Vocabulary table with filters
+- `src/pages/RevisePage.tsx` - SRS practice
+- `src/stores/vocabularyStore.ts` - State + localStorage persistence
+- `src/utils/srs.ts` - SRS algorithm
+- `src/data/hsk1_vocabulary.json` - HSK1 word list
+
+## Data Storage
+Currently: **localStorage** (key: `langseed_progress`)
+Planned: **Supabase** for cloud sync

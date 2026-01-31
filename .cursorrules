@@ -8,6 +8,35 @@ See README.md for full feature list and setup.
 - **GitHub**: https://github.com/avi-otterai/mandarin.git
 - **Remote**: `origin` using `github.com-avi` SSH alias (personal key)
 
+---
+
+## Task Workflow (ALWAYS FOLLOW)
+
+When working on any new task/feature:
+
+### 1. Understand First
+- [ ] Read `README.md` for project overview
+- [ ] Read `.cursorrules` for conventions and context
+- [ ] Understand current code structure before making changes
+
+### 2. Plan Before Implementing
+- [ ] Outline the approach/changes needed
+- [ ] Confirm plan with user if it's a large change
+
+### 3. Implement
+- [ ] Create a **new feature branch** (never commit directly to main)
+- [ ] Make changes following existing code patterns
+- [ ] Test locally if applicable
+
+### 4. Document
+- [ ] Update `README.md` if adding features or changing behavior
+- [ ] Add comments for complex logic
+
+### 5. Commit & Review
+- [ ] Commit changes to feature branch with descriptive message
+- [ ] **ASK user before pushing to GitHub** or merging to main
+- [ ] User confirms → push to origin
+
 ## User's Learning Goals
 - **Target**: Learn Mandarin Chinese from HSK 1 level
 - **Learning priority** (in order):
@@ -84,5 +113,13 @@ The repo uses `github.com-avi` alias which maps to personal SSH key (`~/.ssh/id_
 - `src/data/hsk1_vocabulary.json` - HSK1 word list
 
 ## Data Storage
-Currently: **localStorage** (key: `langseed_progress`)
-Planned: **Supabase** for cloud sync
+- **Local**: localStorage (key: `langseed_progress`) - instant reads/writes
+- **Cloud**: Supabase PostgreSQL with RLS (user-level row security)
+  - Project: `mandarin` (YOUR_PROJECT_ID)
+  - Tables: `concepts`, `srs_records`
+  - Sync: Manual "Save" button triggers cloud sync
+
+## Supabase Config
+- **URL**: `https://YOUR_PROJECT_ID.supabase.co`
+- **Anon Key**: stored in `.env` as `VITE_SUPABASE_ANON_KEY`
+- **Auth**: Email/password (single user, no public signup)

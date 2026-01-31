@@ -1,4 +1,4 @@
-// Vocabulary store with localStorage persistence
+// Vocabulary store with localStorage persistence + Supabase cloud sync
 // Manages concepts and SRS records
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
@@ -10,9 +10,11 @@ import {
   isDue,
   QUESTION_TYPES
 } from '../utils/srs';
+import { fetchFromCloud, saveToCloud, type SyncResult } from '../lib/syncService';
 import hsk1Data from '../data/hsk1_vocabulary.json';
 
 const STORAGE_KEY = 'langseed_progress';
+const LAST_SYNC_KEY = 'langseed_last_sync';
 
 // Generate unique ID
 function generateId(): string {
@@ -60,6 +62,12 @@ export interface VocabularyStore {
   dueCount: number;
   newCount: number;
   
+  // Sync state
+  isSyncing: boolean;
+  syncError: string | null;
+  lastSyncTime: string | null;
+  hasUnsyncedChanges: boolean;
+  
   // Actions
   importHSK1: () => void;
   toggleKnown: (conceptId: string) => void;
@@ -70,12 +78,29 @@ export interface VocabularyStore {
   getSRSForConcept: (conceptId: string) => SRSRecord[];
   getNextPractice: () => { type: 'definition'; concept: Concept } | { type: 'srs'; record: SRSRecord; concept: Concept } | null;
   resetProgress: () => void;
+  
+  // Cloud sync actions
+  syncToCloud: (userId: string) => Promise<SyncResult>;
+  loadFromCloud: (userId: string) => Promise<void>;
+  clearSyncError: () => void;
 }
 
 export function useVocabularyStore(): VocabularyStore {
   const [concepts, setConcepts] = useState<Concept[]>([]);
   const [srsRecords, setSrsRecords] = useState<SRSRecord[]>([]);
   const [initialized, setInitialized] = useState(false);
+  
+  // Sync state
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncError, setSyncError] = useState<string | null>(null);
+  const [lastSyncTime, setLastSyncTime] = useState<string | null>(() => {
+    try {
+      return localStorage.getItem(LAST_SYNC_KEY);
+    } catch {
+      return null;
+    }
+  });
+  const [lastLocalChangeTime, setLastLocalChangeTime] = useState<string | null>(null);
 
   // Load data on mount
   useEffect(() => {
@@ -85,12 +110,20 @@ export function useVocabularyStore(): VocabularyStore {
     setInitialized(true);
   }, []);
 
-  // Save data on change (debounced)
+  // Save data on change (debounced) and track change time
   useEffect(() => {
     if (initialized) {
       saveProgress(concepts, srsRecords);
+      setLastLocalChangeTime(new Date().toISOString());
     }
   }, [concepts, srsRecords, initialized]);
+  
+  // Track if there are unsynced changes
+  const hasUnsyncedChanges = useMemo(() => {
+    if (!lastLocalChangeTime) return false;
+    if (!lastSyncTime) return concepts.length > 0 || srsRecords.length > 0;
+    return new Date(lastLocalChangeTime) > new Date(lastSyncTime);
+  }, [lastLocalChangeTime, lastSyncTime, concepts.length, srsRecords.length]);
 
   // Computed values
   const knownWords = useMemo(() => 
@@ -288,6 +321,65 @@ export function useVocabularyStore(): VocabularyStore {
     localStorage.removeItem(STORAGE_KEY);
   }, []);
 
+  // Cloud sync: Save to Supabase
+  const syncToCloud = useCallback(async (userId: string): Promise<SyncResult> => {
+    setIsSyncing(true);
+    setSyncError(null);
+    
+    try {
+      const result = await saveToCloud(userId, concepts, srsRecords);
+      
+      if (result.success) {
+        const now = new Date().toISOString();
+        setLastSyncTime(now);
+        localStorage.setItem(LAST_SYNC_KEY, now);
+      } else {
+        setSyncError(result.error || 'Sync failed');
+      }
+      
+      return result;
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'Unknown error';
+      setSyncError(errorMsg);
+      return { success: false, error: errorMsg };
+    } finally {
+      setIsSyncing(false);
+    }
+  }, [concepts, srsRecords]);
+
+  // Cloud sync: Load from Supabase
+  const loadFromCloud = useCallback(async (userId: string): Promise<void> => {
+    setIsSyncing(true);
+    setSyncError(null);
+    
+    try {
+      const { concepts: cloudConcepts, srsRecords: cloudSRS, error } = await fetchFromCloud(userId);
+      
+      if (error) {
+        setSyncError(error);
+        return;
+      }
+      
+      // If cloud has data, use it; otherwise keep local data
+      if (cloudConcepts.length > 0 || cloudSRS.length > 0) {
+        setConcepts(cloudConcepts);
+        setSrsRecords(cloudSRS);
+        
+        const now = new Date().toISOString();
+        setLastSyncTime(now);
+        localStorage.setItem(LAST_SYNC_KEY, now);
+      }
+    } catch (err) {
+      setSyncError(err instanceof Error ? err.message : 'Failed to load from cloud');
+    } finally {
+      setIsSyncing(false);
+    }
+  }, []);
+
+  const clearSyncError = useCallback(() => {
+    setSyncError(null);
+  }, []);
+
   return {
     concepts,
     srsRecords,
@@ -295,6 +387,12 @@ export function useVocabularyStore(): VocabularyStore {
     knownWords,
     dueCount,
     newCount,
+    // Sync state
+    isSyncing,
+    syncError,
+    lastSyncTime,
+    hasUnsyncedChanges,
+    // Actions
     importHSK1,
     toggleKnown,
     markAsKnown,
@@ -304,5 +402,9 @@ export function useVocabularyStore(): VocabularyStore {
     getSRSForConcept,
     getNextPractice,
     resetProgress,
+    // Cloud sync
+    syncToCloud,
+    loadFromCloud,
+    clearSyncError,
   };
 }

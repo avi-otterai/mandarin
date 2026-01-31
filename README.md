@@ -4,23 +4,29 @@ A React/TypeScript webapp for learning Mandarin Chinese using spaced repetition.
 
 ## Data Storage
 
-### Current: localStorage (Browser)
-All your progress is saved **locally in your browser's localStorage**:
-- **Key**: `langseed_progress`
-- **Data stored**:
-  - `concepts`: Your vocabulary list with known/unknown status
-  - `srsRecords`: SRS progress for each word (tier, next review time, streak, lapses)
-  - `lastUpdated`: Timestamp of last save
+### Hybrid: localStorage + Supabase Cloud
 
-**Location**: This data persists in your browser. Clearing browser data will reset progress.
+**Local (instant)**: All changes save to localStorage immediately for fast interactions.
 
-**To export your data**: Open browser DevTools → Application → localStorage → Copy `langseed_progress`
+**Cloud (manual sync)**: Click the **Save** button to sync to Supabase for cross-device backup.
 
-### Planned: Supabase (Cloud)
-Future update will add Supabase for:
-- Cross-device sync
-- User accounts
-- Cloud backup
+| Storage | Key/Table | Data |
+|---------|-----------|------|
+| localStorage | `langseed_progress` | concepts, srsRecords, lastUpdated |
+| Supabase | `concepts` | Vocabulary with user preferences |
+| Supabase | `srs_records` | SRS progress per word |
+
+**Row Level Security (RLS)**: Each user can only access their own data.
+
+---
+
+## Authentication
+
+The app uses **Supabase Auth** with email/password login.
+
+- No public signup (private use only)
+- Create your account via Supabase Dashboard
+- All data is isolated per user via RLS
 
 ---
 
@@ -68,22 +74,53 @@ Future update will add Supabase for:
   | 6 | 30 days |
   | 7 | Graduated ✓ |
 
+### Cloud Sync
+- **Save button** in header syncs local data to Supabase
+- **Sync indicator** shows if changes are pending
+- **Auto-load** from cloud on login
+
 ---
 
 ## Tech Stack
 - React 19 + TypeScript
 - Vite (build tool)
 - Tailwind CSS v4 + daisyUI v5
-- localStorage (current)
-- Supabase (planned)
+- localStorage (local cache)
+- Supabase (auth + cloud storage)
 
 ---
 
-## Running Locally
+## Setup
+
+### 1. Clone & Install
 
 ```bash
+git clone https://github.com/avi-otterai/mandarin.git
 cd langseed-js
 npm install
+```
+
+### 2. Configure Supabase
+
+Copy `.env.example` to `.env` and fill in your Supabase credentials:
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env`:
+```
+VITE_SUPABASE_URL=https://your-project-id.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key-here
+```
+
+### 3. Create Supabase User
+
+Go to your Supabase Dashboard → Authentication → Users → Add user
+
+### 4. Run Locally
+
+```bash
 npm run dev
 ```
 
@@ -93,14 +130,24 @@ Open http://localhost:5173/
 
 ## Deploying to Netlify
 
+### Option 1: Connect GitHub
+
+1. Go to [Netlify](https://app.netlify.com)
+2. New site → Import from Git → Select your repo
+3. Build settings:
+   - Build command: `npm run build`
+   - Publish directory: `dist`
+4. Environment variables (Site settings → Environment):
+   - `VITE_SUPABASE_URL`
+   - `VITE_SUPABASE_ANON_KEY`
+5. Deploy!
+
+### Option 2: Manual Deploy
+
 ```bash
 npm run build
-# Deploy 'dist' folder to Netlify
+# Upload 'dist' folder to Netlify
 ```
-
-Or connect GitHub repo with:
-- Build command: `npm run build`
-- Publish directory: `dist`
 
 ---
 
@@ -111,23 +158,50 @@ langseed-js/
 ├── src/
 │   ├── components/
 │   │   ├── Navbar.tsx        # Bottom navigation
-│   │   └── VocabCard.tsx     # Word detail modal
+│   │   ├── VocabCard.tsx     # Word detail modal
+│   │   └── SyncButton.tsx    # Cloud sync button
 │   ├── pages/
 │   │   ├── VocabularyPage.tsx # Table + filters
-│   │   └── RevisePage.tsx     # SRS practice
+│   │   ├── RevisePage.tsx     # SRS practice
+│   │   └── LoginPage.tsx      # Authentication
 │   ├── stores/
-│   │   └── vocabularyStore.ts # State + localStorage
+│   │   └── vocabularyStore.ts # State + localStorage + sync
+│   ├── hooks/
+│   │   └── useAuth.ts         # Supabase auth hook
+│   ├── lib/
+│   │   ├── supabase.ts        # Supabase client
+│   │   └── syncService.ts     # Cloud sync logic
 │   ├── types/
-│   │   └── vocabulary.ts      # TypeScript types
+│   │   ├── vocabulary.ts      # App types
+│   │   └── database.ts        # Supabase types
 │   ├── utils/
 │   │   ├── srs.ts            # SRS algorithm
 │   │   └── pinyin.ts         # Pinyin matching
 │   └── data/
 │       └── hsk1_vocabulary.json
+├── .env.example              # Environment template
+├── netlify.toml              # Netlify config
 ├── index.html
 ├── package.json
 └── README.md
 ```
+
+---
+
+## Supabase Schema
+
+### Tables
+
+**concepts**
+- `id`, `user_id`, `word`, `pinyin`, `part_of_speech`, `meaning`, `chapter`, `source`, `understanding`, `paused`, `created_at`, `updated_at`
+
+**srs_records**
+- `id`, `user_id`, `concept_id`, `question_type`, `tier`, `next_review`, `streak`, `lapses`, `created_at`, `updated_at`
+
+### RLS Policies
+Both tables have Row Level Security enabled:
+- Users can only SELECT/INSERT/UPDATE/DELETE their own rows
+- Enforced via `auth.uid() = user_id`
 
 ---
 
@@ -139,7 +213,9 @@ langseed-js/
 - [x] Sticky table header
 - [x] SRS practice (3 question types)
 - [x] localStorage persistence
-- [ ] Add Supabase for cloud persistence
+- [x] Supabase auth + cloud sync
+- [x] Manual save button with sync indicator
+- [x] Netlify deployment config
 - [ ] Add audio/TTS for pronunciation
 - [ ] Tone-specific practice mode
 - [ ] Import custom vocabulary lists

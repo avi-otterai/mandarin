@@ -13,6 +13,8 @@ See README.md for full feature list and setup.
 ## Task Workflow (ALWAYS FOLLOW)
 
 When working on any new task/feature:
+Note that after completion of a feature/fix, you must automatically fix readme (but after testing and running server).
+Then you must attempt to commit, merge, push, again without the user having to say it. If they don't want to push they'll reject.
 
 ### 1. Understand First
 - [ ] Read `README.md` for project overview

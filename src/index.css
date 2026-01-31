@@ -1,0 +1,71 @@
+@import "tailwindcss";
+@plugin "daisyui" {
+  themes: light --default, dark, cupcake;
+}
+
+/* Force dark theme */
+:root {
+  color-scheme: dark;
+}
+
+/* Custom variables */
+:root {
+  --color-tier-0: #ef4444;
+  --color-tier-1: #f97316;
+  --color-tier-2: #eab308;
+  --color-tier-3: #84cc16;
+  --color-tier-4: #22c55e;
+  --color-tier-5: #14b8a6;
+  --color-tier-6: #06b6d4;
+  --color-tier-7: #8b5cf6;
+}
+
+/* Base styles */
+html, body, #root {
+  min-height: 100vh;
+  background-color: oklch(var(--b1));
+}
+
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+/* Chinese character styling */
+.hanzi {
+  font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  font-weight: 500;
+}
+
+/* Pinyin styling */
+.pinyin {
+  font-family: "JetBrains Mono", "Fira Code", ui-monospace, monospace;
+  letter-spacing: 0.05em;
+}
+
+/* Understanding level colors */
+.understanding-0 { color: var(--color-tier-0); }
+.understanding-1 { color: var(--color-tier-1); }
+.understanding-2 { color: var(--color-tier-2); }
+.understanding-3 { color: var(--color-tier-3); }
+.understanding-4 { color: var(--color-tier-4); }
+.understanding-5 { color: var(--color-tier-5); }
+.understanding-6 { color: var(--color-tier-6); }
+.understanding-7 { color: var(--color-tier-7); }
+
+/* Sticky table header */
+.table-sticky thead {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background-color: oklch(var(--b2));
+}
+
+/* Card hover effects */
+.vocab-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.vocab-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.3);
+}

@@ -152,9 +152,9 @@ export function VocabularyPage({ store }: VocabularyPageProps) {
   };
   
   return (
-    <div className="min-h-screen pb-20">
+    <div className="h-full flex flex-col overflow-hidden">
       {/* Header */}
-      <header className="sticky top-0 z-20 bg-base-100/95 backdrop-blur border-b border-base-300 px-4 py-3">
+      <header className="flex-shrink-0 bg-base-100 border-b border-base-300 px-4 py-3">
         <div className="flex items-center justify-between mb-3">
           <div>
             <h1 className="text-xl font-bold">Vocabulary</h1>
@@ -337,7 +337,7 @@ export function VocabularyPage({ store }: VocabularyPageProps) {
       </header>
       
       {/* Table */}
-      <div className="px-2">
+      <div className="flex-1 overflow-hidden px-2">
         {filteredConcepts.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-lg opacity-70">No vocabulary found</p>
@@ -348,7 +348,7 @@ export function VocabularyPage({ store }: VocabularyPageProps) {
             )}
           </div>
         ) : (
-          <div className="overflow-x-auto max-h-[calc(100vh-220px)]">
+          <div className="h-full overflow-auto">
             <table className="table table-sm table-zebra table-sticky w-full">
               <thead className="text-xs">
                 <tr className="bg-base-200">

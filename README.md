@@ -49,13 +49,14 @@ Understanding these terms is key to how the app works:
 
 | Term | Meaning |
 |------|---------|
-| **Added** | A word has been introduced to your study list. You want to learn it. |
-| **Mastered** | You've demonstrated strong recall of a word (understanding ≥ 80%). It won't appear in SRS reviews. |
-| **Studying** | A word is added but not yet mastered. It will appear in SRS reviews. |
+| **Added / Known** | A word has been introduced to your study list. You want to learn it. These words appear in Revise sessions. |
+| **Mastered** | You've demonstrated strong recall of a word (understanding ≥ 80%). |
+| **Studying** | A word is added but not yet mastered. |
 
 **Important distinction:**
 - **Adding** a word = putting it in your study queue (chapters feature)
 - **Mastering** a word = marking it complete (star checkbox) - either through SRS practice or manually
+- **Known ≠ Memorized**: "Known" just means you've added it to study, not that you've fully learned it
 
 ---
 
@@ -76,23 +77,29 @@ Understanding these terms is key to how the app works:
   - "Reset mastery" - put words back into study rotation
 - Click any character to see details + SRS progress
 
-### Revise Tab (SRS)
-- Spaced repetition practice
-- Question types:
-  - **Pinyin Quiz**: Type the pinyin for a character
-  - **Multiple Choice**: Pick the correct character for a meaning
-  - **Yes/No**: Confirm if a statement is correct
-- 8-tier SRS system with increasing intervals:
-  | Tier | Interval |
-  |------|----------|
-  | 0 | 10 min |
-  | 1 | 1 hour |
-  | 2 | 8 hours |
-  | 3 | 1 day |
-  | 4 | 3 days |
-  | 5 | 7 days |
-  | 6 | 30 days |
-  | 7 | Graduated ✓ |
+### Revise Tab (Flashcard Review)
+- **Flashcard-style** vocabulary review with reveal/hide mechanics
+- **Session-based**: Randomly selects 10 words from your study list per session
+- **Three reveal fields** (tap to show/hide):
+  - **Character** (汉字) - Chinese character
+  - **Pinyin** - Pronunciation with tone marks
+  - **Meaning** - English translation + part of speech
+- **Weighted reveal**: One field is randomly shown initially based on weights:
+  - Pinyin: 50% (most likely - user's strength)
+  - Meaning: 35% (sometimes shown)
+  - Character: 15% (least likely - harder recognition)
+- **Audio icon**: Gray speaker icon next to pinyin (placeholder for future TTS)
+- **Navigation**: Swipe through cards, progress indicator, shuffle for new session
+
+**What "Known" means:**
+- "Known" = words you've added to your study list (from Vocabulary tab)
+- It does NOT mean fully memorized - just that you want to revise these words
+- Unknown/unadded words are not shown to avoid overwhelm
+
+**Future settings** (planned):
+- Configurable words per session
+- Custom reveal weights (e.g., more character recognition practice)
+- Audio/TTS integration
 
 ### Cloud Sync
 - **Save button** in header syncs local data to Supabase
@@ -237,8 +244,10 @@ Both tables have Row Level Security enabled:
 - [x] Supabase auth + cloud sync
 - [x] Manual save button with sync indicator
 - [x] Netlify deployment config
+- [x] Flashcard-style revise with reveal/hide mechanics
 - [ ] Add audio/TTS for pronunciation
 - [ ] Tone-specific practice mode
+- [ ] Settings tab (words per session, reveal weights)
 - [ ] Import custom vocabulary lists
 - [ ] Progress stats / charts
 

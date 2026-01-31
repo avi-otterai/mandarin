@@ -40,8 +40,8 @@ Then you must attempt to commit, merge, push, again without the user having to s
 - [ ] Fix any issues before committing
 
 ### 6. Commit & Push
-- [ ] Commit changes to feature branch with descriptive message
-- [ ] Merge feature branch to `main`
+- [ ] Check git status, diffs to understand not just your current changes but other simultaneous ones
+- [ ] Commit with a descriptive message for all changes
 - [ ] Push to origin (default behavior unless user says otherwise)
 
 ```bash
@@ -79,15 +79,7 @@ Open http://localhost:5173/
 ## Git Workflow
 
 ### Branch Strategy
-- **main**: Production-ready code only
-- **Feature branches**: Create a new branch for every feature/fix
-
-### Creating a Feature Branch
-```bash
-git checkout -b feature/your-feature-name
-# or
-git checkout -b fix/your-fix-name
-```
+- **main**: Single branch for all development.
 
 ### Committing
 If GPG signing fails, use:
@@ -104,14 +96,16 @@ git push -u origin feature/your-feature-name
 **Important for Cursor terminal**: Always use `required_permissions: ["all"]` when pushing to access SSH keys.
 
 ### Merging to Main
-1. Push feature branch
-2. Create PR on GitHub (or merge locally)
-3. After review/approval:
+1. Make changes
+2. Merge locally
+3. After server testing, push
 ```bash
-git checkout main
-git merge feature/your-feature-name
+git add .
+git status
+git commit -m "long message"
 git push origin main
 ```
+Note that there may be simultaneous edits by other cursor agents, so git status (and maybe diff) will help you understand what full commit is about.
 
 ### SSH Configuration
 The repo uses `github.com-avi` alias which maps to personal SSH key (`~/.ssh/id_ed25519`), not the work Teleport certificate.
@@ -136,3 +130,20 @@ The repo uses `github.com-avi` alias which maps to personal SSH key (`~/.ssh/id_
 - **URL**: `https://YOUR_PROJECT_ID.supabase.co`
 - **Anon Key**: stored in `.env` as `VITE_SUPABASE_ANON_KEY`
 - **Auth**: Email/password (single user, no public signup)
+
+---
+
+## Default User Preferences
+
+### Primary User
+- **Email**: your-email@example.com
+
+### Vocabulary Preferences
+- **Selected Chapters**: 1, 2, 3, 4, 5, 6 (HSK1 chapters)
+- Additional user preferences to be added as features develop
+
+### Development Note: Supabase Table Resets
+During active development, Supabase tables may be rewritten/reset. **When this happens**:
+1. Always reset the default user's vocabulary preferences (selected chapters 1-6)
+2. Ensure any seed data or default settings are re-applied for `your-email@example.com`
+3. Document the reset in commit messages

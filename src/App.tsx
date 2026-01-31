@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Navbar } from './components/Navbar';
 import { VocabularyPage } from './pages/VocabularyPage';
 import { RevisePage } from './pages/RevisePage';
@@ -52,46 +52,70 @@ function App() {
   
   return (
     <BrowserRouter>
-      <div className="min-h-screen bg-base-100 text-base-content">
-        {/* Top header with sync and logout */}
-        {auth.isAuthenticated && (
-          <header className="fixed top-0 left-0 right-0 z-50 bg-base-100/95 backdrop-blur border-b border-base-300 px-4 py-2">
-            <div className="flex items-center justify-between max-w-lg mx-auto">
-              <span className="text-sm font-medium text-primary">🀄 LangSeed</span>
-              
-              <div className="flex items-center gap-3">
+      <AppContent 
+        store={store} 
+        auth={auth} 
+        onSync={handleSync} 
+      />
+    </BrowserRouter>
+  );
+}
+
+// Inner component to access useLocation inside BrowserRouter
+function AppContent({ 
+  store, 
+  auth, 
+  onSync 
+}: { 
+  store: ReturnType<typeof useVocabularyStore>; 
+  auth: ReturnType<typeof useAuth>;
+  onSync: () => void;
+}) {
+  const location = useLocation();
+  const showSyncButton = location.pathname === '/vocab';
+
+  return (
+    <div className="h-screen flex flex-col bg-base-100 text-base-content overflow-hidden">
+      {/* Top header with sync and logout */}
+      {auth.isAuthenticated && (
+        <header className="flex-shrink-0 bg-base-100 border-b border-base-300 px-4 py-2 z-20">
+          <div className="flex items-center justify-between max-w-lg mx-auto">
+            <span className="text-sm font-medium text-primary">🀄 LangSeed</span>
+            
+            <div className="flex items-center gap-3">
+              {showSyncButton && (
                 <SyncButton
                   isSyncing={store.isSyncing}
                   hasUnsyncedChanges={store.hasUnsyncedChanges}
                   lastSyncTime={store.lastSyncTime}
                   syncError={store.syncError}
-                  onSync={handleSync}
+                  onSync={onSync}
                   onClearError={store.clearSyncError}
                 />
-                
-                <button
-                  className="btn btn-ghost btn-sm btn-square"
-                  onClick={() => auth.signOut()}
-                  title="Sign out"
-                >
-                  <LogOut className="w-4 h-4" />
-                </button>
-              </div>
+              )}
+              
+              <button
+                className="btn btn-ghost btn-sm btn-square"
+                onClick={() => auth.signOut()}
+                title="Sign out"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
             </div>
-          </header>
-        )}
-        
-        <main className={auth.isAuthenticated ? 'pt-12' : ''}>
-          <Routes>
-            <Route path="/" element={<Navigate to="/vocab" replace />} />
-            <Route path="/vocab" element={<VocabularyPage store={store} />} />
-            <Route path="/revise" element={<RevisePage store={store} />} />
-          </Routes>
-        </main>
-        
-        <Navbar dueCount={store.dueCount} newCount={store.newCount} />
-      </div>
-    </BrowserRouter>
+          </div>
+        </header>
+      )}
+      
+      <main className="flex-1 overflow-hidden">
+        <Routes>
+          <Route path="/" element={<Navigate to="/vocab" replace />} />
+          <Route path="/vocab" element={<VocabularyPage store={store} />} />
+          <Route path="/revise" element={<RevisePage store={store} />} />
+        </Routes>
+      </main>
+      
+      <Navbar dueCount={store.dueCount} newCount={store.newCount} />
+    </div>
   );
 }
 

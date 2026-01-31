@@ -11,7 +11,7 @@ export function Navbar({ dueCount, newCount }: NavbarProps) {
   const totalPractice = dueCount + newCount;
   
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-base-200 border-t border-base-300">
+    <nav className="flex-shrink-0 bg-base-200 border-t border-base-300 z-20">
       <div className="flex justify-around items-center h-16 max-w-lg mx-auto">
         <Link
           to="/vocab"

@@ -32,10 +32,21 @@ When working on any new task/feature:
 - [ ] Update `README.md` if adding features or changing behavior
 - [ ] Add comments for complex logic
 
-### 5. Commit & Review
+### 5. Test Before Push
+- [ ] Run `npm run dev` to test locally
+- [ ] Run `npm run build` to verify no TypeScript/build errors
+- [ ] Fix any issues before committing
+
+### 6. Commit & Push
 - [ ] Commit changes to feature branch with descriptive message
-- [ ] **ASK user before pushing to GitHub** or merging to main
-- [ ] User confirms → push to origin
+- [ ] Merge feature branch to `main`
+- [ ] Push to origin (default behavior unless user says otherwise)
+
+```bash
+git checkout main
+git merge feature/your-feature-name
+git push origin main
+```
 
 ## User's Learning Goals
 - **Target**: Learn Mandarin Chinese from HSK 1 level

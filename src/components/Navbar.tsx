@@ -1,12 +1,13 @@
 import { Link, useLocation } from 'react-router-dom';
-import { BookOpen, GraduationCap } from 'lucide-react';
+import { BookOpen, GraduationCap, Settings } from 'lucide-react';
 
 interface NavbarProps {
   dueCount: number;
   newCount: number;
+  hasUnsyncedSettings?: boolean;
 }
 
-export function Navbar({ dueCount, newCount }: NavbarProps) {
+export function Navbar({ dueCount, newCount, hasUnsyncedSettings }: NavbarProps) {
   const location = useLocation();
   const totalPractice = dueCount + newCount;
   
@@ -42,6 +43,23 @@ export function Navbar({ dueCount, newCount }: NavbarProps) {
             )}
           </div>
           <span className="text-xs mt-1">Revise</span>
+        </Link>
+        
+        <Link
+          to="/settings"
+          className={`flex flex-col items-center justify-center flex-1 h-full transition-colors relative ${
+            location.pathname === '/settings' 
+              ? 'text-primary bg-base-300/50' 
+              : 'text-base-content/60 hover:text-base-content'
+          }`}
+        >
+          <div className="relative">
+            <Settings className="w-6 h-6" />
+            {hasUnsyncedSettings && (
+              <span className="absolute -top-1 -right-1 w-2 h-2 bg-warning rounded-full" />
+            )}
+          </div>
+          <span className="text-xs mt-1">Settings</span>
         </Link>
       </div>
     </nav>

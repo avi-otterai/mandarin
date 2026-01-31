@@ -1,0 +1,237 @@
+// Settings store with localStorage persistence + Supabase cloud sync
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import type { UserSettings, ThemeType, FocusLevel, LearningFocus } from '../types/settings';
+import { DEFAULT_SETTINGS } from '../types/settings';
+import { supabase, isSupabaseConfigured } from '../lib/supabase';
+
+const SETTINGS_KEY = 'langseed_settings';
+const SETTINGS_SYNC_KEY = 'langseed_settings_sync';
+
+// Load settings from localStorage
+function loadSettings(): UserSettings {
+  try {
+    const stored = localStorage.getItem(SETTINGS_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      // Merge with defaults to handle new settings added over time
+      return { ...DEFAULT_SETTINGS, ...parsed };
+    }
+  } catch (e) {
+    console.error('Failed to load settings:', e);
+  }
+  return DEFAULT_SETTINGS;
+}
+
+// Save settings to localStorage
+function saveSettings(settings: UserSettings): void {
+  try {
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+  } catch (e) {
+    console.error('Failed to save settings:', e);
+  }
+}
+
+export interface SettingsStore {
+  // Data
+  settings: UserSettings;
+  
+  // Sync state
+  isSyncing: boolean;
+  syncError: string | null;
+  lastSyncTime: string | null;
+  hasUnsyncedChanges: boolean;
+  
+  // Settings actions
+  updateSettings: (partial: Partial<UserSettings>) => void;
+  setTheme: (theme: ThemeType) => void;
+  setCardsPerSession: (count: number) => void;
+  setLearningFocus: (field: keyof LearningFocus, level: FocusLevel) => void;
+  resetToDefaults: () => void;
+  
+  // Cloud sync
+  syncToCloud: (userId: string) => Promise<{ success: boolean; error?: string }>;
+  loadFromCloud: (userId: string) => Promise<void>;
+  clearSyncError: () => void;
+}
+
+export function useSettingsStore(): SettingsStore {
+  const [settings, setSettings] = useState<UserSettings>(loadSettings);
+  const [initialized, setInitialized] = useState(false);
+  
+  // Sync state
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncError, setSyncError] = useState<string | null>(null);
+  const [lastSyncTime, setLastSyncTime] = useState<string | null>(() => {
+    try {
+      return localStorage.getItem(SETTINGS_SYNC_KEY);
+    } catch {
+      return null;
+    }
+  });
+  const [lastLocalChangeTime, setLastLocalChangeTime] = useState<string | null>(null);
+
+  // Mark as initialized
+  useEffect(() => {
+    setInitialized(true);
+  }, []);
+
+  // Save settings on change
+  useEffect(() => {
+    if (initialized) {
+      saveSettings(settings);
+      setLastLocalChangeTime(new Date().toISOString());
+    }
+  }, [settings, initialized]);
+
+  // Apply theme to document
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', settings.theme);
+    // Also update color-scheme for system UI elements
+    const isDark = ['dark', 'wooden', 'forest', 'sunset', 'ink'].includes(settings.theme);
+    document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
+  }, [settings.theme]);
+
+  // Apply character size
+  useEffect(() => {
+    document.documentElement.setAttribute('data-char-size', settings.characterSize);
+  }, [settings.characterSize]);
+
+  // Apply reduced motion
+  useEffect(() => {
+    if (settings.reducedMotion) {
+      document.documentElement.classList.add('reduce-motion');
+    } else {
+      document.documentElement.classList.remove('reduce-motion');
+    }
+  }, [settings.reducedMotion]);
+
+  // Track unsynced changes
+  const hasUnsyncedChanges = useMemo(() => {
+    if (!lastLocalChangeTime) return false;
+    if (!lastSyncTime) return true;
+    return new Date(lastLocalChangeTime) > new Date(lastSyncTime);
+  }, [lastLocalChangeTime, lastSyncTime]);
+
+  // Actions
+  const updateSettings = useCallback((partial: Partial<UserSettings>) => {
+    setSettings(prev => ({ ...prev, ...partial }));
+  }, []);
+
+  const setTheme = useCallback((theme: ThemeType) => {
+    setSettings(prev => ({ ...prev, theme }));
+  }, []);
+
+  const setCardsPerSession = useCallback((count: number) => {
+    // Clamp between 5 and 50
+    const clamped = Math.max(5, Math.min(50, count));
+    setSettings(prev => ({ ...prev, cardsPerSession: clamped }));
+  }, []);
+
+  const setLearningFocus = useCallback((field: keyof LearningFocus, level: FocusLevel) => {
+    setSettings(prev => ({
+      ...prev,
+      learningFocus: { ...prev.learningFocus, [field]: level },
+    }));
+  }, []);
+
+  const resetToDefaults = useCallback(() => {
+    setSettings(DEFAULT_SETTINGS);
+  }, []);
+
+  // Cloud sync: Save to Supabase
+  const syncToCloud = useCallback(async (userId: string): Promise<{ success: boolean; error?: string }> => {
+    if (!isSupabaseConfigured()) {
+      return { success: false, error: 'Supabase not configured' };
+    }
+
+    setIsSyncing(true);
+    setSyncError(null);
+
+    try {
+      // Upsert settings (insert or update)
+      const { error } = await supabase
+        .from('user_settings')
+        .upsert({
+          user_id: userId,
+          settings: settings,
+          updated_at: new Date().toISOString(),
+        }, {
+          onConflict: 'user_id',
+        });
+
+      if (error) {
+        setSyncError(error.message);
+        return { success: false, error: error.message };
+      }
+
+      const now = new Date().toISOString();
+      setLastSyncTime(now);
+      localStorage.setItem(SETTINGS_SYNC_KEY, now);
+      
+      return { success: true };
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'Unknown error';
+      setSyncError(errorMsg);
+      return { success: false, error: errorMsg };
+    } finally {
+      setIsSyncing(false);
+    }
+  }, [settings]);
+
+  // Cloud sync: Load from Supabase
+  const loadFromCloud = useCallback(async (userId: string): Promise<void> => {
+    if (!isSupabaseConfigured()) return;
+
+    setIsSyncing(true);
+    setSyncError(null);
+
+    try {
+      const { data, error } = await supabase
+        .from('user_settings')
+        .select('settings')
+        .eq('user_id', userId)
+        .single();
+
+      if (error) {
+        // PGRST116 = no rows found, which is fine for new users
+        if (error.code !== 'PGRST116') {
+          setSyncError(error.message);
+        }
+        return;
+      }
+
+      if (data?.settings) {
+        // Merge cloud settings with defaults (handles new fields)
+        setSettings({ ...DEFAULT_SETTINGS, ...data.settings });
+        
+        const now = new Date().toISOString();
+        setLastSyncTime(now);
+        localStorage.setItem(SETTINGS_SYNC_KEY, now);
+      }
+    } catch (err) {
+      setSyncError(err instanceof Error ? err.message : 'Failed to load settings');
+    } finally {
+      setIsSyncing(false);
+    }
+  }, []);
+
+  const clearSyncError = useCallback(() => {
+    setSyncError(null);
+  }, []);
+
+  return {
+    settings,
+    isSyncing,
+    syncError,
+    lastSyncTime,
+    hasUnsyncedChanges,
+    updateSettings,
+    setTheme,
+    setCardsPerSession,
+    setLearningFocus,
+    resetToDefaults,
+    syncToCloud,
+    loadFromCloud,
+    clearSyncError,
+  };
+}

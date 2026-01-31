@@ -1,27 +1,29 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Volume2, ChevronLeft, ChevronRight, Shuffle } from 'lucide-react';
 import type { VocabularyStore } from '../stores/vocabularyStore';
+import type { SettingsStore } from '../stores/settingsStore';
 import type { Concept } from '../types/vocabulary';
+import type { FocusLevel } from '../types/settings';
 
 interface RevisePageProps {
   store: VocabularyStore;
+  settingsStore?: SettingsStore;
 }
 
 // Field types that can be revealed/hidden
 type RevealField = 'character' | 'pinyin' | 'meaning' | 'audio';
 
-// Default weights for which field to show initially (higher = more likely)
-// User prefers pinyin, then meaning, least character recognition
-// Audio is never auto-revealed (weight 0)
-const DEFAULT_REVEAL_WEIGHTS: Record<RevealField, number> = {
-  pinyin: 50,      // Most likely to reveal (comfortable with pinyin)
-  meaning: 35,     // Sometimes show English
-  character: 15,   // Least likely (harder to recognition)
-  audio: 0,        // Never auto-reveal audio
-};
-
-// Session config
-const WORDS_PER_SESSION = 10;
+// Convert focus level (0-3) to weight for probability calculation
+// 0 = skip (never reveal), 3 = high priority (most likely to reveal)
+function focusToWeight(level: FocusLevel): number {
+  const weightMap: Record<FocusLevel, number> = {
+    0: 0,    // Skip - never auto-reveal this field
+    1: 15,   // Low priority
+    2: 35,   // Medium priority
+    3: 50,   // High priority
+  };
+  return weightMap[level];
+}
 
 interface FlashcardState {
   revealed: Record<Exclude<RevealField, 'audio'>, boolean> & { audio: boolean };
@@ -52,11 +54,35 @@ function shuffleArray<T>(array: T[]): T[] {
   return shuffled;
 }
 
-export function RevisePage({ store }: RevisePageProps) {
+export function RevisePage({ store, settingsStore }: RevisePageProps) {
   // Session words - randomly selected from known words
   const [sessionWords, setSessionWords] = useState<Concept[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [cardStates, setCardStates] = useState<Map<string, FlashcardState>>(new Map());
+  
+  // Get settings with defaults
+  const settings = settingsStore?.settings;
+  const cardsPerSession = settings?.cardsPerSession ?? 10;
+  const shuffleMode = settings?.shuffleMode ?? true;
+  
+  // Build reveal weights from settings
+  const revealWeights = useMemo((): Record<RevealField, number> => {
+    if (!settings) {
+      // Default weights if no settings available
+      return {
+        pinyin: 50,
+        meaning: 35,
+        character: 15,
+        audio: 0,
+      };
+    }
+    return {
+      character: focusToWeight(settings.learningFocus.character),
+      pinyin: focusToWeight(settings.learningFocus.pinyin),
+      meaning: focusToWeight(settings.learningFocus.meaning),
+      audio: focusToWeight(settings.learningFocus.audio),
+    };
+  }, [settings]);
   
   // Get known words (words user has added to study, not fully mastered)
   // "Known" = in the user's study list, regardless of mastery level
@@ -66,27 +92,27 @@ export function RevisePage({ store }: RevisePageProps) {
 
   // Initialize a new revision session
   const startNewSession = useCallback(() => {
-    const shuffled = shuffleArray(knownWords);
-    const selected = shuffled.slice(0, WORDS_PER_SESSION);
+    const wordList = shuffleMode ? shuffleArray(knownWords) : knownWords;
+    const selected = wordList.slice(0, cardsPerSession);
     setSessionWords(selected);
     setCurrentIndex(0);
     
-    // Initialize card states with random reveal for each word
+    // Initialize card states with random reveal for each word based on settings
     const newStates = new Map<string, FlashcardState>();
     selected.forEach(word => {
-      const revealField = pickRevealedField(DEFAULT_REVEAL_WEIGHTS);
+      const revealField = pickRevealedField(revealWeights);
       newStates.set(word.id, {
         revealed: {
           character: revealField === 'character',
           pinyin: revealField === 'pinyin',
           meaning: revealField === 'meaning',
-          audio: false, // Audio never auto-revealed
+          audio: false, // Audio never auto-revealed (requires user interaction)
         },
         initiallyRevealed: revealField,
       });
     });
     setCardStates(newStates);
-  }, [knownWords]);
+  }, [knownWords, cardsPerSession, shuffleMode, revealWeights]);
 
   // Start session on mount or when words change
   useEffect(() => {
@@ -276,7 +302,7 @@ export function RevisePage({ store }: RevisePageProps) {
                     : 'bg-base-300 border-2 border-dashed border-base-content/20 hover:border-primary/40'}
                 `}>
                   {currentState.revealed.character ? (
-                    <span className="hanzi text-5xl font-bold text-primary">
+                    <span className="hanzi hanzi-scalable font-bold text-primary">
                       {currentWord.word}
                     </span>
                   ) : (

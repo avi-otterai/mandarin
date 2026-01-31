@@ -13,8 +13,10 @@ A React/TypeScript webapp for learning Mandarin Chinese using spaced repetition.
 | Storage | Key/Table | Data |
 |---------|-----------|------|
 | localStorage | `langseed_progress` | concepts, srsRecords, lastUpdated |
+| localStorage | `langseed_settings` | user preferences (theme, learning focus, etc.) |
 | Supabase | `concepts` | Vocabulary with user preferences |
 | Supabase | `srs_records` | SRS progress per word |
+| Supabase | `user_settings` | User settings (JSONB) |
 
 **Row Level Security (RLS)**: Each user can only access their own data.
 
@@ -96,10 +98,23 @@ Understanding these terms is key to how the app works:
 - It does NOT mean fully memorized - just that you want to revise these words
 - Unknown/unadded words are not shown to avoid overwhelm
 
-**Future settings** (planned):
-- Configurable words per session
-- Custom reveal weights (e.g., more character recognition practice)
-- Audio/TTS integration
+### Settings Tab
+- **Cards per Session**: Configure how many words to review (5-50)
+- **Learning Focus**: Set priority for each field (0=Skip, 1=Low, 2=Med, 3=High):
+  - Character recognition
+  - Pinyin recall
+  - Meaning/translation
+  - Audio/pronunciation
+- **Theme Selection**: 8 themes with live preview:
+  - Light, Dark, Wooden, Ocean, Forest, Sunset, Sakura, Ink
+- **Display Options**:
+  - Character size (small/medium/large)
+  - Pinyin display (tones: māma vs numbers: ma1ma)
+  - Auto-play audio on reveal
+  - Show example sentences
+- **Accessibility**: Reduced motion option
+- **Account**: Sign out and reset to defaults
+- **Save button**: Syncs settings to Supabase for cross-device persistence
 
 ### Cloud Sync
 - **Save button** in header syncs local data to Supabase
@@ -184,22 +199,25 @@ npm run build
 langseed-js/
 ├── src/
 │   ├── components/
-│   │   ├── Navbar.tsx        # Bottom navigation
+│   │   ├── Navbar.tsx        # Bottom navigation (3 tabs)
 │   │   ├── VocabCard.tsx     # Word detail modal
 │   │   └── SyncButton.tsx    # Cloud sync button
 │   ├── pages/
 │   │   ├── VocabularyPage.tsx # Table + filters
-│   │   ├── RevisePage.tsx     # SRS practice
+│   │   ├── RevisePage.tsx     # Flashcard review
+│   │   ├── SettingsPage.tsx   # User preferences
 │   │   └── LoginPage.tsx      # Authentication
 │   ├── stores/
-│   │   └── vocabularyStore.ts # State + localStorage + sync
+│   │   ├── vocabularyStore.ts # Vocab state + localStorage + sync
+│   │   └── settingsStore.ts   # Settings state + localStorage + sync
 │   ├── hooks/
 │   │   └── useAuth.ts         # Supabase auth hook
 │   ├── lib/
 │   │   ├── supabase.ts        # Supabase client
 │   │   └── syncService.ts     # Cloud sync logic
 │   ├── types/
-│   │   ├── vocabulary.ts      # App types
+│   │   ├── vocabulary.ts      # Vocab types
+│   │   ├── settings.ts        # Settings types
 │   │   └── database.ts        # Supabase types
 │   ├── utils/
 │   │   ├── srs.ts            # SRS algorithm
@@ -225,8 +243,12 @@ langseed-js/
 **srs_records**
 - `id`, `user_id`, `concept_id`, `question_type`, `tier`, `next_review`, `streak`, `lapses`, `created_at`, `updated_at`
 
+**user_settings**
+- `user_id` (primary key), `settings` (JSONB), `created_at`, `updated_at`
+- Stores: cardsPerSession, learningFocus, theme, pinyinDisplay, characterSize, autoPlayAudio, showExampleSentences, shuffleMode, reducedMotion
+
 ### RLS Policies
-Both tables have Row Level Security enabled:
+All tables have Row Level Security enabled:
 - Users can only SELECT/INSERT/UPDATE/DELETE their own rows
 - Enforced via `auth.uid() = user_id`
 
@@ -245,9 +267,12 @@ Both tables have Row Level Security enabled:
 - [x] Manual save button with sync indicator
 - [x] Netlify deployment config
 - [x] Flashcard-style revise with reveal/hide mechanics
+- [x] Settings tab with themes & learning focus
+- [x] Configurable words per session
+- [x] Custom reveal weights
+- [x] 8 custom themes (light, dark, wooden, ocean, forest, sunset, sakura, ink)
 - [ ] Add audio/TTS for pronunciation
 - [ ] Tone-specific practice mode
-- [ ] Settings tab (words per session, reveal weights)
 - [ ] Import custom vocabulary lists
 - [ ] Progress stats / charts
 

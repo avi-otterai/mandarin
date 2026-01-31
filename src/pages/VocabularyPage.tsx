@@ -408,7 +408,7 @@ export function VocabularyPage({ store }: VocabularyPageProps) {
                   <tr key={concept.id} className="hover">
                     <td>
                       <button 
-                        className="hanzi text-xl font-bold hover:text-primary cursor-pointer"
+                        className="hanzi hanzi-table font-bold hover:text-primary cursor-pointer"
                         onClick={() => setSelectedConcept(concept)}
                       >
                         {concept.word}

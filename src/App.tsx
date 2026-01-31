@@ -3,20 +3,24 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-route
 import { Navbar } from './components/Navbar';
 import { VocabularyPage } from './pages/VocabularyPage';
 import { RevisePage } from './pages/RevisePage';
+import { SettingsPage } from './pages/SettingsPage';
 import { LoginPage } from './pages/LoginPage';
 import { useVocabularyStore } from './stores/vocabularyStore';
+import { useSettingsStore } from './stores/settingsStore';
 import { useAuth } from './hooks/useAuth';
 import { SyncButton } from './components/SyncButton';
-import { LogOut, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 
 function App() {
   const store = useVocabularyStore();
+  const settingsStore = useSettingsStore();
   const auth = useAuth();
   
   // Load data from cloud on login
   useEffect(() => {
     if (auth.isAuthenticated && auth.user) {
       store.loadFromCloud(auth.user.id);
+      settingsStore.loadFromCloud(auth.user.id);
     }
   }, [auth.isAuthenticated, auth.user?.id]);
 
@@ -49,13 +53,21 @@ function App() {
       store.syncToCloud(auth.user.id);
     }
   };
+
+  const handleSettingsSave = async () => {
+    if (auth.user) {
+      await settingsStore.syncToCloud(auth.user.id);
+    }
+  };
   
   return (
     <BrowserRouter>
       <AppContent 
-        store={store} 
+        store={store}
+        settingsStore={settingsStore}
         auth={auth} 
-        onSync={handleSync} 
+        onSync={handleSync}
+        onSettingsSave={handleSettingsSave}
       />
     </BrowserRouter>
   );
@@ -63,20 +75,24 @@ function App() {
 
 // Inner component to access useLocation inside BrowserRouter
 function AppContent({ 
-  store, 
+  store,
+  settingsStore,
   auth, 
-  onSync 
+  onSync,
+  onSettingsSave,
 }: { 
-  store: ReturnType<typeof useVocabularyStore>; 
+  store: ReturnType<typeof useVocabularyStore>;
+  settingsStore: ReturnType<typeof useSettingsStore>;
   auth: ReturnType<typeof useAuth>;
   onSync: () => void;
+  onSettingsSave: () => Promise<void>;
 }) {
   const location = useLocation();
   const showSyncButton = location.pathname === '/vocab';
 
   return (
     <div className="h-screen flex flex-col bg-base-100 text-base-content overflow-hidden">
-      {/* Top header with sync and logout */}
+      {/* Top header with sync (logout moved to settings) */}
       {auth.isAuthenticated && (
         <header className="flex-shrink-0 bg-base-100 border-b border-base-300 px-4 py-2 z-20">
           <div className="flex items-center justify-between max-w-lg mx-auto">
@@ -93,14 +109,6 @@ function AppContent({
                   onClearError={store.clearSyncError}
                 />
               )}
-              
-              <button
-                className="btn btn-ghost btn-sm btn-square"
-                onClick={() => auth.signOut()}
-                title="Sign out"
-              >
-                <LogOut className="w-4 h-4" />
-              </button>
             </div>
           </div>
         </header>
@@ -110,11 +118,26 @@ function AppContent({
         <Routes>
           <Route path="/" element={<Navigate to="/vocab" replace />} />
           <Route path="/vocab" element={<VocabularyPage store={store} />} />
-          <Route path="/revise" element={<RevisePage store={store} />} />
+          <Route path="/revise" element={<RevisePage store={store} settingsStore={settingsStore} />} />
+          <Route 
+            path="/settings" 
+            element={
+              <SettingsPage 
+                settingsStore={settingsStore}
+                onSave={onSettingsSave}
+                onLogout={() => auth.signOut()}
+                userEmail={auth.user?.email}
+              />
+            } 
+          />
         </Routes>
       </main>
       
-      <Navbar dueCount={store.dueCount} newCount={store.newCount} />
+      <Navbar 
+        dueCount={store.dueCount} 
+        newCount={store.newCount}
+        hasUnsyncedSettings={settingsStore.hasUnsyncedChanges}
+      />
     </div>
   );
 }

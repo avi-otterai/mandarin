@@ -57,25 +57,37 @@ function shuffleArray<T>(array: T[]): T[] {
   return shuffled;
 }
 
-// Fire confetti celebration
+// Fire confetti celebration - big burst then sustained side cannons
 function fireConfetti() {
-  const duration = 3000;
+  // Initial big burst from center
+  confetti({
+    particleCount: 100,
+    spread: 70,
+    origin: { y: 0.6 },
+    colors: ['#ff6b6b', '#4ecdc4', '#ffe66d', '#95e1d3', '#f38181', '#a29bfe', '#fd79a8'],
+    zIndex: 9999,
+  });
+
+  // Side cannons for 2 seconds
+  const duration = 2000;
   const end = Date.now() + duration;
 
   const frame = () => {
     confetti({
-      particleCount: 3,
+      particleCount: 4,
       angle: 60,
       spread: 55,
-      origin: { x: 0 },
-      colors: ['#ff6b6b', '#4ecdc4', '#ffe66d', '#95e1d3', '#f38181'],
+      origin: { x: 0, y: 0.7 },
+      colors: ['#ff6b6b', '#4ecdc4', '#ffe66d'],
+      zIndex: 9999,
     });
     confetti({
-      particleCount: 3,
+      particleCount: 4,
       angle: 120,
       spread: 55,
-      origin: { x: 1 },
-      colors: ['#ff6b6b', '#4ecdc4', '#ffe66d', '#95e1d3', '#f38181'],
+      origin: { x: 1, y: 0.7 },
+      colors: ['#95e1d3', '#f38181', '#a29bfe'],
+      zIndex: 9999,
     });
 
     if (Date.now() < end) {
@@ -249,6 +261,23 @@ export function RevisePage({ store, settingsStore }: RevisePageProps) {
   // Check if audio is available (always false for now)
   const isAudioAvailable = false;
 
+  // Session complete - fire confetti and mark as reviewed today
+  useEffect(() => {
+    if (sessionComplete && !confettiFiredRef.current) {
+      confettiFiredRef.current = true;
+      markReviewedToday();
+      // Small delay to ensure DOM is ready
+      setTimeout(() => fireConfetti(), 100);
+    }
+  }, [sessionComplete]);
+  
+  // Detect session completion
+  useEffect(() => {
+    if (sessionWords.length > 0 && currentIndex >= sessionWords.length && !sessionComplete) {
+      setSessionComplete(true);
+    }
+  }, [currentIndex, sessionWords.length, sessionComplete]);
+
   // No words to study
   if (knownWords.length === 0) {
     return (
@@ -274,22 +303,6 @@ export function RevisePage({ store, settingsStore }: RevisePageProps) {
       </div>
     );
   }
-
-  // Session complete - fire confetti and mark as reviewed today
-  useEffect(() => {
-    if (sessionComplete && !confettiFiredRef.current) {
-      confettiFiredRef.current = true;
-      markReviewedToday();
-      fireConfetti();
-    }
-  }, [sessionComplete]);
-  
-  // Detect session completion
-  useEffect(() => {
-    if (sessionWords.length > 0 && currentIndex >= sessionWords.length && !sessionComplete) {
-      setSessionComplete(true);
-    }
-  }, [currentIndex, sessionWords.length, sessionComplete]);
 
   // Session complete screen
   if (sessionComplete) {

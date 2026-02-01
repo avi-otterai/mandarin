@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { BookOpen, GraduationCap, Settings, Check, AlertCircle } from 'lucide-react';
+import { BookOpen, GraduationCap, Settings, Check } from 'lucide-react';
 
 interface NavbarProps {
   reviewedToday: boolean;
@@ -39,9 +39,7 @@ export function Navbar({ reviewedToday, hasUnsyncedSettings }: NavbarProps) {
                 <Check className="w-3 h-3" strokeWidth={3} />
               </span>
             ) : (
-              <span className="absolute -top-1.5 -right-1.5 w-4 h-4 flex items-center justify-center bg-warning text-warning-content rounded-full">
-                <AlertCircle className="w-3 h-3" strokeWidth={3} />
-              </span>
+              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-error rounded-full" />
             )}
           </div>
           <span className="text-xs mt-1">Revise</span>

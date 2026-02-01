@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Navbar } from './components/Navbar';
 import { HelpModal } from './components/HelpModal';
@@ -119,6 +119,11 @@ function AppContent({
     // Re-check reviewed status when navigating (e.g., after completing a session)
     setReviewedToday(hasReviewedToday());
   }, [location.pathname]);
+  
+  // Callback for when review session completes - updates immediately without route change
+  const handleReviewComplete = useCallback(() => {
+    setReviewedToday(true);
+  }, []);
 
   return (
     <div className="h-dvh flex flex-col bg-base-100 text-base-content overflow-hidden">
@@ -161,7 +166,7 @@ function AppContent({
         <Routes>
           <Route path="/" element={<Navigate to="/revise" replace />} />
           <Route path="/vocab" element={<VocabularyPage store={store} settingsStore={settingsStore} />} />
-          <Route path="/revise" element={<RevisePage store={store} settingsStore={settingsStore} />} />
+          <Route path="/revise" element={<RevisePage store={store} settingsStore={settingsStore} onReviewComplete={handleReviewComplete} />} />
           <Route 
             path="/settings" 
             element={

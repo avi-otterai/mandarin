@@ -12,6 +12,7 @@ const LAST_REVIEW_KEY = 'langseed_last_review';
 interface RevisePageProps {
   store: VocabularyStore;
   settingsStore?: SettingsStore;
+  onReviewComplete?: () => void;
 }
 
 // Field types that can be revealed/hidden
@@ -115,7 +116,7 @@ function markReviewedToday() {
   localStorage.setItem(LAST_REVIEW_KEY, new Date().toISOString());
 }
 
-export function RevisePage({ store, settingsStore }: RevisePageProps) {
+export function RevisePage({ store, settingsStore, onReviewComplete }: RevisePageProps) {
   // Session words - randomly selected from known words
   const [sessionWords, setSessionWords] = useState<Concept[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -309,10 +310,12 @@ export function RevisePage({ store, settingsStore }: RevisePageProps) {
     if (sessionComplete && !confettiFiredRef.current) {
       confettiFiredRef.current = true;
       markReviewedToday();
+      // Notify parent immediately so navbar updates
+      onReviewComplete?.();
       // Fire confetti
       fireConfetti();
     }
-  }, [sessionComplete]);
+  }, [sessionComplete, onReviewComplete]);
   
   // Detect session completion
   useEffect(() => {

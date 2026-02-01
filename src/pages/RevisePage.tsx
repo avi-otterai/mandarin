@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { Volume2, ChevronLeft, ChevronRight, Shuffle, Loader2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Volume2, ChevronLeft, ChevronRight, Shuffle, Loader2, BookOpen, CheckSquare } from 'lucide-react';
 import type { VocabularyStore } from '../stores/vocabularyStore';
 import type { SettingsStore } from '../stores/settingsStore';
 import type { Concept } from '../types/vocabulary';
@@ -320,7 +321,7 @@ export function RevisePage({ store, settingsStore }: RevisePageProps) {
     }
   }, [currentIndex, sessionWords.length, sessionComplete]);
 
-  // No words to study
+  // No words to study - enhanced empty state with guidance
   if (knownWords.length === 0) {
     return (
       <div className="h-full flex flex-col overflow-hidden">
@@ -331,15 +332,42 @@ export function RevisePage({ store, settingsStore }: RevisePageProps) {
         <div className="flex-1 overflow-auto p-4">
           <div className="max-w-lg mx-auto">
             <div className="card bg-base-200">
-              <div className="card-body items-center text-center py-12">
-                <div className="text-6xl mb-4">📚</div>
-                <h2 className="text-2xl font-bold">No Words Yet</h2>
-                <p className="text-base-content/60 mt-2">
-                  Add some words from the Vocabulary tab to start revising.
+              <div className="card-body items-center text-center py-10">
+                <div className="text-6xl mb-4">🎯</div>
+                <h2 className="text-2xl font-bold">Ready to Learn?</h2>
+                <p className="text-base-content/60 mt-2 max-w-xs">
+                  Select the words you want to study first, then come back here to practice!
                 </p>
-                <p className="text-sm text-base-content/40 mt-4">
-                  Go to Vocabulary → Add chapters or mark individual words to study.
-                </p>
+                
+                {/* Steps */}
+                <div className="mt-6 space-y-3 text-left w-full max-w-xs">
+                  <div className="flex items-center gap-3 p-3 bg-base-100 rounded-xl">
+                    <div className="bg-primary/10 p-2 rounded-lg shrink-0">
+                      <BookOpen className="w-5 h-5 text-primary" />
+                    </div>
+                    <div className="text-sm">
+                      <span className="font-medium">1.</span> Go to <span className="font-semibold text-primary">Vocabulary</span>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-3 p-3 bg-base-100 rounded-xl">
+                    <div className="bg-success/10 p-2 rounded-lg shrink-0">
+                      <CheckSquare className="w-5 h-5 text-success" />
+                    </div>
+                    <div className="text-sm">
+                      <span className="font-medium">2.</span> Check <CheckSquare className="w-3.5 h-3.5 inline text-success" /> words to learn
+                    </div>
+                  </div>
+                </div>
+                
+                {/* CTA Button */}
+                <Link 
+                  to="/vocab"
+                  className="btn btn-primary mt-6 gap-2"
+                >
+                  <BookOpen className="w-5 h-5" />
+                  Go to Vocabulary
+                </Link>
               </div>
             </div>
           </div>

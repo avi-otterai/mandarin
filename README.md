@@ -128,6 +128,12 @@ No complex mastery levels - just known or unknown. (SRS tracking for recall stre
 
 **Mobile optimized**: Uses dynamic viewport height (`dvh`) and fixed positioning for reliable mobile layout without double-scroll issues.
 
+### Onboarding & Help
+- **Auto-show welcome modal** for new users (first visit)
+- **Help button (?)** in header - always accessible to re-open the guide
+- **Welcome modal** explains all 3 tabs with icons and tips
+- **Enhanced empty state** on Revise page guides users to Vocabulary if no words are selected
+
 ### Settings Tab
 - **Cards per Session**: Configure how many words to review (5-50)
 - **Learning Focus**: Set priority for each field (0=Skip, 1=Low, 2=Med, 3=High):
@@ -246,6 +252,7 @@ avi-mandarin/
 ├── src/
 │   ├── components/
 │   │   ├── Navbar.tsx        # Bottom navigation (3 tabs)
+│   │   ├── HelpModal.tsx     # Onboarding/help modal
 │   │   ├── VocabCard.tsx     # Word detail modal
 │   │   └── SyncButton.tsx    # Cloud sync button
 │   ├── pages/
@@ -325,6 +332,7 @@ All tables have Row Level Security enabled:
 - [x] Browser TTS for Chinese pronunciation (voice selection, speed control)
 - [x] Fixed mobile layout: bottom navigation always visible, proper scroll handling
 - [x] Default landing page changed to Revise tab
+- [x] Onboarding: Help modal for new users, ? icon in header, enhanced empty state
 - [ ] ElevenLabs premium TTS integration (multiple voices, styles)
 - [ ] Tone-specific practice mode
 - [ ] Progress stats / charts

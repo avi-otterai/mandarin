@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Navbar } from './components/Navbar';
+import { HelpModal } from './components/HelpModal';
 import { VocabularyPage } from './pages/VocabularyPage';
 import { RevisePage, hasReviewedToday } from './pages/RevisePage';
 import { SettingsPage } from './pages/SettingsPage';
@@ -9,7 +10,9 @@ import { useVocabularyStore } from './stores/vocabularyStore';
 import { useSettingsStore } from './stores/settingsStore';
 import { useAuth } from './hooks/useAuth';
 import { SyncButton } from './components/SyncButton';
-import { Loader2 } from 'lucide-react';
+import { Loader2, HelpCircle } from 'lucide-react';
+
+const ONBOARDING_KEY = 'langseed_onboarding_seen';
 
 function App() {
   const store = useVocabularyStore();
@@ -93,6 +96,25 @@ function AppContent({
   // Track if user reviewed today - re-check on route change
   const [reviewedToday, setReviewedToday] = useState(hasReviewedToday);
   
+  // Help modal state
+  const [showHelpModal, setShowHelpModal] = useState(false);
+  
+  // Auto-show help modal for new users (first time)
+  useEffect(() => {
+    const hasSeenOnboarding = localStorage.getItem(ONBOARDING_KEY);
+    if (!hasSeenOnboarding) {
+      // Small delay so the app renders first
+      const timer = setTimeout(() => setShowHelpModal(true), 500);
+      return () => clearTimeout(timer);
+    }
+  }, []);
+  
+  // Mark onboarding as seen when modal is closed
+  const handleCloseHelp = () => {
+    setShowHelpModal(false);
+    localStorage.setItem(ONBOARDING_KEY, 'true');
+  };
+  
   useEffect(() => {
     // Re-check reviewed status when navigating (e.g., after completing a session)
     setReviewedToday(hasReviewedToday());
@@ -104,7 +126,16 @@ function AppContent({
       {auth.isAuthenticated && (
         <header className="flex-shrink-0 bg-base-100 border-b border-base-300 px-4 py-2 z-20">
           <div className="flex items-center justify-between max-w-lg mx-auto">
-            <span className="text-sm font-medium text-primary">🪕 Saras</span>
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-primary">🪕 Saras</span>
+              <button
+                className="btn btn-xs btn-ghost btn-circle text-base-content/50 hover:text-primary"
+                onClick={() => setShowHelpModal(true)}
+                title="Help & Guide"
+              >
+                <HelpCircle className="w-4 h-4" />
+              </button>
+            </div>
             
             <div className="flex items-center gap-3">
               {showSyncButton && (
@@ -121,6 +152,9 @@ function AppContent({
           </div>
         </header>
       )}
+      
+      {/* Help modal */}
+      <HelpModal isOpen={showHelpModal} onClose={handleCloseHelp} />
       
       {/* Main content area - accounts for fixed navbar */}
       <main className="flex-1 overflow-hidden pb-16">

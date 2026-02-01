@@ -199,24 +199,36 @@ Open http://localhost:5173/
 
 ## Deploying to Netlify
 
-### Option 1: Connect GitHub
+### GitHub Auto-Deployment (Recommended)
 
-1. Go to [Netlify](https://app.netlify.com)
-2. New site → Import from Git → Select your repo
-3. Build settings:
+Connect GitHub for automatic deploys on every push to `main`:
+
+1. **Create site**: Go to [app.netlify.com](https://app.netlify.com) → **Add new site** → **Import an existing project**
+2. **Connect GitHub**: Click "Deploy with GitHub" → Authorize → Select `avi-otterai/mandarin`
+3. **Verify build settings** (auto-detected from `netlify.toml`):
+   - Branch: `main`
    - Build command: `npm run build`
    - Publish directory: `dist`
-4. Environment variables (Site settings → Environment):
-   - `VITE_SUPABASE_URL`
-   - `VITE_SUPABASE_ANON_KEY`
-5. Deploy!
+4. **Add environment variables** (CRITICAL!):
+   - `VITE_SUPABASE_URL` → `https://YOUR_PROJECT_ID.supabase.co`
+   - `VITE_SUPABASE_ANON_KEY` → your anon key
+5. **Deploy!** Click "Deploy site"
 
-### Option 2: Manual Deploy
+**✅ Auto-deploy enabled**: Every push to `main` triggers a new build automatically.
+
+### Manual Deploy (Alternative)
 
 ```bash
 npm run build
-# Upload 'dist' folder to Netlify
+# Drag & drop 'dist' folder to Netlify dashboard
 ```
+
+### Netlify Configuration
+
+The `netlify.toml` file handles:
+- Build command and publish directory
+- SPA routing (redirects all routes to `index.html`)
+- Security headers (X-Frame-Options, CSP, etc.)
 
 ---
 

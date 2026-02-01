@@ -273,6 +273,7 @@ All tables have Row Level Security enabled:
 - [x] 8 custom themes (light, dark, wooden, ocean, forest, sunset, sakura, ink)
 - [x] Confetti celebration on session completion
 - [x] Revise tab indicator (✓ if reviewed today, ! if not)
+- [x] Fix: Next button now works on last card to complete session
 - [ ] Add audio/TTS for pronunciation
 - [ ] Tone-specific practice mode
 - [ ] Import custom vocabulary lists

@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Volume2, ChevronLeft, ChevronRight, Shuffle } from 'lucide-react';
-import confetti from 'canvas-confetti';
 import type { VocabularyStore } from '../stores/vocabularyStore';
 import type { SettingsStore } from '../stores/settingsStore';
 import type { Concept } from '../types/vocabulary';
@@ -57,44 +56,41 @@ function shuffleArray<T>(array: T[]): T[] {
   return shuffled;
 }
 
-// Fire confetti celebration - big burst then sustained side cannons
-function fireConfetti() {
-  // Initial big burst from center
-  confetti({
-    particleCount: 100,
-    spread: 70,
-    origin: { y: 0.6 },
-    colors: ['#ff6b6b', '#4ecdc4', '#ffe66d', '#95e1d3', '#f38181', '#a29bfe', '#fd79a8'],
-    zIndex: 9999,
-  });
-
-  // Side cannons for 2 seconds
-  const duration = 2000;
-  const end = Date.now() + duration;
-
-  const frame = () => {
+// Fire confetti celebration using dynamic import
+async function fireConfetti() {
+  try {
+    const confettiModule = await import('canvas-confetti');
+    const confetti = confettiModule.default;
+    
+    // Big center burst
     confetti({
-      particleCount: 4,
-      angle: 60,
-      spread: 55,
-      origin: { x: 0, y: 0.7 },
-      colors: ['#ff6b6b', '#4ecdc4', '#ffe66d'],
-      zIndex: 9999,
+      particleCount: 150,
+      spread: 100,
+      origin: { y: 0.6 },
     });
-    confetti({
-      particleCount: 4,
-      angle: 120,
-      spread: 55,
-      origin: { x: 1, y: 0.7 },
-      colors: ['#95e1d3', '#f38181', '#a29bfe'],
-      zIndex: 9999,
-    });
-
-    if (Date.now() < end) {
-      requestAnimationFrame(frame);
-    }
-  };
-  frame();
+    
+    // Left cannon
+    setTimeout(() => {
+      confetti({
+        particleCount: 50,
+        angle: 60,
+        spread: 55,
+        origin: { x: 0 },
+      });
+    }, 250);
+    
+    // Right cannon
+    setTimeout(() => {
+      confetti({
+        particleCount: 50,
+        angle: 120,
+        spread: 55,
+        origin: { x: 1 },
+      });
+    }, 400);
+  } catch (err) {
+    console.error('Confetti error:', err);
+  }
 }
 
 // Check if reviewed today
@@ -241,7 +237,8 @@ export function RevisePage({ store, settingsStore }: RevisePageProps) {
 
   // Navigation
   const goNext = useCallback(() => {
-    if (currentIndex < sessionWords.length - 1) {
+    // Allow going past last card to trigger session complete
+    if (currentIndex < sessionWords.length) {
       setCurrentIndex(prev => prev + 1);
     }
   }, [currentIndex, sessionWords.length]);
@@ -266,8 +263,8 @@ export function RevisePage({ store, settingsStore }: RevisePageProps) {
     if (sessionComplete && !confettiFiredRef.current) {
       confettiFiredRef.current = true;
       markReviewedToday();
-      // Small delay to ensure DOM is ready
-      setTimeout(() => fireConfetti(), 100);
+      // Fire confetti
+      fireConfetti();
     }
   }, [sessionComplete]);
   
@@ -321,7 +318,13 @@ export function RevisePage({ store, settingsStore }: RevisePageProps) {
                 You reviewed {sessionWords.length} words.
               </p>
               <button 
-                className="btn btn-primary mt-6"
+                className="btn btn-secondary mt-4"
+                onClick={() => fireConfetti()}
+              >
+                Test Confetti
+              </button>
+              <button 
+                className="btn btn-primary mt-2"
                 onClick={() => {
                   confettiFiredRef.current = false;
                   setSessionComplete(false);

@@ -196,11 +196,23 @@
 /* Base styles */
 html, body, #root {
   min-height: 100vh;
+  min-height: 100dvh;
   background-color: oklch(var(--b1));
 }
 
 body {
   font-family: system-ui, -apple-system, sans-serif;
+}
+
+/* Dynamic viewport height fallback */
+.h-dvh {
+  height: 100vh;
+  height: 100dvh;
+}
+
+/* Safe area for fixed bottom navigation (iPhone notch/home indicator) */
+.safe-area-inset-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0);
 }
 
 /* Chinese character styling */

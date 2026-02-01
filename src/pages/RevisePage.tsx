@@ -323,22 +323,24 @@ export function RevisePage({ store, settingsStore }: RevisePageProps) {
   // No words to study
   if (knownWords.length === 0) {
     return (
-      <div className="min-h-screen pb-20">
-        <header className="sticky top-0 z-20 bg-base-100/95 backdrop-blur border-b border-base-300 px-4 py-3">
+      <div className="h-full flex flex-col overflow-hidden">
+        <header className="flex-shrink-0 bg-base-100/95 backdrop-blur border-b border-base-300 px-4 py-3">
           <h1 className="text-xl font-bold text-center">Revise</h1>
         </header>
         
-        <div className="p-4 max-w-lg mx-auto">
-          <div className="card bg-base-200">
-            <div className="card-body items-center text-center py-12">
-              <div className="text-6xl mb-4">📚</div>
-              <h2 className="text-2xl font-bold">No Words Yet</h2>
-              <p className="text-base-content/60 mt-2">
-                Add some words from the Vocabulary tab to start revising.
-              </p>
-              <p className="text-sm text-base-content/40 mt-4">
-                Go to Vocabulary → Add chapters or mark individual words to study.
-              </p>
+        <div className="flex-1 overflow-auto p-4">
+          <div className="max-w-lg mx-auto">
+            <div className="card bg-base-200">
+              <div className="card-body items-center text-center py-12">
+                <div className="text-6xl mb-4">📚</div>
+                <h2 className="text-2xl font-bold">No Words Yet</h2>
+                <p className="text-base-content/60 mt-2">
+                  Add some words from the Vocabulary tab to start revising.
+                </p>
+                <p className="text-sm text-base-content/40 mt-4">
+                  Go to Vocabulary → Add chapters or mark individual words to study.
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -349,30 +351,32 @@ export function RevisePage({ store, settingsStore }: RevisePageProps) {
   // Session complete screen
   if (sessionComplete) {
     return (
-      <div className="min-h-screen pb-20">
-        <header className="sticky top-0 z-20 bg-base-100/95 backdrop-blur border-b border-base-300 px-4 py-3">
+      <div className="h-full flex flex-col overflow-hidden">
+        <header className="flex-shrink-0 bg-base-100/95 backdrop-blur border-b border-base-300 px-4 py-3">
           <h1 className="text-xl font-bold text-center">Revise</h1>
         </header>
         
-        <div className="p-4 max-w-lg mx-auto">
-          <div className="card bg-base-200">
-            <div className="card-body items-center text-center py-12">
-              <div className="text-6xl mb-4">🎉</div>
-              <h2 className="text-2xl font-bold">Session Complete!</h2>
-              <p className="text-base-content/60 mt-2">
-                You reviewed {sessionWords.length} words.
-              </p>
-              <button 
-                className="btn btn-primary mt-6"
-                onClick={() => {
-                  confettiFiredRef.current = false;
-                  setSessionComplete(false);
-                  startNewSession();
-                }}
-              >
-                <Shuffle className="w-5 h-5" />
-                Start New Session
-              </button>
+        <div className="flex-1 overflow-auto p-4">
+          <div className="max-w-lg mx-auto">
+            <div className="card bg-base-200">
+              <div className="card-body items-center text-center py-12">
+                <div className="text-6xl mb-4">🎉</div>
+                <h2 className="text-2xl font-bold">Session Complete!</h2>
+                <p className="text-base-content/60 mt-2">
+                  You reviewed {sessionWords.length} words.
+                </p>
+                <button 
+                  className="btn btn-primary mt-6"
+                  onClick={() => {
+                    confettiFiredRef.current = false;
+                    setSessionComplete(false);
+                    startNewSession();
+                  }}
+                >
+                  <Shuffle className="w-5 h-5" />
+                  Start New Session
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -382,7 +386,7 @@ export function RevisePage({ store, settingsStore }: RevisePageProps) {
 
   // Main flashcard view
   return (
-    <div className="h-screen pb-20 bg-gradient-to-b from-base-100 to-base-200 flex flex-col overflow-hidden">
+    <div className="h-full bg-gradient-to-b from-base-100 to-base-200 flex flex-col overflow-hidden">
       {/* Header */}
       <header className="shrink-0 bg-base-100/95 backdrop-blur border-b border-base-300 px-4 py-2">
         <div className="flex items-center justify-between max-w-lg mx-auto">

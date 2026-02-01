@@ -1,4 +1,4 @@
-# LangSeed JS - Chinese Learning App
+# Saras - Chinese Learning App
 
 A React/TypeScript webapp for learning Mandarin Chinese using spaced repetition.
 
@@ -116,10 +116,17 @@ No complex mastery levels - just known or unknown. (SRS tracking for recall stre
 - If you see "No Words Yet" - go to Vocabulary and check some words!
 - This prevents overwhelm by keeping your study set focused and intentional
 
-### Navigation Bar Indicators
-The bottom navbar shows status indicators:
+### Navigation Bar
+**Fixed bottom navigation** with 3 tabs - always visible on mobile:
+- **Vocabulary**: Browse and manage your word list
+- **Revise**: Flashcard practice (default landing page)
+- **Settings**: Customize your experience
+
+**Status indicators**:
 - **Revise tab**: Shows ✓ (green badge) if you've reviewed today, or ⚠ (orange badge) if not
 - **Settings tab**: Shows orange dot if there are unsynced settings changes
+
+**Mobile optimized**: Uses dynamic viewport height (`dvh`) and fixed positioning for reliable mobile layout without double-scroll issues.
 
 ### Settings Tab
 - **Cards per Session**: Configure how many words to review (5-50)
@@ -165,7 +172,7 @@ The bottom navbar shows status indicators:
 
 ```bash
 git clone https://github.com/avi-otterai/mandarin.git
-cd langseed-js
+cd avi-mandarin
 npm install
 ```
 
@@ -235,7 +242,7 @@ The `netlify.toml` file handles:
 ## Project Structure
 
 ```
-langseed-js/
+avi-mandarin/
 ├── src/
 │   ├── components/
 │   │   ├── Navbar.tsx        # Bottom navigation (3 tabs)
@@ -316,6 +323,8 @@ All tables have Row Level Security enabled:
 - [x] Revise tab indicator (✓ if reviewed today, ! if not)
 - [x] Fix: Next button now works on last card to complete session
 - [x] Browser TTS for Chinese pronunciation (voice selection, speed control)
+- [x] Fixed mobile layout: bottom navigation always visible, proper scroll handling
+- [x] Default landing page changed to Revise tab
 - [ ] ElevenLabs premium TTS integration (multiple voices, styles)
 - [ ] Tone-specific practice mode
 - [ ] Progress stats / charts

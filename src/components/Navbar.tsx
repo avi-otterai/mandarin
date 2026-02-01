@@ -10,8 +10,8 @@ export function Navbar({ reviewedToday, hasUnsyncedSettings }: NavbarProps) {
   const location = useLocation();
   
   return (
-    <nav className="flex-shrink-0 bg-base-200 border-t border-base-300 z-20">
-      <div className="flex justify-around items-center h-16 max-w-lg mx-auto">
+    <nav className="fixed bottom-0 left-0 right-0 bg-base-200 border-t border-base-300 z-50">
+      <div className="flex justify-around items-center h-16 max-w-lg mx-auto safe-area-inset-bottom">
         <Link
           to="/vocab"
           className={`flex flex-col items-center justify-center flex-1 h-full transition-colors ${

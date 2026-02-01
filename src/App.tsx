@@ -99,12 +99,12 @@ function AppContent({
   }, [location.pathname]);
 
   return (
-    <div className="h-screen flex flex-col bg-base-100 text-base-content overflow-hidden">
+    <div className="h-dvh flex flex-col bg-base-100 text-base-content overflow-hidden">
       {/* Top header with sync (logout moved to settings) */}
       {auth.isAuthenticated && (
         <header className="flex-shrink-0 bg-base-100 border-b border-base-300 px-4 py-2 z-20">
           <div className="flex items-center justify-between max-w-lg mx-auto">
-            <span className="text-sm font-medium text-primary">🀄 LangSeed</span>
+            <span className="text-sm font-medium text-primary">🪕 Saras</span>
             
             <div className="flex items-center gap-3">
               {showSyncButton && (
@@ -122,9 +122,10 @@ function AppContent({
         </header>
       )}
       
-      <main className="flex-1 overflow-hidden">
+      {/* Main content area - accounts for fixed navbar */}
+      <main className="flex-1 overflow-hidden pb-16">
         <Routes>
-          <Route path="/" element={<Navigate to="/vocab" replace />} />
+          <Route path="/" element={<Navigate to="/revise" replace />} />
           <Route path="/vocab" element={<VocabularyPage store={store} settingsStore={settingsStore} />} />
           <Route path="/revise" element={<RevisePage store={store} settingsStore={settingsStore} />} />
           <Route 
@@ -141,6 +142,7 @@ function AppContent({
         </Routes>
       </main>
       
+      {/* Fixed bottom navigation */}
       <Navbar 
         reviewedToday={reviewedToday}
         hasUnsyncedSettings={settingsStore.hasUnsyncedChanges}

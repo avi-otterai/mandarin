@@ -25,7 +25,7 @@ export function LoginPage({ onLogin, loading, error, onClearError }: LoginPagePr
         <div className="card-body">
           {/* Header */}
           <div className="text-center mb-6">
-            <h1 className="text-4xl font-bold text-primary mb-2">🀄 LangSeed</h1>
+            <h1 className="text-4xl font-bold text-primary mb-2">🪕 Saras</h1>
             <p className="text-base-content/60">Mandarin Chinese Learning</p>
           </div>
 

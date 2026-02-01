@@ -1,4 +1,4 @@
-# Netlify configuration for LangSeed Mandarin app
+# Netlify configuration for Saras Mandarin app
 
 [build]
   command = "npm run build"

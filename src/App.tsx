@@ -125,7 +125,7 @@ function AppContent({
       <main className="flex-1 overflow-hidden">
         <Routes>
           <Route path="/" element={<Navigate to="/vocab" replace />} />
-          <Route path="/vocab" element={<VocabularyPage store={store} />} />
+          <Route path="/vocab" element={<VocabularyPage store={store} settingsStore={settingsStore} />} />
           <Route path="/revise" element={<RevisePage store={store} settingsStore={settingsStore} />} />
           <Route 
             path="/settings" 

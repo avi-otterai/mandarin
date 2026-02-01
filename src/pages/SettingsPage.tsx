@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   Save, 
   RefreshCw, 
@@ -16,6 +16,8 @@ import {
   Type,
   Moon,
   Sun,
+  Play,
+  Mic,
 } from 'lucide-react';
 import type { SettingsStore } from '../stores/settingsStore';
 import type { 
@@ -24,7 +26,14 @@ import type {
   LearningFocus, 
   PinyinDisplay,
 } from '../types/settings';
-import { FOCUS_LABELS, FOCUS_DESCRIPTIONS, THEME_META } from '../types/settings';
+import { FOCUS_LABELS, FOCUS_DESCRIPTIONS, THEME_META, SPEECH_RATE_PRESETS } from '../types/settings';
+import { 
+  getChineseVoices, 
+  speak, 
+  stopSpeaking, 
+  isTTSSupported,
+  type TTSVoice 
+} from '../services/ttsService';
 
 interface SettingsPageProps {
   settingsStore: SettingsStore;
@@ -37,6 +46,44 @@ export function SettingsPage({ settingsStore, onSave, onLogout, userEmail }: Set
   const { settings, isSyncing, syncError, hasUnsyncedChanges, lastSyncTime } = settingsStore;
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  
+  // TTS state
+  const [availableVoices, setAvailableVoices] = useState<TTSVoice[]>([]);
+  const [voicesLoading, setVoicesLoading] = useState(true);
+  const [testingVoice, setTestingVoice] = useState(false);
+  const ttsSupported = isTTSSupported();
+
+  // Load available voices on mount
+  useEffect(() => {
+    if (!ttsSupported) {
+      setVoicesLoading(false);
+      return;
+    }
+    
+    getChineseVoices().then(voices => {
+      setAvailableVoices(voices);
+      setVoicesLoading(false);
+    });
+  }, [ttsSupported]);
+
+  // Test voice preview
+  const handleTestVoice = async () => {
+    if (testingVoice) {
+      stopSpeaking();
+      setTestingVoice(false);
+      return;
+    }
+    
+    setTestingVoice(true);
+    try {
+      await speak('你好，我是你的中文老师。', {
+        voiceId: settings.audio.browserVoiceId || undefined,
+        rate: settings.audio.speechRate,
+      });
+    } finally {
+      setTestingVoice(false);
+    }
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -348,29 +395,6 @@ export function SettingsPage({ settingsStore, onSave, onLogout, userEmail }: Set
             </div>
           </div>
 
-          {/* Auto-play Audio */}
-          <div className="bg-base-200 rounded-xl p-4 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              {settings.autoPlayAudio ? (
-                <Volume2 className="w-5 h-5 text-base-content/60" />
-              ) : (
-                <VolumeX className="w-5 h-5 text-base-content/60" />
-              )}
-              <div>
-                <h3 className="font-medium">Auto-play Audio</h3>
-                <p className="text-sm text-base-content/60">
-                  Play pronunciation when revealed
-                </p>
-              </div>
-            </div>
-            <input
-              type="checkbox"
-              className="toggle toggle-primary"
-              checked={settings.autoPlayAudio}
-              onChange={(e) => settingsStore.updateSettings({ autoPlayAudio: e.target.checked })}
-            />
-          </div>
-
           {/* Show Example Sentences */}
           <div className="bg-base-200 rounded-xl p-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -389,6 +413,118 @@ export function SettingsPage({ settingsStore, onSave, onLogout, userEmail }: Set
               onChange={(e) => settingsStore.updateSettings({ showExampleSentences: e.target.checked })}
             />
           </div>
+        </section>
+
+        {/* ========== AUDIO / TTS SETTINGS ========== */}
+        <section className="space-y-4">
+          <h2 className="text-lg font-semibold flex items-center gap-2">
+            <Mic className="w-5 h-5 text-info" />
+            Audio & Pronunciation
+          </h2>
+          
+          {!ttsSupported ? (
+            <div className="alert alert-warning">
+              <AlertTriangle className="w-4 h-4" />
+              <span>Your browser doesn't support text-to-speech. Try Chrome or Safari.</span>
+            </div>
+          ) : (
+            <>
+              {/* Voice Selection */}
+              <div className="bg-base-200 rounded-xl p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <h3 className="font-medium">Chinese Voice</h3>
+                    <p className="text-sm text-base-content/60">
+                      {voicesLoading ? 'Loading voices...' : 
+                       availableVoices.length === 0 ? 'No Chinese voices found' :
+                       `${availableVoices.length} voice${availableVoices.length > 1 ? 's' : ''} available`}
+                    </p>
+                  </div>
+                  <button
+                    className={`btn btn-sm btn-circle ${testingVoice ? 'btn-error' : 'btn-info'}`}
+                    onClick={handleTestVoice}
+                    disabled={voicesLoading || availableVoices.length === 0}
+                    title={testingVoice ? 'Stop' : 'Test voice'}
+                  >
+                    <Play className={`w-4 h-4 ${testingVoice ? 'hidden' : ''}`} />
+                    {testingVoice && <span className="loading loading-spinner loading-xs" />}
+                  </button>
+                </div>
+                
+                {availableVoices.length > 0 && (
+                  <select
+                    className="select select-bordered w-full"
+                    value={settings.audio.browserVoiceId}
+                    onChange={(e) => settingsStore.setAudioSettings({ browserVoiceId: e.target.value })}
+                  >
+                    <option value="">Auto (best available)</option>
+                    {availableVoices.map((voice) => (
+                      <option key={voice.id} value={voice.id}>
+                        {voice.name}
+                        {voice.gender !== 'unknown' && ` (${voice.gender})`}
+                        {voice.localService && ' • Offline'}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </div>
+
+              {/* Speech Rate */}
+              <div className="bg-base-200 rounded-xl p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <h3 className="font-medium">Speech Speed</h3>
+                    <p className="text-sm text-base-content/60">
+                      {SPEECH_RATE_PRESETS.find(p => p.value === settings.audio.speechRate)?.description || 
+                       `${settings.audio.speechRate}x`}
+                    </p>
+                  </div>
+                  <span className="text-xl font-bold text-info">
+                    {settings.audio.speechRate}x
+                  </span>
+                </div>
+                
+                <div className="flex gap-2 flex-wrap">
+                  {SPEECH_RATE_PRESETS.map((preset) => (
+                    <button
+                      key={preset.value}
+                      className={`btn btn-sm ${
+                        settings.audio.speechRate === preset.value 
+                          ? 'btn-info' 
+                          : 'btn-ghost'
+                      }`}
+                      onClick={() => settingsStore.setAudioSettings({ speechRate: preset.value })}
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Auto-play Audio (moved here for context) */}
+              <div className="bg-base-200 rounded-xl p-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  {settings.autoPlayAudio ? (
+                    <Volume2 className="w-5 h-5 text-info" />
+                  ) : (
+                    <VolumeX className="w-5 h-5 text-base-content/60" />
+                  )}
+                  <div>
+                    <h3 className="font-medium">Auto-play Audio</h3>
+                    <p className="text-sm text-base-content/60">
+                      Play pronunciation when revealed
+                    </p>
+                  </div>
+                </div>
+                <input
+                  type="checkbox"
+                  className="toggle toggle-info"
+                  checked={settings.autoPlayAudio}
+                  onChange={(e) => settingsStore.updateSettings({ autoPlayAudio: e.target.checked })}
+                />
+              </div>
+            </>
+          )}
         </section>
 
         {/* ========== ACCESSIBILITY ========== */}

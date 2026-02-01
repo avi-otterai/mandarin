@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { Volume2, ChevronLeft, ChevronRight, Shuffle } from 'lucide-react';
+import { Volume2, ChevronLeft, ChevronRight, Shuffle, Loader2 } from 'lucide-react';
 import type { VocabularyStore } from '../stores/vocabularyStore';
 import type { SettingsStore } from '../stores/settingsStore';
 import type { Concept } from '../types/vocabulary';
 import type { FocusLevel } from '../types/settings';
+import { speak, stopSpeaking, isTTSSupported } from '../services/ttsService';
 
 const LAST_REVIEW_KEY = 'langseed_last_review';
 
@@ -121,6 +122,10 @@ export function RevisePage({ store, settingsStore }: RevisePageProps) {
   const [sessionComplete, setSessionComplete] = useState(false);
   const confettiFiredRef = useRef(false);
   
+  // TTS state
+  const [isPlaying, setIsPlaying] = useState(false);
+  const ttsSupported = isTTSSupported();
+  
   // Get settings with defaults
   const settings = settingsStore?.settings;
   const cardsPerSession = settings?.cardsPerSession ?? 10;
@@ -145,10 +150,12 @@ export function RevisePage({ store, settingsStore }: RevisePageProps) {
     };
   }, [settings]);
   
-  // Get known words (words user has added to study, not fully mastered)
-  // "Known" = in the user's study list, regardless of mastery level
+  // Get KNOWN words - ONLY words user has explicitly checked in Vocabulary tab
+  // "Known" = checkbox checked (understanding >= 80) = user wants to learn this word
+  // "Unknown" = not checked = user doesn't want to study this yet (avoids overwhelm)
+  // This is the CRITICAL filter - Revise should NEVER show unchecked words!
   const knownWords = useMemo(() => {
-    return store.concepts.filter(c => !c.paused);
+    return store.concepts.filter(c => c.understanding >= 80 && !c.paused);
   }, [store.concepts]);
 
   // Initialize a new revision session
@@ -167,7 +174,7 @@ export function RevisePage({ store, settingsStore }: RevisePageProps) {
           character: revealField === 'character',
           pinyin: revealField === 'pinyin',
           meaning: revealField === 'meaning',
-          audio: false, // Audio never auto-revealed (requires user interaction)
+          audio: true, // Audio always visible (doesn't reveal text info)
         },
         initiallyRevealed: revealField,
       });
@@ -206,7 +213,7 @@ export function RevisePage({ store, settingsStore }: RevisePageProps) {
     });
   }, [currentWord]);
 
-  // Reveal all fields
+  // Reveal all text fields (audio is always visible)
   const revealAll = useCallback(() => {
     if (!currentWord) return;
     
@@ -220,7 +227,7 @@ export function RevisePage({ store, settingsStore }: RevisePageProps) {
             character: true,
             pinyin: true,
             meaning: true,
-            audio: true,
+            audio: true, // Keep as true (always visible)
           },
         });
       }
@@ -228,12 +235,11 @@ export function RevisePage({ store, settingsStore }: RevisePageProps) {
     });
   }, [currentWord]);
 
-  // Check if all fields are revealed
+  // Check if all text fields are revealed (audio is always visible)
   const allRevealed = currentState && 
     currentState.revealed.character && 
     currentState.revealed.pinyin && 
-    currentState.revealed.meaning && 
-    currentState.revealed.audio;
+    currentState.revealed.meaning;
 
   // Navigation
   const goNext = useCallback(() => {
@@ -249,14 +255,53 @@ export function RevisePage({ store, settingsStore }: RevisePageProps) {
     }
   }, [currentIndex]);
 
-  // Handle audio play (placeholder - will show toast that audio is unavailable)
-  const handlePlayAudio = useCallback(() => {
-    // TODO: Implement TTS or audio file playback
-    // For now, this is just a placeholder
-  }, []);
+  // Handle audio play
+  const handlePlayAudio = useCallback(async () => {
+    if (!currentWord || !ttsSupported) return;
+    
+    if (isPlaying) {
+      stopSpeaking();
+      setIsPlaying(false);
+      return;
+    }
+    
+    setIsPlaying(true);
+    try {
+      await speak(currentWord.word, {
+        voiceId: settings?.audio?.browserVoiceId || undefined,
+        rate: settings?.audio?.speechRate ?? 0.9,
+      });
+    } catch (err) {
+      console.error('TTS error:', err);
+    } finally {
+      setIsPlaying(false);
+    }
+  }, [currentWord, ttsSupported, isPlaying, settings?.audio]);
 
-  // Check if audio is available (always false for now)
-  const isAudioAvailable = false;
+  // Auto-play audio when card changes (if enabled)
+  const prevWordIdRef = useRef<string | null>(null);
+  useEffect(() => {
+    const currentWordId = currentWord?.id ?? null;
+    const prevWordId = prevWordIdRef.current;
+    prevWordIdRef.current = currentWordId;
+    
+    // Auto-play when moving to a new card
+    if (currentWordId && currentWordId !== prevWordId && settings?.autoPlayAudio && ttsSupported) {
+      handlePlayAudio();
+    }
+  }, [currentWord?.id, settings?.autoPlayAudio, ttsSupported, handlePlayAudio]);
+
+  // Stop audio when changing cards
+  useEffect(() => {
+    return () => {
+      if (ttsSupported) {
+        stopSpeaking();
+      }
+    };
+  }, [currentIndex, ttsSupported]);
+
+  // Check if audio is available
+  const isAudioAvailable = ttsSupported;
 
   // Session complete - fire confetti and mark as reviewed today
   useEffect(() => {
@@ -445,35 +490,24 @@ export function RevisePage({ store, settingsStore }: RevisePageProps) {
                 </div>
               </div>
 
-              {/* Audio Section */}
-              <div 
-                className="cursor-pointer select-none"
-                onClick={() => toggleReveal('audio')}
-              >
+              {/* Audio Section - Always visible (no text to hide) */}
+              <div>
                 <span className="text-xs font-medium text-base-content/50 uppercase tracking-wider mb-1 block">
                   Audio
                 </span>
-                <div className={`
-                  text-center h-16 flex items-center justify-center rounded-xl transition-all duration-300
-                  ${currentState.revealed.audio 
-                    ? 'bg-info/10 border-2 border-info/30' 
-                    : 'bg-base-300 border-2 border-dashed border-base-content/20 hover:border-info/40'}
-                `}>
-                  {currentState.revealed.audio ? (
-                    <button
-                      className={`btn btn-circle btn-lg ${isAudioAvailable ? 'btn-info' : 'btn-ghost opacity-40 cursor-not-allowed'}`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (isAudioAvailable) handlePlayAudio();
-                      }}
-                      disabled={!isAudioAvailable}
-                      title={isAudioAvailable ? 'Play audio' : 'Audio coming soon'}
-                    >
+                <div className="text-center h-16 flex items-center justify-center rounded-xl bg-info/10 border-2 border-info/30">
+                  <button
+                    className={`btn btn-circle btn-lg ${isAudioAvailable ? (isPlaying ? 'btn-error' : 'btn-info') : 'btn-ghost opacity-40 cursor-not-allowed'}`}
+                    onClick={() => isAudioAvailable && handlePlayAudio()}
+                    disabled={!isAudioAvailable}
+                    title={!isAudioAvailable ? 'TTS not supported' : isPlaying ? 'Stop' : 'Play pronunciation'}
+                  >
+                    {isPlaying ? (
+                      <Loader2 className="w-6 h-6 animate-spin" />
+                    ) : (
                       <Volume2 className="w-6 h-6" />
-                    </button>
-                  ) : (
-                    <span className="text-3xl text-base-content/20">?</span>
-                  )}
+                    )}
+                  </button>
                 </div>
               </div>
 

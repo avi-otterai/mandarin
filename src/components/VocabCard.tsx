@@ -1,16 +1,46 @@
-import { Check, RotateCcw } from 'lucide-react';
+import { useState, useCallback } from 'react';
+import { Check, RotateCcw, Volume2, Loader2 } from 'lucide-react';
 import type { Concept, SRSRecord } from '../types/vocabulary';
 import { tierToColorClass, formatTimeUntilReview } from '../utils/srs';
+import { speak, stopSpeaking, isTTSSupported } from '../services/ttsService';
 
 interface VocabCardProps {
   concept: Concept;
   srsRecords: SRSRecord[];
   onToggleKnown: () => void;
   onClose: () => void;
+  audioSettings?: {
+    browserVoiceId?: string;
+    speechRate?: number;
+  };
 }
 
-export function VocabCard({ concept, srsRecords, onToggleKnown, onClose }: VocabCardProps) {
+export function VocabCard({ concept, srsRecords, onToggleKnown, onClose, audioSettings }: VocabCardProps) {
   const isKnown = concept.understanding >= 80;
+  const [isPlaying, setIsPlaying] = useState(false);
+  const ttsSupported = isTTSSupported();
+  
+  const handlePlayAudio = useCallback(async () => {
+    if (!ttsSupported) return;
+    
+    if (isPlaying) {
+      stopSpeaking();
+      setIsPlaying(false);
+      return;
+    }
+    
+    setIsPlaying(true);
+    try {
+      await speak(concept.word, {
+        voiceId: audioSettings?.browserVoiceId || undefined,
+        rate: audioSettings?.speechRate ?? 0.9,
+      });
+    } catch (err) {
+      console.error('TTS error:', err);
+    } finally {
+      setIsPlaying(false);
+    }
+  }, [concept.word, ttsSupported, isPlaying, audioSettings]);
   
   return (
     <>
@@ -26,9 +56,24 @@ export function VocabCard({ concept, srsRecords, onToggleKnown, onClose }: Vocab
           <div className="card-body">
             {/* Header with word and pinyin */}
             <div className="text-center mb-4">
-              <h2 className="hanzi text-5xl font-bold text-primary mb-2">
-                {concept.word}
-              </h2>
+              <div className="flex items-start justify-center gap-2">
+                <h2 className="hanzi text-5xl font-bold text-primary mb-2">
+                  {concept.word}
+                </h2>
+                {ttsSupported && (
+                  <button
+                    className={`btn btn-sm btn-circle ${isPlaying ? 'btn-error' : 'btn-ghost text-info'}`}
+                    onClick={handlePlayAudio}
+                    title={isPlaying ? 'Stop' : 'Play pronunciation'}
+                  >
+                    {isPlaying ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Volume2 className="w-4 h-4" />
+                    )}
+                  </button>
+                )}
+              </div>
               <p className="pinyin text-2xl text-secondary">
                 {concept.pinyin}
               </p>

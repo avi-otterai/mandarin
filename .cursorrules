@@ -114,10 +114,48 @@ The repo uses `github.com-avi` alias which maps to personal SSH key (`~/.ssh/id_
 
 ## Key Files
 - `src/pages/VocabularyPage.tsx` - Vocabulary table with filters
-- `src/pages/RevisePage.tsx` - SRS practice
+- `src/pages/RevisePage.tsx` - Flashcard review (ONLY shows known words!)
 - `src/stores/vocabularyStore.ts` - State + localStorage persistence
 - `src/utils/srs.ts` - SRS algorithm
 - `src/data/hsk1_vocabulary.json` - HSK1 word list
+
+---
+
+## ⚠️ CRITICAL: Known vs Unknown Words
+
+**This is the most important concept in the app - understand this before making any changes!**
+
+### Binary Categories (ONLY 2)
+| Status | Checkbox | understanding | In Revise? |
+|--------|----------|---------------|------------|
+| **Known** | ✓ Checked | >= 80 | **YES** |
+| **Unknown** | ☐ Unchecked | < 80 | **NO** |
+
+### How It Works
+1. **Importing chapters** adds words to `concepts` list with `understanding: 0` (unknown)
+2. **Checking the ✓ checkbox** sets `understanding: 100` → word is now "known"
+3. **RevisePage filters by `understanding >= 80`** - ONLY known words appear!
+
+### Why This Design
+- **Avoids overwhelm**: User only sees words they've explicitly selected
+- **Controlled learning**: Start with a few checked words, expand gradually
+- **Intentional vocabulary**: Revise tab is never cluttered with unselected words
+
+### Code Implementation
+```typescript
+// VocabularyPage: Checkbox toggles known status
+checked={concept.understanding >= 80}
+onChange={() => store.toggleKnown(concept.id)}
+
+// RevisePage: CRITICAL FILTER - only known words!
+const knownWords = store.concepts.filter(c => c.understanding >= 80 && !c.paused);
+```
+
+### ⚠️ DO NOT:
+- Remove the `understanding >= 80` filter from RevisePage
+- Show unchecked words in Revise sessions
+- Add intermediate mastery levels (keep it binary: known/unknown)
+- Confuse "known" with "memorized" - known just means "selected to study"
 
 ## Data Storage
 - **Local**: localStorage (key: `langseed_progress`) - instant reads/writes

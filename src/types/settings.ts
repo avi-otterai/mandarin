@@ -15,6 +15,15 @@ export type PinyinDisplay = 'tones' | 'numbers'; // māma vs ma1ma1
 
 export type CharacterSize = 'small' | 'medium' | 'large';
 
+export type AudioProvider = 'browser' | 'elevenlabs';
+
+export interface AudioSettings {
+  provider: AudioProvider;
+  browserVoiceId: string;      // Voice URI for browser TTS (empty = auto-select)
+  speechRate: number;          // 0.5 - 2.0 (1.0 = normal)
+  // Future: elevenlabsVoiceId, elevenlabsApiKey
+}
+
 export interface UserSettings {
   // Review settings
   cardsPerSession: number;         // 5-50, default 10
@@ -25,6 +34,9 @@ export interface UserSettings {
   pinyinDisplay: PinyinDisplay;
   characterSize: CharacterSize;
   autoPlayAudio: boolean;          // Auto-play when audio section revealed
+  
+  // Audio/TTS settings
+  audio: AudioSettings;
   
   // Study preferences
   showExampleSentences: boolean;   // When available
@@ -46,6 +58,11 @@ export const DEFAULT_SETTINGS: UserSettings = {
   pinyinDisplay: 'tones',
   characterSize: 'medium',
   autoPlayAudio: false,
+  audio: {
+    provider: 'browser',
+    browserVoiceId: '',  // Auto-select best available
+    speechRate: 0.9,     // Slightly slower for learning
+  },
   showExampleSentences: true,
   shuffleMode: true,
   reducedMotion: false,
@@ -76,3 +93,13 @@ export const THEME_META: Record<ThemeType, { name: string; emoji: string; descri
   sakura: { name: 'Sakura', emoji: '🌸', description: 'Soft pink' },
   ink: { name: 'Ink', emoji: '🖋️', description: 'High contrast B&W' },
 };
+
+// Speech rate presets
+export const SPEECH_RATE_PRESETS = [
+  { value: 0.5, label: '0.5x', description: 'Very Slow' },
+  { value: 0.7, label: '0.7x', description: 'Slow' },
+  { value: 0.9, label: '0.9x', description: 'Learning' },
+  { value: 1.0, label: '1.0x', description: 'Normal' },
+  { value: 1.2, label: '1.2x', description: 'Fast' },
+  { value: 1.5, label: '1.5x', description: 'Very Fast' },
+];

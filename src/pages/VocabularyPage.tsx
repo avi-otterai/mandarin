@@ -1,21 +1,23 @@
 import { useState, useMemo, useEffect } from 'react';
 import { ChevronUp, ChevronDown, ChevronsUpDown, Download, CheckSquare, Square, Filter, Layers, Plus, Minus, ChevronRight } from 'lucide-react';
 import type { VocabularyStore } from '../stores/vocabularyStore';
+import type { SettingsStore } from '../stores/settingsStore';
 import type { Concept } from '../types/vocabulary';
 import { VocabCard } from '../components/VocabCard';
 
 interface VocabularyPageProps {
   store: VocabularyStore;
+  settingsStore?: SettingsStore;
 }
 
 type SortField = 'pinyin' | 'word' | 'meaning' | 'part_of_speech' | 'chapter' | 'understanding';
 type SortDir = 'asc' | 'desc';
 
-export function VocabularyPage({ store }: VocabularyPageProps) {
+export function VocabularyPage({ store, settingsStore }: VocabularyPageProps) {
   const [sortField, setSortField] = useState<SortField>('chapter');
   const [sortDir, setSortDir] = useState<SortDir>('asc');
   const [filterChapter, setFilterChapter] = useState<string>('all');
-  const [filterMastery, setFilterMastery] = useState<'all' | 'mastered' | 'studying'>('all');
+  const [filterKnown, setFilterKnown] = useState<'all' | 'known' | 'unknown'>('all');
   const [selectedConcept, setSelectedConcept] = useState<Concept | null>(null);
   
   // Bulk chapter management
@@ -44,10 +46,12 @@ export function VocabularyPage({ store }: VocabularyPageProps) {
       result = result.filter(c => c.chapter === parseInt(filterChapter));
     }
     
-    // Mastery filter
-    if (filterMastery === 'mastered') {
+    // Known/Unknown filter
+    // Known = checked (understanding >= 80) = user wants to learn this word
+    // Unknown = not checked = user hasn't selected this word yet
+    if (filterKnown === 'known') {
       result = result.filter(c => c.understanding >= 80);
-    } else if (filterMastery === 'studying') {
+    } else if (filterKnown === 'unknown') {
       result = result.filter(c => c.understanding < 80);
     }
     
@@ -75,7 +79,7 @@ export function VocabularyPage({ store }: VocabularyPageProps) {
       }
       return sortDir === 'asc' ? comparison : -comparison;
     });
-  }, [store.concepts, filterChapter, filterMastery, sortField, sortDir]);
+  }, [store.concepts, filterChapter, filterKnown, sortField, sortDir]);
   
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -96,9 +100,10 @@ export function VocabularyPage({ store }: VocabularyPageProps) {
   };
 
   // Stats
-  const masteredCount = store.concepts.filter(c => c.understanding >= 80).length;
+  // "Known" = checked words (understanding >= 80) = words user wants to learn
+  const knownCount = store.concepts.filter(c => c.understanding >= 80).length;
   const totalAdded = store.concepts.length;
-  const filteredMastered = filteredConcepts.filter(c => c.understanding >= 80).length;
+  const filteredKnown = filteredConcepts.filter(c => c.understanding >= 80).length;
   
   // Bulk chapter stats
   const bulkStats = useMemo(() => {
@@ -123,8 +128,9 @@ export function VocabularyPage({ store }: VocabularyPageProps) {
     });
   }, [store.availableChapters, store.hsk1Vocab, store.concepts]);
   
-  // Mass mastery toggle for filtered results
-  const handleMarkAllMastered = () => {
+  // Mass known/unknown toggle for filtered results
+  // "Known" = checked = user wants to learn this word (will appear in Revise)
+  const handleMarkAllKnown = () => {
     filteredConcepts.forEach(c => {
       if (c.understanding < 80) {
         store.toggleKnown(c.id);
@@ -132,7 +138,7 @@ export function VocabularyPage({ store }: VocabularyPageProps) {
     });
   };
   
-  const handleResetAllMastery = () => {
+  const handleMarkAllUnknown = () => {
     filteredConcepts.forEach(c => {
       if (c.understanding >= 80) {
         store.toggleKnown(c.id);
@@ -159,7 +165,7 @@ export function VocabularyPage({ store }: VocabularyPageProps) {
           <div>
             <h1 className="text-xl font-bold">Vocabulary</h1>
             <p className="text-sm text-base-content/60">
-              {totalAdded} added · {masteredCount} mastered
+              {totalAdded} words · {knownCount} known
             </p>
           </div>
           <div className="flex gap-2">
@@ -287,24 +293,24 @@ export function VocabularyPage({ store }: VocabularyPageProps) {
             <option value="all">All Chapters</option>
             {chapters.map(ch => {
               const chapterTotal = store.concepts.filter(c => c.chapter === ch).length;
-              const chapterKnown = store.concepts.filter(c => c.chapter === ch && c.understanding >= 80).length;
+              const chapterKnownCount = store.concepts.filter(c => c.chapter === ch && c.understanding >= 80).length;
               return (
                 <option key={ch} value={ch}>
-                  Ch. {ch} ({chapterKnown}/{chapterTotal})
+                  Ch. {ch} ({chapterKnownCount}/{chapterTotal})
                 </option>
               );
             })}
           </select>
           
-          {/* Mastery filter */}
+          {/* Known/Unknown filter */}
           <select
             className="select select-sm select-bordered bg-base-200"
-            value={filterMastery}
-            onChange={e => setFilterMastery(e.target.value as 'all' | 'mastered' | 'studying')}
+            value={filterKnown}
+            onChange={e => setFilterKnown(e.target.value as 'all' | 'known' | 'unknown')}
           >
             <option value="all">All</option>
-            <option value="mastered">Mastered</option>
-            <option value="studying">Studying</option>
+            <option value="known">Known ✓</option>
+            <option value="unknown">Unknown</option>
           </select>
           
           {/* Showing count */}
@@ -318,19 +324,21 @@ export function VocabularyPage({ store }: VocabularyPageProps) {
           <div className="flex gap-2 mt-2 pt-2 border-t border-base-300">
             <button 
               className="btn btn-xs btn-outline btn-success"
-              onClick={handleMarkAllMastered}
-              disabled={filteredMastered === filteredConcepts.length}
+              onClick={handleMarkAllKnown}
+              disabled={filteredKnown === filteredConcepts.length}
+              title="Mark all as known - these will appear in Revise sessions"
             >
               <CheckSquare className="w-3 h-3" />
-              Mark all mastered ({filteredConcepts.length - filteredMastered})
+              Mark all known ({filteredConcepts.length - filteredKnown})
             </button>
             <button 
               className="btn btn-xs btn-outline btn-warning"
-              onClick={handleResetAllMastery}
-              disabled={filteredMastered === 0}
+              onClick={handleMarkAllUnknown}
+              disabled={filteredKnown === 0}
+              title="Mark as unknown - these will NOT appear in Revise sessions"
             >
               <Square className="w-3 h-3" />
-              Reset mastery ({filteredMastered})
+              Mark unknown ({filteredKnown})
             </button>
           </div>
         )}
@@ -395,10 +403,10 @@ export function VocabularyPage({ store }: VocabularyPageProps) {
                   <th 
                     className="cursor-pointer hover:bg-base-300 text-center whitespace-nowrap"
                     onClick={() => handleSort('understanding')}
-                    title="Mastered - tick when you've fully learned this word"
+                    title="Known - check to include in Revise sessions (only checked words appear in Revise)"
                   >
                     <div className="flex items-center justify-center gap-1">
-                      ⭐ <SortIcon field="understanding" />
+                      ✓ <SortIcon field="understanding" />
                     </div>
                   </th>
                 </tr>
@@ -447,6 +455,7 @@ export function VocabularyPage({ store }: VocabularyPageProps) {
             if (updated) setSelectedConcept(updated);
           }}
           onClose={() => setSelectedConcept(null)}
+          audioSettings={settingsStore?.settings.audio}
         />
       )}
     </div>

@@ -46,48 +46,64 @@ The app uses **Supabase Auth** with email/password login.
 
 ---
 
-## Terminology
+## Terminology: Known vs Unknown Words
 
-Understanding these terms is key to how the app works:
+**This is the most important concept in the app!**
 
-| Term | Meaning |
-|------|---------|
-| **Added / Known** | A word has been introduced to your study list. You want to learn it. These words appear in Revise sessions. |
-| **Mastered** | You've demonstrated strong recall of a word (understanding ≥ 80%). |
-| **Studying** | A word is added but not yet mastered. |
+| Term | Meaning | In Revise? |
+|------|---------|------------|
+| **Known** ✓ | Word is checked in Vocabulary tab. User wants to learn this word. | **YES** |
+| **Unknown** | Word is NOT checked. User hasn't selected it yet (to avoid overwhelm). | **NO** |
 
-**Important distinction:**
-- **Adding** a word = putting it in your study queue (chapters feature)
-- **Mastering** a word = marking it complete (star checkbox) - either through SRS practice or manually
-- **Known ≠ Memorized**: "Known" just means you've added it to study, not that you've fully learned it
+### How It Works
+
+1. **Import chapters** → Words are added to Vocabulary (but marked as "unknown" by default)
+2. **Check the ✓ checkbox** → Word becomes "known" = you want to learn it
+3. **Only checked (known) words appear in Revise sessions!**
+
+### Why This Matters
+
+- **Avoids overwhelm**: You only see words you've explicitly chosen to learn
+- **Controlled vocab**: Start small (check a few words), gradually expand
+- **Focused learning**: Revise tab shows ONLY your selected vocabulary
+
+### Binary System
+
+There are only **2 categories**:
+- ✓ **Known** = checked = will appear in Revise
+- ☐ **Unknown** = not checked = won't appear in Revise
+
+No complex mastery levels - just known or unknown. (SRS tracking for recall strength is separate and granular.)
 
 ---
 
 ## Features
 
 ### Vocabulary Tab
-- **Table view** with sortable columns: Character, Pinyin, Meaning, Type, Chapter, Mastered (⭐)
+- **Table view** with sortable columns: Character, Pinyin, Meaning, Type, Chapter, Known (✓)
 - **Sticky header** - header stays visible while scrolling
 - **Filters**:
   - By chapter (Ch. 1-15)
-  - By mastery status (All / Mastered / Studying)
+  - By known status (All / Known ✓ / Unknown)
 - **Bulk chapter management**:
-  - Add words from chapter ranges (e.g., Ch. 1-6) to your study list
-  - Remove chapters you don't want to study yet
+  - Add words from chapter ranges (e.g., Ch. 1-6) to your list
+  - Remove chapters you don't want yet
   - Quick add buttons per chapter showing progress
 - **Mass actions**:
-  - "Mark all mastered" - for current filtered view
-  - "Reset mastery" - put words back into study rotation
+  - "Mark all known" - check all words in current view (adds to Revise)
+  - "Mark unknown" - uncheck words (removes from Revise)
+- **Checkbox (✓ column)**: Check = "known" = word will appear in Revise sessions
 - Click any character to see details + SRS progress
 
 ### Revise Tab (Flashcard Review)
 - **Flashcard-style** vocabulary review with reveal/hide mechanics
-- **Session-based**: Randomly selects words from your study list (configurable in Settings)
+- **Session-based**: Randomly selects from your KNOWN words (configurable in Settings)
+- **CRITICAL**: Only words with ✓ checkbox in Vocabulary appear here!
 - **Four reveal fields** (tap to show/hide):
   - **Character** (汉字) - Chinese character
   - **Pinyin** - Pronunciation with tone marks
   - **Meaning** - English translation + part of speech
-  - **Audio** - Speaker button (placeholder for future TTS)
+  - **Audio** - Speaker button with Text-to-Speech pronunciation
 - **Weighted reveal**: One field is randomly shown initially based on your Learning Focus settings:
   - Default weights: Pinyin 50%, Meaning 35%, Character 15%, Audio 0%
   - Customize in Settings → Learning Focus
@@ -95,10 +111,10 @@ Understanding these terms is key to how the app works:
 - **Daily tracking**: Completing a session marks today as "reviewed" (stored in localStorage)
 - **Navigation**: Previous/Next buttons, progress bar, dot indicators, shuffle button
 
-**What "Known" means:**
-- "Known" = words you've added to your study list (from Vocabulary tab)
-- It does NOT mean fully memorized - just that you want to revise these words
-- Unknown/unadded words are not shown to avoid overwhelm
+**⚠️ Known Words Only:**
+- Revise ONLY shows words you've checked (✓) in the Vocabulary tab
+- If you see "No Words Yet" - go to Vocabulary and check some words!
+- This prevents overwhelm by keeping your study set focused and intentional
 
 ### Navigation Bar Indicators
 The bottom navbar shows status indicators:
@@ -117,8 +133,12 @@ The bottom navbar shows status indicators:
 - **Display Options**:
   - Character size (small/medium/large)
   - Pinyin display (tones: māma vs numbers: ma1ma)
-  - Auto-play audio on reveal
   - Show example sentences
+- **Audio & Pronunciation**:
+  - Chinese voice selection (auto-detects available system voices)
+  - Speech speed control (0.5x - 1.5x)
+  - Auto-play audio when revealed
+  - Test voice preview button
 - **Accessibility**: Reduced motion option
 - **Account**: Sign out and reset to defaults
 - **Save button**: Syncs settings to Supabase for cross-device persistence
@@ -222,6 +242,8 @@ langseed-js/
 │   ├── lib/
 │   │   ├── supabase.ts        # Supabase client
 │   │   └── syncService.ts     # Cloud sync logic
+│   ├── services/
+│   │   └── ttsService.ts      # Text-to-Speech (browser API)
 │   ├── types/
 │   │   ├── vocabulary.ts      # Vocab types
 │   │   ├── settings.ts        # Settings types
@@ -266,7 +288,7 @@ All tables have Row Level Security enabled:
 - [x] Vocabulary table with sorting
 - [x] Chapter filtering
 - [x] Bulk chapter add/remove
-- [x] Mass mastery toggle
+- [x] Mass known/unknown toggle
 - [x] Sticky table header
 - [x] SRS practice (3 question types)
 - [x] localStorage persistence
@@ -281,7 +303,8 @@ All tables have Row Level Security enabled:
 - [x] Confetti celebration on session completion
 - [x] Revise tab indicator (✓ if reviewed today, ! if not)
 - [x] Fix: Next button now works on last card to complete session
-- [ ] Add audio/TTS for pronunciation
+- [x] Browser TTS for Chinese pronunciation (voice selection, speed control)
+- [ ] ElevenLabs premium TTS integration (multiple voices, styles)
 - [ ] Tone-specific practice mode
 - [ ] Progress stats / charts
 - [ ] **Session tracking in Supabase**: Record each revision session (timestamp, cards reviewed, per-card recall feedback - e.g., "knew it" vs "didn't know" for each hidden modality)

@@ -58,11 +58,11 @@ export interface VocabularyStore {
   hsk1Vocab: VocabWord[];
   
   // Computed
-  addedWords: Set<string>;  // Words that have been introduced/added to study list
+  addedWords: Set<string>;  // Words that have been imported (exist in concepts list)
   dueCount: number;
   newCount: number;
   availableChapters: number[];
-  masteredCount: number;    // Words with understanding >= 80%
+  knownCount: number;       // Words marked as "known" (understanding >= 80) - ONLY these appear in Revise
   
   // Sync state
   isSyncing: boolean;
@@ -130,14 +130,16 @@ export function useVocabularyStore(): VocabularyStore {
   }, [lastLocalChangeTime, lastSyncTime, concepts.length, srsRecords.length]);
 
   // Computed values
-  // Words that have been added to study list (introduced to user)
+  // Words that have been imported/added to the concepts list
   const addedWords = useMemo(() => 
     new Set(concepts.map(c => c.word)),
     [concepts]
   );
   
-  // Words with high understanding (mastered)
-  const masteredCount = useMemo(() => 
+  // "Known" words = checked in Vocabulary (understanding >= 80)
+  // CRITICAL: Only known words appear in Revise sessions!
+  // Unknown words (not checked) are excluded to avoid overwhelming the user
+  const knownCount = useMemo(() => 
     concepts.filter(c => c.understanding >= 80).length,
     [concepts]
   );
@@ -436,7 +438,7 @@ export function useVocabularyStore(): VocabularyStore {
     dueCount,
     newCount,
     availableChapters,
-    masteredCount,
+    knownCount,
     // Sync state
     isSyncing,
     syncError,

@@ -318,13 +318,7 @@ export function RevisePage({ store, settingsStore }: RevisePageProps) {
                 You reviewed {sessionWords.length} words.
               </p>
               <button 
-                className="btn btn-secondary mt-4"
-                onClick={() => fireConfetti()}
-              >
-                Test Confetti
-              </button>
-              <button 
-                className="btn btn-primary mt-2"
+                className="btn btn-primary mt-6"
                 onClick={() => {
                   confettiFiredRef.current = false;
                   setSessionComplete(false);

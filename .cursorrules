@@ -165,7 +165,7 @@ const knownWords = store.concepts.filter(c => c.understanding >= 80 && !c.paused
   - Sync: Manual "Save" button triggers cloud sync
 
 ## Supabase Config
-- **URL**: `https://YOUR_PROJECT_ID.supabase.co`
+- **URL**: stored in `.env` as `VITE_SUPABASE_URL`
 - **Anon Key**: stored in `.env` as `VITE_SUPABASE_ANON_KEY`
 - **Auth**: Email/password (single user, no public signup)
 

@@ -210,8 +210,8 @@ Connect GitHub for automatic deploys on every push to `main`:
    - Build command: `npm run build`
    - Publish directory: `dist`
 4. **Add environment variables** (CRITICAL!):
-   - `VITE_SUPABASE_URL` → `https://YOUR_PROJECT_ID.supabase.co`
-   - `VITE_SUPABASE_ANON_KEY` → your anon key
+   - `VITE_SUPABASE_URL` → your Supabase project URL (from `.env`)
+   - `VITE_SUPABASE_ANON_KEY` → your anon key (from `.env`)
 5. **Deploy!** Click "Deploy site"
 
 **✅ Auto-deploy enabled**: Every push to `main` triggers a new build automatically.

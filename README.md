@@ -14,6 +14,7 @@ A React/TypeScript webapp for learning Mandarin Chinese using spaced repetition.
 |---------|-----------|------|
 | localStorage | `langseed_progress` | concepts, srsRecords, lastUpdated |
 | localStorage | `langseed_settings` | user preferences (theme, learning focus, etc.) |
+| localStorage | `langseed_last_review` | ISO timestamp of last completed review session |
 | Supabase | `concepts` | Vocabulary with user preferences |
 | Supabase | `srs_records` | SRS progress per word |
 | Supabase | `user_settings` | User settings (JSONB) |
@@ -81,22 +82,28 @@ Understanding these terms is key to how the app works:
 
 ### Revise Tab (Flashcard Review)
 - **Flashcard-style** vocabulary review with reveal/hide mechanics
-- **Session-based**: Randomly selects 10 words from your study list per session
-- **Three reveal fields** (tap to show/hide):
+- **Session-based**: Randomly selects words from your study list (configurable in Settings)
+- **Four reveal fields** (tap to show/hide):
   - **Character** (汉字) - Chinese character
   - **Pinyin** - Pronunciation with tone marks
   - **Meaning** - English translation + part of speech
-- **Weighted reveal**: One field is randomly shown initially based on weights:
-  - Pinyin: 50% (most likely - user's strength)
-  - Meaning: 35% (sometimes shown)
-  - Character: 15% (least likely - harder recognition)
-- **Audio icon**: Gray speaker icon next to pinyin (placeholder for future TTS)
-- **Navigation**: Swipe through cards, progress indicator, shuffle for new session
+  - **Audio** - Speaker button (placeholder for future TTS)
+- **Weighted reveal**: One field is randomly shown initially based on your Learning Focus settings:
+  - Default weights: Pinyin 50%, Meaning 35%, Character 15%, Audio 0%
+  - Customize in Settings → Learning Focus
+- **Session completion**: 🎉 Confetti celebration when you finish all cards
+- **Daily tracking**: Completing a session marks today as "reviewed" (stored in localStorage)
+- **Navigation**: Previous/Next buttons, progress bar, dot indicators, shuffle button
 
 **What "Known" means:**
 - "Known" = words you've added to your study list (from Vocabulary tab)
 - It does NOT mean fully memorized - just that you want to revise these words
 - Unknown/unadded words are not shown to avoid overwhelm
+
+### Navigation Bar Indicators
+The bottom navbar shows status indicators:
+- **Revise tab**: Shows ✓ (green badge) if you've reviewed today, or ⚠ (orange badge) if not
+- **Settings tab**: Shows orange dot if there are unsynced settings changes
 
 ### Settings Tab
 - **Cards per Session**: Configure how many words to review (5-50)
@@ -276,7 +283,6 @@ All tables have Row Level Security enabled:
 - [x] Fix: Next button now works on last card to complete session
 - [ ] Add audio/TTS for pronunciation
 - [ ] Tone-specific practice mode
-- [ ] Import custom vocabulary lists
 - [ ] Progress stats / charts
 - [ ] **Session tracking in Supabase**: Record each revision session (timestamp, cards reviewed, per-card recall feedback - e.g., "knew it" vs "didn't know" for each hidden modality)
 

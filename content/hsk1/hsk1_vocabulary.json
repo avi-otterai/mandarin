@@ -43,7 +43,7 @@
     "word": "没关系",
     "pinyin": "méi guānxi",
     "part_of_speech": "other",
-    "meaning": "it's OK, no problem",
+    "meaning": "that's OK, it doesn't matter",
     "chapter": 1,
     "source": "hsk1"
   },
@@ -67,7 +67,7 @@
     "word": "不客气",
     "pinyin": "bù kèqi",
     "part_of_speech": "other",
-    "meaning": "you're welcome",
+    "meaning": "you're welcome, don't mention it",
     "chapter": 2,
     "source": "hsk1"
   },
@@ -115,7 +115,7 @@
     "word": "李月",
     "pinyin": "Lǐ Yuè",
     "part_of_speech": "other",
-    "meaning": "(name) Li Yue",
+    "meaning": "Li Yue, name of a person",
     "chapter": 2,
     "source": "hsk1"
   },
@@ -139,7 +139,7 @@
     "word": "吗",
     "pinyin": "ma",
     "part_of_speech": "particle",
-    "meaning": "question particle",
+    "meaning": "used at the end of a question",
     "chapter": 3,
     "source": "hsk1"
   },
@@ -171,7 +171,7 @@
     "word": "美国",
     "pinyin": "Měiguó",
     "part_of_speech": "other",
-    "meaning": "USA, America",
+    "meaning": "the United States of America",
     "chapter": 3,
     "source": "hsk1"
   },
@@ -195,7 +195,7 @@
     "word": "的",
     "pinyin": "de",
     "part_of_speech": "particle",
-    "meaning": "possessive particle",
+    "meaning": "used after an attribute",
     "chapter": 4,
     "source": "hsk1"
   },
@@ -227,7 +227,7 @@
     "word": "呢",
     "pinyin": "ne",
     "part_of_speech": "particle",
-    "meaning": "question particle",
+    "meaning": "used at the end of a question",
     "chapter": 4,
     "source": "hsk1"
   },
@@ -275,7 +275,7 @@
     "word": "口",
     "pinyin": "kǒu",
     "part_of_speech": "measure_word",
-    "meaning": "measure word (family)",
+    "meaning": "a measure word for members of families, etc.",
     "chapter": 5,
     "source": "hsk1"
   },
@@ -299,7 +299,7 @@
     "word": "了",
     "pinyin": "le",
     "part_of_speech": "particle",
-    "meaning": "particle indicating change",
+    "meaning": "used at the end of or in the middle of a sentence to indicate a change or a new circumstance",
     "chapter": 5,
     "source": "hsk1"
   },
@@ -315,7 +315,7 @@
     "word": "多",
     "pinyin": "duō",
     "part_of_speech": "adverb",
-    "meaning": "how (degree)",
+    "meaning": "indicating degree or extent",
     "chapter": 5,
     "source": "hsk1"
   },
@@ -331,7 +331,7 @@
     "word": "会",
     "pinyin": "huì",
     "part_of_speech": "other",
-    "meaning": "can, able to",
+    "meaning": "od. can, to be able to",
     "chapter": 6,
     "source": "hsk1"
   },
@@ -403,7 +403,7 @@
     "word": "怎么",
     "pinyin": "zěnme",
     "part_of_speech": "pronoun",
-    "meaning": "how (to do)",
+    "meaning": "(indicating nature, condition or manner, etc.) how",
     "chapter": 6,
     "source": "hsk1"
   },
@@ -417,41 +417,41 @@
   },
   {
     "word": "二十五号",
-    "pinyin": "èrshíwǔ hào",
+    "pinyin": "èrshíwǔ",
     "part_of_speech": "other",
-    "meaning": "the 25th (of a month)",
+    "meaning": "hào",
     "chapter": 7,
     "source": "hsk1"
   },
   {
     "word": "中国菜",
-    "pinyin": "Zhōngguó cài",
-    "part_of_speech": "noun",
-    "meaning": "Chinese food",
+    "pinyin": "Zhōngguó",
+    "part_of_speech": "other",
+    "meaning": "cài",
     "chapter": 7,
     "source": "hsk1"
   },
   {
     "word": "看书",
-    "pinyin": "kàn shū",
-    "part_of_speech": "verb",
-    "meaning": "to read (a book)",
+    "pinyin": "kàn",
+    "part_of_speech": "other",
+    "meaning": "shū",
     "chapter": 7,
     "source": "hsk1"
   },
   {
     "word": "看日历",
-    "pinyin": "kàn rìlì",
-    "part_of_speech": "verb",
-    "meaning": "to look at a calendar",
+    "pinyin": "kàn",
+    "part_of_speech": "other",
+    "meaning": "rìlì",
     "chapter": 7,
     "source": "hsk1"
   },
   {
     "word": "在银行",
-    "pinyin": "zài yínháng",
+    "pinyin": "zài",
     "part_of_speech": "other",
-    "meaning": "at the bank",
+    "meaning": "yínháng",
     "chapter": 7,
     "source": "hsk1"
   },
@@ -483,7 +483,7 @@
     "word": "号",
     "pinyin": "hào",
     "part_of_speech": "noun",
-    "meaning": "date number",
+    "meaning": "(for date of month) number",
     "chapter": 7,
     "source": "hsk1"
   },
@@ -539,7 +539,7 @@
     "word": "看",
     "pinyin": "kàn",
     "part_of_speech": "verb",
-    "meaning": "to look, watch, read",
+    "meaning": "to look at, to watch, to read",
     "chapter": 7,
     "source": "hsk1"
   },
@@ -555,7 +555,7 @@
     "word": "想",
     "pinyin": "xiǎng",
     "part_of_speech": "other",
-    "meaning": "to want, would like",
+    "meaning": "od. to want, would like",
     "chapter": 8,
     "source": "hsk1"
   },
@@ -619,7 +619,7 @@
     "word": "个",
     "pinyin": "ge",
     "part_of_speech": "measure_word",
-    "meaning": "general measure word",
+    "meaning": "a general measure word",
     "chapter": 8,
     "source": "hsk1"
   },
@@ -659,7 +659,7 @@
     "word": "块",
     "pinyin": "kuài",
     "part_of_speech": "measure_word",
-    "meaning": "yuan (money unit)",
+    "meaning": "a unit of money, same as \"yuan\"",
     "chapter": 8,
     "source": "hsk1"
   },
@@ -803,7 +803,7 @@
     "word": "本",
     "pinyin": "běn",
     "part_of_speech": "measure_word",
-    "meaning": "measure word (books)",
+    "meaning": "a measure word for books",
     "chapter": 10,
     "source": "hsk1"
   },
@@ -835,7 +835,7 @@
     "word": "王方",
     "pinyin": "Wáng Fāng",
     "part_of_speech": "other",
-    "meaning": "(name) Wang Fang",
+    "meaning": "Wang Fang, name of a person",
     "chapter": 10,
     "source": "hsk1"
   },
@@ -843,7 +843,7 @@
     "word": "谢朋",
     "pinyin": "Xiè Péng",
     "part_of_speech": "other",
-    "meaning": "(name) Xie Peng",
+    "meaning": "Xie Peng, name of a person",
     "chapter": 10,
     "source": "hsk1"
   },
@@ -859,7 +859,7 @@
     "word": "能",
     "pinyin": "néng",
     "part_of_speech": "other",
-    "meaning": "can, may",
+    "meaning": "od. can, may",
     "chapter": 10,
     "source": "hsk1"
   },
@@ -883,7 +883,7 @@
     "word": "回",
     "pinyin": "huí",
     "part_of_speech": "verb",
-    "meaning": "to return, go back",
+    "meaning": "to come/go back, to return",
     "chapter": 11,
     "source": "hsk1"
   },
@@ -920,26 +920,34 @@
     "source": "hsk1"
   },
   {
-    "word": "中午",
-    "pinyin": "zhōngwǔ",
-    "part_of_speech": "noun",
-    "meaning": "noon, midday",
+    "word": "她在学校。Tā",
+    "pinyin": "zài",
+    "part_of_speech": "other",
+    "meaning": "xuéxiào.",
     "chapter": 11,
     "source": "hsk1"
   },
   {
-    "word": "他们",
-    "pinyin": "tāmen",
-    "part_of_speech": "pronoun",
-    "meaning": "they, them",
+    "word": "王方中午去商店。Wáng",
+    "pinyin": "Fāng zhōngwǔ",
+    "part_of_speech": "other",
+    "meaning": "qù shāngdiàn.",
     "chapter": 11,
     "source": "hsk1"
   },
   {
-    "word": "也",
-    "pinyin": "yě",
-    "part_of_speech": "adverb",
-    "meaning": "also, too",
+    "word": "他们很忙（busy），星期六也工作。Tāmen",
+    "pinyin": "hěn",
+    "part_of_speech": "other",
+    "meaning": "áng, xīngqí liù yě gōngzuò.",
+    "chapter": 11,
+    "source": "hsk1"
+  },
+  {
+    "word": "她上午不喝茶，下午前喝茶。Tā",
+    "pinyin": "shàngwǔ bù",
+    "part_of_speech": "other",
+    "meaning": "hē chá, xiàwǔ qián hē chá.",
     "chapter": 11,
     "source": "hsk1"
   },
@@ -955,7 +963,7 @@
     "word": "怎么样",
     "pinyin": "zěnmeyàng",
     "part_of_speech": "pronoun",
-    "meaning": "how (about)",
+    "meaning": "(indicating nature, condition or manner) how",
     "chapter": 12,
     "source": "hsk1"
   },
@@ -963,7 +971,7 @@
     "word": "太",
     "pinyin": "tài",
     "part_of_speech": "adverb",
-    "meaning": "too, extremely",
+    "meaning": "too, excessively; 太……了 tài...le too, extremely",
     "chapter": 12,
     "source": "hsk1"
   },
@@ -1040,18 +1048,34 @@
     "source": "hsk1"
   },
   {
-    "word": "身体",
-    "pinyin": "shēntǐ",
-    "part_of_speech": "noun",
-    "meaning": "body, health",
+    "word": "妈妈身体不太好。Māma",
+    "pinyin": "shēntǐ bù",
+    "part_of_speech": "other",
+    "meaning": "tài hǎo.",
     "chapter": 12,
     "source": "hsk1"
   },
   {
-    "word": "饭",
-    "pinyin": "fàn",
-    "part_of_speech": "noun",
-    "meaning": "meal, cooked rice",
+    "word": "明天天气很好，不会下雨。Míngtiān",
+    "pinyin": "tiānqì hěn",
+    "part_of_speech": "other",
+    "meaning": "hǎo, bù huì xià yǔ.",
+    "chapter": 12,
+    "source": "hsk1"
+  },
+  {
+    "word": "王小姐爱吃水果，不爱吃饭。Wáng",
+    "pinyin": "xiǎojiě ài",
+    "part_of_speech": "other",
+    "meaning": "chī shuǐguǒ, bù ài chī fàn.",
+    "chapter": 12,
+    "source": "hsk1"
+  },
+  {
+    "word": "今天天气太热了，你多喝水。Jīntiān",
+    "pinyin": "tiānqì tài",
+    "part_of_speech": "other",
+    "meaning": "rè le, nǐ duō hē shuǐ.",
     "chapter": 12,
     "source": "hsk1"
   },
@@ -1107,7 +1131,7 @@
     "word": "一点儿",
     "pinyin": "yīdiǎnr",
     "part_of_speech": "other",
-    "meaning": "a few, a little",
+    "meaning": "um.-m. a few, a little",
     "chapter": 14,
     "source": "hsk1"
   },
@@ -1195,7 +1219,7 @@
     "word": "啊",
     "pinyin": "a",
     "part_of_speech": "particle",
-    "meaning": "exclamatory particle",
+    "meaning": "a modal particle used at the end of a sentence as a sign of confirmation or defense",
     "chapter": 14,
     "source": "hsk1"
   },

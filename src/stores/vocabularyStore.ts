@@ -106,10 +106,30 @@ export function useVocabularyStore(): VocabularyStore {
   });
   const [lastLocalChangeTime, setLastLocalChangeTime] = useState<string | null>(null);
 
-  // Load data on mount
+  // Load data on mount and sync meanings from source JSON
   useEffect(() => {
     const { concepts: loadedConcepts, srsRecords: loadedSRS } = loadProgress();
-    setConcepts(loadedConcepts);
+    
+    // Sync meanings from source JSON (ensures meanings are up-to-date after JSON edits)
+    const vocab = hsk1Data as VocabWord[];
+    const vocabMap = new Map(vocab.map(v => [v.word, v]));
+    
+    let syncCount = 0;
+    const updatedConcepts = loadedConcepts.map(c => {
+      const sourceWord = vocabMap.get(c.word);
+      if (sourceWord && sourceWord.meaning !== c.meaning) {
+        syncCount++;
+        return { ...c, meaning: sourceWord.meaning };
+      }
+      return c;
+    });
+    
+    // Save synced data immediately to persist updates
+    if (syncCount > 0) {
+      saveProgress(updatedConcepts, loadedSRS);
+    }
+    
+    setConcepts(updatedConcepts);
     setSrsRecords(loadedSRS);
     setInitialized(true);
   }, []);

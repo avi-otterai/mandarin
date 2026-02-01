@@ -25,3 +25,14 @@ npm-debug.log*
 
 # TypeScript cache
 *.tsbuildinfo
+
+# copyright files
+content/hsk1/corrected_chapters
+# content/hsk1/hsk1_vocabulary.json
+content/hsk1/hsk1_corrected.txt
+content/hsk1/hsk1_raw.txt
+content/hsk1/hsk1_ocr.txt
+content/hsk1/hsk1.txt
+content/hsk1/hsk1_structure_analysis.txt
+content/hsk1/hsk1_structure_analysis.txt
+*.pdf

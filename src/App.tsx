@@ -9,8 +9,7 @@ import { LoginPage } from './pages/LoginPage';
 import { useVocabularyStore } from './stores/vocabularyStore';
 import { useSettingsStore } from './stores/settingsStore';
 import { useAuth } from './hooks/useAuth';
-import { SyncButton } from './components/SyncButton';
-import { Loader2, HelpCircle } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 
 const ONBOARDING_KEY = 'langseed_onboarding_seen';
 
@@ -91,7 +90,6 @@ function AppContent({
   onSettingsSave: () => Promise<void>;
 }) {
   const location = useLocation();
-  const showSyncButton = location.pathname === '/vocab';
   
   // Track if user reviewed today - re-check on route change
   const [reviewedToday, setReviewedToday] = useState(hasReviewedToday);
@@ -127,37 +125,6 @@ function AppContent({
 
   return (
     <div className="h-dvh flex flex-col bg-base-100 text-base-content overflow-hidden">
-      {/* Top header with sync (logout moved to settings) */}
-      {auth.isAuthenticated && (
-        <header className="flex-shrink-0 bg-base-100 border-b border-base-300 px-4 py-2 z-20">
-          <div className="flex items-center justify-between max-w-lg mx-auto">
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-primary">🪕 Saras</span>
-              <button
-                className="btn btn-xs btn-ghost btn-circle text-base-content/50 hover:text-primary"
-                onClick={() => setShowHelpModal(true)}
-                title="Help & Guide"
-              >
-                <HelpCircle className="w-4 h-4" />
-              </button>
-            </div>
-            
-            <div className="flex items-center gap-3">
-              {showSyncButton && (
-                <SyncButton
-                  isSyncing={store.isSyncing}
-                  hasUnsyncedChanges={store.hasUnsyncedChanges}
-                  lastSyncTime={store.lastSyncTime}
-                  syncError={store.syncError}
-                  onSync={onSync}
-                  onClearError={store.clearSyncError}
-                />
-              )}
-            </div>
-          </div>
-        </header>
-      )}
-      
       {/* Help modal */}
       <HelpModal isOpen={showHelpModal} onClose={handleCloseHelp} />
       
@@ -165,8 +132,28 @@ function AppContent({
       <main className="flex-1 overflow-hidden pb-16">
         <Routes>
           <Route path="/" element={<Navigate to="/revise" replace />} />
-          <Route path="/vocab" element={<VocabularyPage store={store} settingsStore={settingsStore} />} />
-          <Route path="/revise" element={<RevisePage store={store} settingsStore={settingsStore} onReviewComplete={handleReviewComplete} />} />
+          <Route 
+            path="/vocab" 
+            element={
+              <VocabularyPage 
+                store={store} 
+                settingsStore={settingsStore}
+                onSync={onSync}
+                onShowHelp={() => setShowHelpModal(true)}
+              />
+            } 
+          />
+          <Route 
+            path="/revise" 
+            element={
+              <RevisePage 
+                store={store} 
+                settingsStore={settingsStore} 
+                onReviewComplete={handleReviewComplete}
+                onShowHelp={() => setShowHelpModal(true)}
+              />
+            } 
+          />
           <Route 
             path="/settings" 
             element={
@@ -175,6 +162,7 @@ function AppContent({
                 onSave={onSettingsSave}
                 onLogout={() => auth.signOut()}
                 userEmail={auth.user?.email}
+                onShowHelp={() => setShowHelpModal(true)}
               />
             } 
           />

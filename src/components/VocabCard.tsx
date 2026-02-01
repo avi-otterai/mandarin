@@ -2,17 +2,15 @@ import { useState, useCallback } from 'react';
 import { Check, RotateCcw, Volume2, Loader2 } from 'lucide-react';
 import type { Concept, SRSRecord } from '../types/vocabulary';
 import { tierToColorClass, formatTimeUntilReview } from '../utils/srs';
-import { speak, stopSpeaking, isTTSSupported } from '../services/ttsService';
+import { speak, stopSpeaking, isTTSSupported, getVoiceForCurrentBrowser } from '../services/ttsService';
+import type { AudioSettings } from '../types/settings';
 
 interface VocabCardProps {
   concept: Concept;
   srsRecords: SRSRecord[];
   onToggleKnown: () => void;
   onClose: () => void;
-  audioSettings?: {
-    browserVoiceId?: string;
-    speechRate?: number;
-  };
+  audioSettings?: Partial<AudioSettings>;
 }
 
 export function VocabCard({ concept, srsRecords, onToggleKnown, onClose, audioSettings }: VocabCardProps) {
@@ -32,7 +30,7 @@ export function VocabCard({ concept, srsRecords, onToggleKnown, onClose, audioSe
     setIsPlaying(true);
     try {
       await speak(concept.word, {
-        voiceId: audioSettings?.browserVoiceId || undefined,
+        voiceId: audioSettings ? getVoiceForCurrentBrowser(audioSettings) : undefined,
         rate: audioSettings?.speechRate ?? 0.9,
       });
     } catch (err) {

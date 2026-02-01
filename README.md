@@ -85,14 +85,11 @@ No complex mastery levels - just known or unknown. (SRS tracking for recall stre
 - **Filters**:
   - By chapter (Ch. 1-15)
   - By known status (All / Known ✓ / Unknown)
-- **Bulk chapter management**:
-  - Add words from chapter ranges (e.g., Ch. 1-6) to your list
-  - Remove chapters you don't want yet
-  - Quick add buttons per chapter showing progress
 - **Mass actions**:
   - "Mark all known" - check all words in current view (adds to Revise)
   - "Mark unknown" - uncheck words (removes from Revise)
 - **Checkbox (✓ column)**: Check = "known" = word will appear in Revise sessions
+- **Save button**: Syncs vocabulary progress to cloud
 - Click any character to see details + SRS progress
 
 ### Revise Tab (Flashcard Review)
@@ -130,7 +127,7 @@ No complex mastery levels - just known or unknown. (SRS tracking for recall stre
 
 ### Onboarding & Help
 - **Auto-show welcome modal** for new users (first visit)
-- **Help button (?)** in header - always accessible to re-open the guide
+- **Help button (?)** in each page header - always accessible to re-open the guide
 - **Welcome modal** explains all 3 tabs with icons and tips
 - **Enhanced empty state** on Revise page guides users to Vocabulary if no words are selected
 
@@ -149,6 +146,9 @@ No complex mastery levels - just known or unknown. (SRS tracking for recall stre
   - Show example sentences
 - **Audio & Pronunciation**:
   - Chinese voice selection (auto-detects available system voices)
+  - **Per-browser voice preferences**: Different browsers have different TTS voices available. Your voice selection is saved per-browser (Safari, Chrome, Cursor Browser, etc.) so each device uses its best available voice
+  - Shows "Saving for: [Browser Name]" to indicate which browser's preference you're editing
+  - Warning shown if saved voice isn't available in current browser
   - Speech speed control (0.5x - 1.5x)
   - Auto-play audio when revealed
   - Test voice preview button
@@ -194,7 +194,12 @@ Edit `.env`:
 ```
 VITE_SUPABASE_URL=https://your-project-id.supabase.co
 VITE_SUPABASE_ANON_KEY=your-anon-key-here
+
+# Optional: Auto-login for development (only works in dev mode)
+VITE_DEV_USER_PASSWORD=your-password-here
 ```
+
+**Dev Auto-Login**: If you set `VITE_DEV_USER_PASSWORD`, the app will automatically log in as `your-email@example.com` when running `npm run dev`. This is useful for local development to avoid repeated logins.
 
 ### 3. Create Supabase User
 
@@ -253,8 +258,7 @@ avi-mandarin/
 │   ├── components/
 │   │   ├── Navbar.tsx        # Bottom navigation (3 tabs)
 │   │   ├── HelpModal.tsx     # Onboarding/help modal
-│   │   ├── VocabCard.tsx     # Word detail modal
-│   │   └── SyncButton.tsx    # Cloud sync button
+│   │   └── VocabCard.tsx     # Word detail modal
 │   ├── pages/
 │   │   ├── VocabularyPage.tsx # Table + filters
 │   │   ├── RevisePage.tsx     # Flashcard review
@@ -300,7 +304,7 @@ avi-mandarin/
 
 **user_settings**
 - `user_id` (primary key), `settings` (JSONB), `created_at`, `updated_at`
-- Stores: cardsPerSession, learningFocus, theme, pinyinDisplay, characterSize, autoPlayAudio, showExampleSentences, shuffleMode, reducedMotion
+- Stores: cardsPerSession, learningFocus, theme, pinyinDisplay, characterSize, autoPlayAudio, showExampleSentences, shuffleMode, reducedMotion, audio (including voicesByBrowser for per-browser voice preferences)
 
 ### RLS Policies
 All tables have Row Level Security enabled:
@@ -313,7 +317,6 @@ All tables have Row Level Security enabled:
 
 - [x] Vocabulary table with sorting
 - [x] Chapter filtering
-- [x] Bulk chapter add/remove
 - [x] Mass known/unknown toggle
 - [x] Sticky table header
 - [x] SRS practice (3 question types)
@@ -333,6 +336,9 @@ All tables have Row Level Security enabled:
 - [x] Fixed mobile layout: bottom navigation always visible, proper scroll handling
 - [x] Default landing page changed to Revise tab
 - [x] Onboarding: Help modal for new users, ? icon in header, enhanced empty state
+- [x] Per-browser voice preferences (different browsers have different TTS voices)
+- [x] Dev auto-login for local development (set VITE_DEV_USER_PASSWORD in .env)
+- [x] Settings properly load from cloud on page reload
 - [ ] ElevenLabs premium TTS integration (multiple voices, styles)
 - [ ] Tone-specific practice mode
 - [ ] Progress stats / charts

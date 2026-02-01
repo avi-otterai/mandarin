@@ -16,6 +16,80 @@ export interface TTSOptions {
   voiceId?: string;     // Voice URI to use
 }
 
+// Browser type for per-browser voice preferences
+export type BrowserType = 'safari' | 'chrome' | 'firefox' | 'cursor' | 'arc' | 'edge' | 'unknown';
+
+// Detect current browser type from user agent
+export function detectBrowser(): BrowserType {
+  if (typeof navigator === 'undefined') return 'unknown';
+  
+  const ua = navigator.userAgent.toLowerCase();
+  
+  // Debug: log user agent on first call
+  if (typeof window !== 'undefined' && !(window as unknown as { __browserDetected?: boolean }).__browserDetected) {
+    console.log('[TTS] User agent:', navigator.userAgent);
+    (window as unknown as { __browserDetected?: boolean }).__browserDetected = true;
+  }
+  
+  // Order matters - more specific checks first
+  // Cursor Browser uses Electron with specific identifiers
+  if (ua.includes('cursor') || ua.includes('electron')) return 'cursor';
+  if (ua.includes('arc/')) return 'arc';
+  if (ua.includes('edg/')) return 'edge';
+  if (ua.includes('firefox')) return 'firefox';
+  if (ua.includes('chrome') && !ua.includes('chromium')) return 'chrome';
+  if (ua.includes('safari') && !ua.includes('chrome')) return 'safari';
+  
+  return 'unknown';
+}
+
+// Get display name for browser type
+export function getBrowserDisplayName(browser: BrowserType): string {
+  const names: Record<BrowserType, string> = {
+    safari: 'Safari',
+    chrome: 'Chrome',
+    firefox: 'Firefox',
+    cursor: 'Cursor Browser',
+    arc: 'Arc',
+    edge: 'Edge',
+    unknown: 'Browser',
+  };
+  return names[browser];
+}
+
+// Default voice preferences per browser (curated by user preference)
+// These are voice URIs that work well on each platform
+export const DEFAULT_VOICES_BY_BROWSER: Partial<Record<BrowserType, string>> = {
+  cursor: 'Chinese Taiwan',  // User's preferred voice for Cursor
+  safari: 'com.apple.voice.compact.zh-TW.Meijia',  // Meijia for Safari/macOS
+  chrome: '',  // Let Chrome auto-select
+  arc: '',     // Let Arc auto-select
+};
+
+// Helper to get the voice ID for the current browser from audio settings
+// Used by components that need to play audio
+export function getVoiceForCurrentBrowser(audioSettings: {
+  browserVoiceId?: string;
+  voicesByBrowser?: Partial<Record<string, string>>;
+}): string | undefined {
+  const browser = detectBrowser();
+  const voicesByBrowser = audioSettings?.voicesByBrowser || {};
+  
+  // Try browser-specific voice first
+  const browserVoice = voicesByBrowser[browser];
+  if (browserVoice !== undefined && browserVoice !== '') {
+    return browserVoice;
+  }
+  
+  // Fall back to legacy field
+  if (audioSettings?.browserVoiceId) {
+    return audioSettings.browserVoiceId;
+  }
+  
+  // Return undefined to let the TTS system auto-select
+  return undefined;
+}
+
 // Singleton state
 let cachedVoices: TTSVoice[] = [];
 let voicesLoaded = false;

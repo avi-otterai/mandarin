@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { ChevronUp, ChevronDown, ChevronsUpDown, Download, CheckSquare, Square, Filter, Layers, Plus, Minus, ChevronRight } from 'lucide-react';
+import { ChevronUp, ChevronDown, ChevronsUpDown, Download, CheckSquare, Square, Filter, HelpCircle, Check, Loader2, AlertTriangle, Cloud } from 'lucide-react';
 import type { VocabularyStore } from '../stores/vocabularyStore';
 import type { SettingsStore } from '../stores/settingsStore';
 import type { Concept } from '../types/vocabulary';
@@ -8,22 +8,19 @@ import { VocabCard } from '../components/VocabCard';
 interface VocabularyPageProps {
   store: VocabularyStore;
   settingsStore?: SettingsStore;
+  onSync?: () => void;
+  onShowHelp?: () => void;
 }
 
 type SortField = 'pinyin' | 'word' | 'meaning' | 'part_of_speech' | 'chapter' | 'understanding';
 type SortDir = 'asc' | 'desc';
 
-export function VocabularyPage({ store, settingsStore }: VocabularyPageProps) {
+export function VocabularyPage({ store, settingsStore, onSync, onShowHelp }: VocabularyPageProps) {
   const [sortField, setSortField] = useState<SortField>('chapter');
   const [sortDir, setSortDir] = useState<SortDir>('asc');
   const [filterChapter, setFilterChapter] = useState<string>('all');
   const [filterKnown, setFilterKnown] = useState<'all' | 'known' | 'unknown'>('all');
   const [selectedConcept, setSelectedConcept] = useState<Concept | null>(null);
-  
-  // Bulk chapter management
-  const [showBulkPanel, setShowBulkPanel] = useState(false);
-  const [fromChapter, setFromChapter] = useState(1);
-  const [toChapter, setToChapter] = useState(6);
   
   // Auto-import HSK1 if no vocab exists
   useEffect(() => {
@@ -105,29 +102,6 @@ export function VocabularyPage({ store, settingsStore }: VocabularyPageProps) {
   const totalAdded = store.concepts.length;
   const filteredKnown = filteredConcepts.filter(c => c.understanding >= 80).length;
   
-  // Bulk chapter stats
-  const bulkStats = useMemo(() => {
-    const inRange = store.hsk1Vocab.filter(w => w.chapter >= fromChapter && w.chapter <= toChapter);
-    const alreadyAdded = inRange.filter(w => store.addedWords.has(w.word));
-    const canAdd = inRange.length - alreadyAdded.length;
-    const conceptsInRange = store.concepts.filter(c => c.chapter >= fromChapter && c.chapter <= toChapter);
-    return {
-      totalInRange: inRange.length,
-      alreadyAdded: alreadyAdded.length,
-      canAdd,
-      canRemove: conceptsInRange.length,
-    };
-  }, [fromChapter, toChapter, store.hsk1Vocab, store.addedWords, store.concepts]);
-  
-  // Get chapter stats for quick buttons
-  const chapterStats = useMemo(() => {
-    return store.availableChapters.map(ch => {
-      const total = store.hsk1Vocab.filter(w => w.chapter === ch).length;
-      const added = store.concepts.filter(c => c.chapter === ch).length;
-      return { chapter: ch, total, added };
-    });
-  }, [store.availableChapters, store.hsk1Vocab, store.concepts]);
-  
   // Mass known/unknown toggle for filtered results
   // "Known" = checked = user wants to learn this word (will appear in Revise)
   const handleMarkAllKnown = () => {
@@ -146,15 +120,25 @@ export function VocabularyPage({ store, settingsStore }: VocabularyPageProps) {
     });
   };
   
-  // Bulk chapter handlers
-  const handleAddChapters = () => {
-    store.importChapters(fromChapter, toChapter);
+  // Format last sync time
+  const formatTime = (isoString: string | null) => {
+    if (!isoString) return 'Never';
+    const date = new Date(isoString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    const diffHours = Math.floor(diffMins / 60);
+    if (diffHours < 24) return `${diffHours}h ago`;
+    return date.toLocaleDateString();
   };
   
-  const handleRemoveChapters = () => {
-    if (confirm(`Remove all ${bulkStats.canRemove} words from chapters ${fromChapter}-${toChapter}? This will reset your progress for these words.`)) {
-      store.removeChapters(fromChapter, toChapter);
-    }
+  // Sync button state
+  const getSyncButtonClass = () => {
+    if (store.syncError) return 'btn-error';
+    if (store.hasUnsyncedChanges) return 'btn-warning';
+    return 'btn-success';
   };
   
   return (
@@ -168,15 +152,46 @@ export function VocabularyPage({ store, settingsStore }: VocabularyPageProps) {
               {totalAdded} words · {knownCount} known
             </p>
           </div>
-          <div className="flex gap-2">
-            <button 
-              className={`btn btn-sm ${showBulkPanel ? 'btn-primary' : 'btn-ghost'}`}
-              onClick={() => setShowBulkPanel(!showBulkPanel)}
-            >
-              <Layers className="w-4 h-4" />
-              Chapters
-              <ChevronRight className={`w-3 h-3 transition-transform ${showBulkPanel ? 'rotate-90' : ''}`} />
-            </button>
+          <div className="flex items-center gap-2">
+            {onShowHelp && (
+              <button
+                className="btn btn-sm btn-ghost btn-circle text-base-content/50 hover:text-primary"
+                onClick={onShowHelp}
+                title="Help & Guide"
+              >
+                <HelpCircle className="w-5 h-5" />
+              </button>
+            )}
+            {onSync && (
+              <button
+                className={`btn btn-sm gap-1 ${getSyncButtonClass()}`}
+                onClick={store.syncError ? store.clearSyncError : onSync}
+                disabled={store.isSyncing || (!store.hasUnsyncedChanges && !store.syncError)}
+                title={store.syncError || `Last saved: ${formatTime(store.lastSyncTime)}`}
+              >
+                {store.isSyncing ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : store.syncError ? (
+                  <>
+                    <AlertTriangle className="w-4 h-4" />
+                    Retry
+                  </>
+                ) : store.hasUnsyncedChanges ? (
+                  <>
+                    <Cloud className="w-4 h-4" />
+                    Save
+                  </>
+                ) : (
+                  <>
+                    <Check className="w-4 h-4" />
+                    Saved
+                  </>
+                )}
+              </button>
+            )}
             {store.concepts.length === 0 && (
               <button 
                 className="btn btn-sm btn-primary"
@@ -189,159 +204,62 @@ export function VocabularyPage({ store, settingsStore }: VocabularyPageProps) {
           </div>
         </div>
         
-        {/* Bulk Chapter Management Panel */}
-        {showBulkPanel && (
-          <div className="bg-base-200 rounded-lg p-3 mb-3 space-y-3">
-            <div className="text-sm font-medium text-base-content/80">Add or remove chapters in bulk</div>
-            
-            {/* Chapter Range Selector */}
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-sm">Chapters</span>
-              <select 
-                className="select select-sm select-bordered w-20"
-                value={fromChapter}
-                onChange={(e) => {
-                  const val = parseInt(e.target.value);
-                  setFromChapter(val);
-                  if (val > toChapter) setToChapter(val);
-                }}
-              >
-                {store.availableChapters.map(ch => (
-                  <option key={ch} value={ch}>{ch}</option>
-                ))}
-              </select>
-              <span className="text-sm">to</span>
-              <select 
-                className="select select-sm select-bordered w-20"
-                value={toChapter}
-                onChange={(e) => {
-                  const val = parseInt(e.target.value);
-                  setToChapter(val);
-                  if (val < fromChapter) setFromChapter(val);
-                }}
-              >
-                {store.availableChapters.map(ch => (
-                  <option key={ch} value={ch}>{ch}</option>
-                ))}
-              </select>
-              
-              {/* Stats badge */}
-              <span className="badge badge-sm badge-neutral ml-auto">
-                {bulkStats.alreadyAdded}/{bulkStats.totalInRange} added
-              </span>
-            </div>
-            
-            {/* Action buttons */}
-            <div className="flex flex-wrap gap-2">
-              <button
-                className="btn btn-sm btn-success"
-                onClick={handleAddChapters}
-                disabled={bulkStats.canAdd === 0}
-              >
-                <Plus className="w-3 h-3" />
-                Add {bulkStats.canAdd} words
-              </button>
-              <button
-                className="btn btn-sm btn-error btn-outline"
-                onClick={handleRemoveChapters}
-                disabled={bulkStats.canRemove === 0}
-              >
-                <Minus className="w-3 h-3" />
-                Remove {bulkStats.canRemove} words
-              </button>
-            </div>
-            
-            {/* Quick chapter toggles */}
-            <div className="pt-2 border-t border-base-300">
-              <div className="text-xs text-base-content/60 mb-2">Quick add by chapter:</div>
-              <div className="flex flex-wrap gap-1">
-                {chapterStats.map(({ chapter, total, added }) => (
-                  <button
-                    key={chapter}
-                    className={`btn btn-xs ${added === total ? 'btn-success' : added > 0 ? 'btn-warning' : 'btn-ghost'}`}
-                    onClick={() => {
-                      if (added < total) {
-                        store.importChapters(chapter, chapter);
-                      }
-                    }}
-                    disabled={added === total}
-                    title={`Chapter ${chapter}: ${added}/${total} words`}
-                  >
-                    Ch.{chapter}
-                    <span className="text-xs opacity-70">
-                      {added}/{total}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-        
-        {/* Filters Row */}
-        <div className="flex flex-wrap gap-2 items-center">
-          <div className="flex items-center gap-1 text-sm text-base-content/60">
-            <Filter className="w-4 h-4" />
-          </div>
+        {/* Filters & Actions Row */}
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <Filter className="w-3.5 h-3.5 text-base-content/40 shrink-0" />
           
           {/* Chapter filter */}
           <select
-            className="select select-sm select-bordered bg-base-200"
+            className="select select-xs select-bordered bg-base-200 w-auto"
             value={filterChapter}
             onChange={e => setFilterChapter(e.target.value)}
           >
-            <option value="all">All Chapters</option>
-            {chapters.map(ch => {
-              const chapterTotal = store.concepts.filter(c => c.chapter === ch).length;
-              const chapterKnownCount = store.concepts.filter(c => c.chapter === ch && c.understanding >= 80).length;
-              return (
-                <option key={ch} value={ch}>
-                  Ch. {ch} ({chapterKnownCount}/{chapterTotal})
-                </option>
-              );
-            })}
+            <option value="all">All</option>
+            {chapters.map(ch => (
+              <option key={ch} value={ch}>{ch}</option>
+            ))}
           </select>
           
           {/* Known/Unknown filter */}
           <select
-            className="select select-sm select-bordered bg-base-200"
+            className="select select-xs select-bordered bg-base-200 w-auto"
             value={filterKnown}
             onChange={e => setFilterKnown(e.target.value as 'all' | 'known' | 'unknown')}
           >
             <option value="all">All</option>
-            <option value="known">Known ✓</option>
-            <option value="unknown">Unknown</option>
+            <option value="known">✓</option>
+            <option value="unknown">○</option>
           </select>
           
+          {/* Mass actions */}
+          {filteredConcepts.length > 0 && (
+            <>
+              <button 
+                className="btn btn-xs btn-outline btn-success gap-0.5"
+                onClick={handleMarkAllKnown}
+                disabled={filteredKnown === filteredConcepts.length}
+                title="Mark all filtered as known - adds to Revise"
+              >
+                <CheckSquare className="w-3 h-3" />
+                ✓ all ({filteredConcepts.length - filteredKnown})
+              </button>
+              <button 
+                className="btn btn-xs btn-outline btn-warning gap-0.5"
+                onClick={handleMarkAllUnknown}
+                disabled={filteredKnown === 0}
+                title="Mark all filtered as unknown - removes from Revise"
+              >
+                <Square className="w-3 h-3" />
+                ○ all ({filteredKnown})
+              </button>
+            </>
+          )}
+          
           {/* Showing count */}
-          <span className="badge badge-sm ml-auto">
+          <span className="text-xs text-base-content/50 ml-auto">
             {filteredConcepts.length} words
           </span>
         </div>
-        
-        {/* Mass actions */}
-        {filteredConcepts.length > 0 && (
-          <div className="flex gap-2 mt-2 pt-2 border-t border-base-300">
-            <button 
-              className="btn btn-xs btn-outline btn-success"
-              onClick={handleMarkAllKnown}
-              disabled={filteredKnown === filteredConcepts.length}
-              title="Mark all as known - these will appear in Revise sessions"
-            >
-              <CheckSquare className="w-3 h-3" />
-              Mark all known ({filteredConcepts.length - filteredKnown})
-            </button>
-            <button 
-              className="btn btn-xs btn-outline btn-warning"
-              onClick={handleMarkAllUnknown}
-              disabled={filteredKnown === 0}
-              title="Mark as unknown - these will NOT appear in Revise sessions"
-            >
-              <Square className="w-3 h-3" />
-              Mark unknown ({filteredKnown})
-            </button>
-          </div>
-        )}
       </header>
       
       {/* Table */}

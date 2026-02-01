@@ -1,5 +1,5 @@
 // Settings store with localStorage persistence + Supabase cloud sync
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import type { UserSettings, ThemeType, FocusLevel, LearningFocus, AudioSettings } from '../types/settings';
 import { DEFAULT_SETTINGS } from '../types/settings';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
@@ -59,6 +59,9 @@ export function useSettingsStore(): SettingsStore {
   const [settings, setSettings] = useState<UserSettings>(loadSettings);
   const [initialized, setInitialized] = useState(false);
   
+  // Track if we're loading from cloud (to avoid marking as "local change")
+  const isLoadingFromCloud = useRef(false);
+  
   // Sync state
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncError, setSyncError] = useState<string | null>(null);
@@ -76,11 +79,14 @@ export function useSettingsStore(): SettingsStore {
     setInitialized(true);
   }, []);
 
-  // Save settings on change
+  // Save settings on change (but not when loading from cloud)
   useEffect(() => {
     if (initialized) {
       saveSettings(settings);
-      setLastLocalChangeTime(new Date().toISOString());
+      // Only mark as local change if not loading from cloud
+      if (!isLoadingFromCloud.current) {
+        setLastLocalChangeTime(new Date().toISOString());
+      }
     }
   }, [settings, initialized]);
 
@@ -192,6 +198,7 @@ export function useSettingsStore(): SettingsStore {
 
     setIsSyncing(true);
     setSyncError(null);
+    isLoadingFromCloud.current = true;
 
     try {
       const { data, error } = await supabase
@@ -210,16 +217,23 @@ export function useSettingsStore(): SettingsStore {
 
       if (data?.settings) {
         // Merge cloud settings with defaults (handles new fields)
-        setSettings({ ...DEFAULT_SETTINGS, ...data.settings });
+        const cloudSettings = { ...DEFAULT_SETTINGS, ...data.settings };
+        setSettings(cloudSettings);
         
         const now = new Date().toISOString();
         setLastSyncTime(now);
         localStorage.setItem(SETTINGS_SYNC_KEY, now);
+        
+        console.log('[Settings] Loaded from cloud:', cloudSettings.audio?.browserVoiceId);
       }
     } catch (err) {
       setSyncError(err instanceof Error ? err.message : 'Failed to load settings');
     } finally {
       setIsSyncing(false);
+      // Reset flag after a short delay to allow the useEffect to run
+      setTimeout(() => {
+        isLoadingFromCloud.current = false;
+      }, 100);
     }
   }, []);
 

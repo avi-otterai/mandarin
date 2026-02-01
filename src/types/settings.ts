@@ -17,9 +17,13 @@ export type CharacterSize = 'small' | 'medium' | 'large';
 
 export type AudioProvider = 'browser' | 'elevenlabs';
 
+// Per-browser voice preferences (different browsers have different voice sets)
+export type VoicesByBrowser = Partial<Record<string, string>>;
+
 export interface AudioSettings {
   provider: AudioProvider;
-  browserVoiceId: string;      // Voice URI for browser TTS (empty = auto-select)
+  browserVoiceId: string;      // Legacy: single voice ID (for backwards compat)
+  voicesByBrowser: VoicesByBrowser;  // NEW: voice preferences per browser type
   speechRate: number;          // 0.5 - 2.0 (1.0 = normal)
   // Future: elevenlabsVoiceId, elevenlabsApiKey
 }
@@ -60,7 +64,16 @@ export const DEFAULT_SETTINGS: UserSettings = {
   autoPlayAudio: false,
   audio: {
     provider: 'browser',
-    browserVoiceId: '',  // Auto-select best available
+    browserVoiceId: '',  // Legacy field (for backwards compat)
+    voicesByBrowser: {
+      // User's preferred voices per browser (curated defaults)
+      cursor: 'Chinese Taiwan',
+      safari: 'com.apple.voice.compact.zh-TW.Meijia',
+      chrome: '',  // Auto-select
+      arc: '',     // Auto-select
+      firefox: '', // Auto-select
+      edge: '',    // Auto-select
+    },
     speechRate: 0.9,     // Slightly slower for learning
   },
   showExampleSentences: true,

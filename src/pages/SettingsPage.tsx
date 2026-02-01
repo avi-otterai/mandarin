@@ -18,6 +18,7 @@ import {
   Sun,
   Play,
   Mic,
+  HelpCircle,
 } from 'lucide-react';
 import type { SettingsStore } from '../stores/settingsStore';
 import type { 
@@ -32,7 +33,10 @@ import {
   speak, 
   stopSpeaking, 
   isTTSSupported,
-  type TTSVoice 
+  detectBrowser,
+  getBrowserDisplayName,
+  type TTSVoice,
+  type BrowserType,
 } from '../services/ttsService';
 
 interface SettingsPageProps {
@@ -40,9 +44,10 @@ interface SettingsPageProps {
   onSave: () => Promise<void>;
   onLogout: () => void;
   userEmail?: string;
+  onShowHelp?: () => void;
 }
 
-export function SettingsPage({ settingsStore, onSave, onLogout, userEmail }: SettingsPageProps) {
+export function SettingsPage({ settingsStore, onSave, onLogout, userEmail, onShowHelp }: SettingsPageProps) {
   const { settings, isSyncing, syncError, hasUnsyncedChanges, lastSyncTime } = settingsStore;
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -52,6 +57,29 @@ export function SettingsPage({ settingsStore, onSave, onLogout, userEmail }: Set
   const [voicesLoading, setVoicesLoading] = useState(true);
   const [testingVoice, setTestingVoice] = useState(false);
   const ttsSupported = isTTSSupported();
+  
+  // Browser detection for per-browser voice preferences
+  const [currentBrowser] = useState<BrowserType>(() => detectBrowser());
+  const browserDisplayName = getBrowserDisplayName(currentBrowser);
+  
+  // Get current voice for this browser (with fallback to legacy field)
+  const getCurrentVoiceId = (): string => {
+    const voicesByBrowser = settings.audio.voicesByBrowser || {};
+    const browserVoice = voicesByBrowser[currentBrowser];
+    // Use browser-specific voice if set, otherwise fall back to legacy field
+    if (browserVoice !== undefined) return browserVoice;
+    return settings.audio.browserVoiceId || '';
+  };
+  
+  // Set voice for current browser
+  const setCurrentVoiceId = (voiceId: string) => {
+    const voicesByBrowser = { ...(settings.audio.voicesByBrowser || {}) };
+    voicesByBrowser[currentBrowser] = voiceId;
+    settingsStore.setAudioSettings({ 
+      voicesByBrowser,
+      browserVoiceId: voiceId, // Also update legacy field for backwards compat
+    });
+  };
 
   // Load available voices on mount
   useEffect(() => {
@@ -76,8 +104,9 @@ export function SettingsPage({ settingsStore, onSave, onLogout, userEmail }: Set
     
     setTestingVoice(true);
     try {
+      const voiceId = getCurrentVoiceId();
       await speak('你好，我是你的中文老师。', {
-        voiceId: settings.audio.browserVoiceId || undefined,
+        voiceId: voiceId || undefined,
         rate: settings.audio.speechRate,
       });
     } finally {
@@ -125,39 +154,51 @@ export function SettingsPage({ settingsStore, onSave, onLogout, userEmail }: Set
             </p>
           </div>
           
-          {/* Save Button */}
-          <button
-            className={`btn btn-sm gap-2 ${
-              saveSuccess ? 'btn-success' : 
-              syncError ? 'btn-error' : 
-              hasUnsyncedChanges ? 'btn-warning' : 
-              'btn-primary'
-            }`}
-            onClick={handleSave}
-            disabled={saving || isSyncing}
-          >
-            {saving || isSyncing ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Saving...
-              </>
-            ) : saveSuccess ? (
-              <>
-                <Check className="w-4 h-4" />
-                Saved
-              </>
-            ) : syncError ? (
-              <>
-                <AlertTriangle className="w-4 h-4" />
-                Retry
-              </>
-            ) : (
-              <>
-                <Save className="w-4 h-4" />
-                Save
-              </>
+          <div className="flex items-center gap-2">
+            {onShowHelp && (
+              <button
+                className="btn btn-sm btn-ghost btn-circle text-base-content/50 hover:text-primary"
+                onClick={onShowHelp}
+                title="Help & Guide"
+              >
+                <HelpCircle className="w-5 h-5" />
+              </button>
             )}
-          </button>
+            
+            {/* Save Button */}
+            <button
+              className={`btn btn-sm gap-2 ${
+                saveSuccess ? 'btn-success' : 
+                syncError ? 'btn-error' : 
+                hasUnsyncedChanges ? 'btn-warning' : 
+                'btn-primary'
+              }`}
+              onClick={handleSave}
+              disabled={saving || isSyncing}
+            >
+              {saving || isSyncing ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Saving...
+                </>
+              ) : saveSuccess ? (
+                <>
+                  <Check className="w-4 h-4" />
+                  Saved
+                </>
+              ) : syncError ? (
+                <>
+                  <AlertTriangle className="w-4 h-4" />
+                  Retry
+                </>
+              ) : (
+                <>
+                  <Save className="w-4 h-4" />
+                  Save
+                </>
+              )}
+            </button>
+          </div>
         </div>
         
         {/* Sync status */}
@@ -439,6 +480,9 @@ export function SettingsPage({ settingsStore, onSave, onLogout, userEmail }: Set
                        availableVoices.length === 0 ? 'No Chinese voices found' :
                        `${availableVoices.length} voice${availableVoices.length > 1 ? 's' : ''} available`}
                     </p>
+                    <p className="text-xs text-base-content/40 mt-1">
+                      Saving for: <span className="font-medium text-info">{browserDisplayName}</span>
+                    </p>
                   </div>
                   <button
                     className={`btn btn-sm btn-circle ${testingVoice ? 'btn-error' : 'btn-info'}`}
@@ -452,20 +496,29 @@ export function SettingsPage({ settingsStore, onSave, onLogout, userEmail }: Set
                 </div>
                 
                 {availableVoices.length > 0 && (
-                  <select
-                    className="select select-bordered w-full"
-                    value={settings.audio.browserVoiceId}
-                    onChange={(e) => settingsStore.setAudioSettings({ browserVoiceId: e.target.value })}
-                  >
-                    <option value="">Auto (best available)</option>
-                    {availableVoices.map((voice) => (
-                      <option key={voice.id} value={voice.id}>
-                        {voice.name}
-                        {voice.gender !== 'unknown' && ` (${voice.gender})`}
-                        {voice.localService && ' • Offline'}
-                      </option>
-                    ))}
-                  </select>
+                  <>
+                    <select
+                      className="select select-bordered w-full"
+                      value={getCurrentVoiceId()}
+                      onChange={(e) => setCurrentVoiceId(e.target.value)}
+                    >
+                      <option value="">Auto (best available)</option>
+                      {availableVoices.map((voice) => (
+                        <option key={voice.id} value={voice.id}>
+                          {voice.name}
+                          {voice.gender !== 'unknown' && ` (${voice.gender})`}
+                          {voice.localService && ' • Offline'}
+                        </option>
+                      ))}
+                    </select>
+                    {/* Show if saved voice doesn't match any available voice */}
+                    {getCurrentVoiceId() && !availableVoices.some(v => v.id === getCurrentVoiceId()) && (
+                      <p className="text-xs text-warning mt-2">
+                        ⚠️ Saved voice "{getCurrentVoiceId()}" not found in this browser. 
+                        Select a new voice to update.
+                      </p>
+                    )}
+                  </>
                 )}
               </div>
 

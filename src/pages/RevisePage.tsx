@@ -1,11 +1,11 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Volume2, ChevronLeft, ChevronRight, Shuffle, Loader2, BookOpen, CheckSquare } from 'lucide-react';
+import { Volume2, ChevronLeft, ChevronRight, Shuffle, Loader2, BookOpen, CheckSquare, HelpCircle } from 'lucide-react';
 import type { VocabularyStore } from '../stores/vocabularyStore';
 import type { SettingsStore } from '../stores/settingsStore';
 import type { Concept } from '../types/vocabulary';
 import type { FocusLevel } from '../types/settings';
-import { speak, stopSpeaking, isTTSSupported } from '../services/ttsService';
+import { speak, stopSpeaking, isTTSSupported, getVoiceForCurrentBrowser } from '../services/ttsService';
 
 const LAST_REVIEW_KEY = 'langseed_last_review';
 
@@ -13,6 +13,7 @@ interface RevisePageProps {
   store: VocabularyStore;
   settingsStore?: SettingsStore;
   onReviewComplete?: () => void;
+  onShowHelp?: () => void;
 }
 
 // Field types that can be revealed/hidden
@@ -116,7 +117,7 @@ function markReviewedToday() {
   localStorage.setItem(LAST_REVIEW_KEY, new Date().toISOString());
 }
 
-export function RevisePage({ store, settingsStore, onReviewComplete }: RevisePageProps) {
+export function RevisePage({ store, settingsStore, onReviewComplete, onShowHelp }: RevisePageProps) {
   // Session words - randomly selected from known words
   const [sessionWords, setSessionWords] = useState<Concept[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -270,7 +271,7 @@ export function RevisePage({ store, settingsStore, onReviewComplete }: RevisePag
     setIsPlaying(true);
     try {
       await speak(currentWord.word, {
-        voiceId: settings?.audio?.browserVoiceId || undefined,
+        voiceId: settings?.audio ? getVoiceForCurrentBrowser(settings.audio) : undefined,
         rate: settings?.audio?.speechRate ?? 0.9,
       });
     } catch (err) {
@@ -419,29 +420,40 @@ export function RevisePage({ store, settingsStore, onReviewComplete }: RevisePag
   return (
     <div className="h-full bg-gradient-to-b from-base-100 to-base-200 flex flex-col overflow-hidden">
       {/* Header */}
-      <header className="shrink-0 bg-base-100/95 backdrop-blur border-b border-base-300 px-4 py-2">
-        <div className="flex items-center justify-between max-w-lg mx-auto">
-          <h1 className="text-lg font-bold">Revise</h1>
-          <button 
-            className="btn btn-sm btn-ghost"
-            onClick={startNewSession}
-            title="Shuffle new words"
-          >
-            <Shuffle className="w-4 h-4" />
-          </button>
-        </div>
-        
-        {/* Progress indicator */}
-        <div className="max-w-lg mx-auto mt-1">
-          <div className="flex items-center gap-2 text-sm text-base-content/60">
-            <span>{currentIndex + 1} / {sessionWords.length}</span>
-            <progress 
-              className="progress progress-primary flex-1 h-1.5" 
-              value={currentIndex + 1} 
-              max={sessionWords.length}
-            />
+      <header className="flex-shrink-0 bg-base-100 border-b border-base-300 px-4 py-3">
+        <div className="flex items-center justify-between mb-2">
+          <div>
+            <h1 className="text-xl font-bold">Revise</h1>
+            <p className="text-sm text-base-content/60">
+              {currentIndex + 1} / {sessionWords.length} cards
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            {onShowHelp && (
+              <button
+                className="btn btn-sm btn-ghost btn-circle text-base-content/50 hover:text-primary"
+                onClick={onShowHelp}
+                title="Help & Guide"
+              >
+                <HelpCircle className="w-5 h-5" />
+              </button>
+            )}
+            <button 
+              className="btn btn-sm btn-ghost"
+              onClick={startNewSession}
+              title="Shuffle new words"
+            >
+              <Shuffle className="w-4 h-4" />
+            </button>
           </div>
         </div>
+        
+        {/* Progress bar */}
+        <progress 
+          className="progress progress-primary w-full h-1.5" 
+          value={currentIndex + 1} 
+          max={sessionWords.length}
+        />
       </header>
 
       {/* Flashcard */}

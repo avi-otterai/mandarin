@@ -142,21 +142,23 @@ export async function speak(
 
   const utterance = new SpeechSynthesisUtterance(text);
   
-  // Set voice if specified
+  // Ensure voices are loaded first
+  const chineseVoices = await getChineseVoices();
+  
+  // Set voice - try specified voice first, fall back to best Chinese voice
+  let selectedVoice: SpeechSynthesisVoice | null = null;
+  
   if (options.voiceId) {
-    const voice = getNativeVoice(options.voiceId);
-    if (voice) {
-      utterance.voice = voice;
-    }
-  } else {
-    // Try to use a Chinese voice by default
-    const chineseVoices = await getChineseVoices();
-    if (chineseVoices.length > 0) {
-      const voice = getNativeVoice(chineseVoices[0].id);
-      if (voice) {
-        utterance.voice = voice;
-      }
-    }
+    selectedVoice = getNativeVoice(options.voiceId);
+  }
+  
+  // Fall back to first Chinese voice if specified voice not found
+  if (!selectedVoice && chineseVoices.length > 0) {
+    selectedVoice = getNativeVoice(chineseVoices[0].id);
+  }
+  
+  if (selectedVoice) {
+    utterance.voice = selectedVoice;
   }
 
   // Apply options

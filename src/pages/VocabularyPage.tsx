@@ -288,7 +288,7 @@ export function VocabularyPage({ store, settingsStore, onSync, onShowHelp }: Voc
                     </div>
                   </th>
                   <th 
-                    className="cursor-pointer hover:bg-base-300 whitespace-nowrap"
+                    className="cursor-pointer hover:bg-base-300 whitespace-nowrap min-w-[4rem]"
                     onClick={() => handleSort('word')}
                   >
                     <div className="flex items-center gap-1">
@@ -336,7 +336,7 @@ export function VocabularyPage({ store, settingsStore, onSync, onShowHelp }: Voc
                   <tr key={concept.id} className="hover">
                     {/* Pinyin - sticky left */}
                     <td className="pinyin text-sm sticky left-0 z-10 bg-inherit">{concept.pinyin}</td>
-                    <td>
+                    <td className="whitespace-nowrap">
                       <button 
                         className="hanzi hanzi-table font-bold hover:text-primary cursor-pointer"
                         onClick={() => setSelectedConcept(concept)}

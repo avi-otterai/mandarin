@@ -48,27 +48,40 @@ export function createInitialModality(chapter: number): ConceptModality {
 // KNOWLEDGE UPDATE FORMULA
 // ═══════════════════════════════════════════════════════════
 
+// Update rates for different scenarios
+const UPDATE_RATES = {
+  // Answer modality (active recall - primary test)
+  answer: {
+    gain: 0.25,    // 25% toward 100 on correct
+    loss: 0.175,   // 17.5% toward 0 on incorrect
+  },
+  // Question modality (passive recognition - secondary benefit)
+  question: {
+    gain: 0.12,    // 12% toward 100 on correct (you recognized it)
+    loss: 0.08,    // 8% toward 0 on incorrect (might still know it)
+  },
+};
+
 /**
  * Update modality knowledge after a quiz answer
  * 
  * Asymmetric update:
- * - Correct: Move 25% toward 100 (successes boost confidence)
- * - Incorrect: Move 17.5% toward 0 (mistakes hurt less)
+ * - Correct: Move toward 100 (successes boost confidence)
+ * - Incorrect: Move toward 0 (mistakes hurt less than successes help)
  * 
- * This targets ~70-80% success rate for engaged learning.
+ * @param isAnswerModality - true for answer modality (higher rates), false for question modality (lower rates)
  */
-export function updateKnowledge(current: number, correct: boolean): number {
-  const GAIN_RATE = 0.25;   // How fast we learn from success
-  const LOSS_RATE = 0.175;  // How fast we forget from mistakes (70% of gain rate)
+export function updateKnowledge(current: number, correct: boolean, isAnswerModality: boolean = true): number {
+  const rates = isAnswerModality ? UPDATE_RATES.answer : UPDATE_RATES.question;
   
   let newKnowledge: number;
   
   if (correct) {
     // Move toward 100
-    newKnowledge = current + (100 - current) * GAIN_RATE;
+    newKnowledge = current + (100 - current) * rates.gain;
   } else {
     // Move toward 0 (but gentler)
-    newKnowledge = current - current * LOSS_RATE;
+    newKnowledge = current - current * rates.loss;
   }
   
   // Clamp to 0-100 and round
@@ -77,13 +90,15 @@ export function updateKnowledge(current: number, correct: boolean): number {
 
 /**
  * Update a modality score after a quiz answer
+ * @param isAnswerModality - true for answer modality (higher rates), false for question modality (lower rates)
  */
 export function updateModalityScore(
   current: ModalityScore,
-  correct: boolean
+  correct: boolean,
+  isAnswerModality: boolean = true
 ): ModalityScore {
   return {
-    knowledge: updateKnowledge(current.knowledge, correct),
+    knowledge: updateKnowledge(current.knowledge, correct, isAnswerModality),
     attempts: current.attempts + 1,
     successes: current.successes + (correct ? 1 : 0),
     lastAttempt: new Date().toISOString(),
@@ -156,26 +171,47 @@ export function getAverageKnowledge(modality: ConceptModality): number {
 
 /**
  * Compute modality averages across all concepts
+ * Only includes concepts that have been tested (attempts > 0) for each modality
+ * Untested modalities are excluded from the average to avoid skewing by defaults
  */
 export function computeModalityAverages(concepts: Concept[]): Record<Modality, number> {
   if (concepts.length === 0) {
     return { character: 0, pinyin: 0, meaning: 0, audio: 0 };
   }
   
-  const sums = { character: 0, pinyin: 0, meaning: 0, audio: 0 };
+  // Track sum and count separately for each modality (only tested ones)
+  const stats = {
+    character: { sum: 0, count: 0 },
+    pinyin: { sum: 0, count: 0 },
+    meaning: { sum: 0, count: 0 },
+    audio: { sum: 0, count: 0 },
+  };
   
   for (const concept of concepts) {
-    sums.character += concept.modality.character.knowledge;
-    sums.pinyin += concept.modality.pinyin.knowledge;
-    sums.meaning += concept.modality.meaning.knowledge;
-    sums.audio += concept.modality.audio.knowledge;
+    // Only include modalities that have been tested (attempts > 0)
+    if (concept.modality.character.attempts > 0) {
+      stats.character.sum += concept.modality.character.knowledge;
+      stats.character.count++;
+    }
+    if (concept.modality.pinyin.attempts > 0) {
+      stats.pinyin.sum += concept.modality.pinyin.knowledge;
+      stats.pinyin.count++;
+    }
+    if (concept.modality.meaning.attempts > 0) {
+      stats.meaning.sum += concept.modality.meaning.knowledge;
+      stats.meaning.count++;
+    }
+    if (concept.modality.audio.attempts > 0) {
+      stats.audio.sum += concept.modality.audio.knowledge;
+      stats.audio.count++;
+    }
   }
   
   return {
-    character: Math.round(sums.character / concepts.length),
-    pinyin: Math.round(sums.pinyin / concepts.length),
-    meaning: Math.round(sums.meaning / concepts.length),
-    audio: Math.round(sums.audio / concepts.length),
+    character: stats.character.count > 0 ? Math.round(stats.character.sum / stats.character.count) : 0,
+    pinyin: stats.pinyin.count > 0 ? Math.round(stats.pinyin.sum / stats.pinyin.count) : 0,
+    meaning: stats.meaning.count > 0 ? Math.round(stats.meaning.sum / stats.meaning.count) : 0,
+    audio: stats.audio.count > 0 ? Math.round(stats.audio.sum / stats.audio.count) : 0,
   };
 }
 

@@ -109,17 +109,20 @@ export function ProfilePage({ settingsStore, vocabStore, onSave, onLogout, userE
   }, [vocabStore]);
   
   // Refresh progress on mount
+  // Only refresh if there are no local unsaved changes to avoid overwriting quiz results
   const handleRefreshProgress = useCallback(async () => {
     if (!onRefreshProgress || isRefreshingProgress) return;
+    // Don't overwrite local changes with cloud data
+    if (vocabStore.hasUnsyncedChanges) return;
     setIsRefreshingProgress(true);
     try {
       await onRefreshProgress();
     } finally {
       setIsRefreshingProgress(false);
     }
-  }, [onRefreshProgress, isRefreshingProgress]);
+  }, [onRefreshProgress, isRefreshingProgress, vocabStore.hasUnsyncedChanges]);
   
-  // Auto-refresh progress when page mounts
+  // Auto-refresh progress when page mounts (only if no local changes)
   useEffect(() => {
     handleRefreshProgress();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps

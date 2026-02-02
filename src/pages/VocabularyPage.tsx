@@ -1,5 +1,5 @@
-import { useState, useMemo, useEffect } from 'react';
-import { ChevronUp, ChevronDown, ChevronsUpDown, Download, CheckSquare, Square, Filter, HelpCircle, Check, Loader2, AlertTriangle, Cloud } from 'lucide-react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
+import { ChevronUp, ChevronDown, ChevronsUpDown, Download, CheckSquare, Square, Filter, HelpCircle, Check, Loader2, AlertTriangle, Cloud, RefreshCw } from 'lucide-react';
 import type { VocabularyStore } from '../stores/vocabularyStore';
 import type { SettingsStore } from '../stores/settingsStore';
 import type { Concept } from '../types/vocabulary';
@@ -10,17 +10,21 @@ interface VocabularyPageProps {
   settingsStore?: SettingsStore;
   onSync?: () => void;
   onShowHelp?: () => void;
+  onRefresh?: () => Promise<void>;
 }
 
 type SortField = 'pinyin' | 'word' | 'meaning' | 'part_of_speech' | 'chapter' | 'knowledge';
 type SortDir = 'asc' | 'desc';
 
-export function VocabularyPage({ store, settingsStore, onSync, onShowHelp }: VocabularyPageProps) {
+export function VocabularyPage({ store, settingsStore, onSync, onShowHelp, onRefresh }: VocabularyPageProps) {
   const [sortField, setSortField] = useState<SortField>('chapter');
   const [sortDir, setSortDir] = useState<SortDir>('asc');
   const [filterChapter, setFilterChapter] = useState<string>('all');
   const [filterStudying, setFilterStudying] = useState<'all' | 'studying' | 'paused'>('all');
   const [selectedConcept, setSelectedConcept] = useState<Concept | null>(null);
+  
+  // Refresh state
+  const [isRefreshing, setIsRefreshing] = useState(false);
   
   // Auto-import HSK1 if no vocab exists
   useEffect(() => {
@@ -28,6 +32,25 @@ export function VocabularyPage({ store, settingsStore, onSync, onShowHelp }: Voc
       store.importHSK1();
     }
   }, [store.concepts.length, store.hsk1Vocab.length, store.importHSK1]);
+  
+  // Async refresh on mount (shows cached data immediately, syncs in background)
+  // Only refresh if there are no local unsaved changes to avoid overwriting quiz results
+  const handleRefresh = useCallback(async () => {
+    if (!onRefresh || isRefreshing) return;
+    // Don't overwrite local changes with cloud data
+    if (store.hasUnsyncedChanges) return;
+    setIsRefreshing(true);
+    try {
+      await onRefresh();
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [onRefresh, isRefreshing, store.hasUnsyncedChanges]);
+  
+  // Auto-refresh when page mounts (only if no local changes)
+  useEffect(() => {
+    handleRefresh();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   
   // Get unique chapters
   const chapters = useMemo(() => {
@@ -143,7 +166,15 @@ export function VocabularyPage({ store, settingsStore, onSync, onShowHelp }: Voc
       <header className="flex-shrink-0 bg-base-100 border-b border-base-300 px-4 py-3">
         <div className="flex items-center justify-between mb-3">
           <div>
-            <h1 className="text-xl font-bold">Vocabulary</h1>
+            <h1 className="text-xl font-bold flex items-center gap-2">
+              Vocabulary
+              {isRefreshing && (
+                <span className="flex items-center gap-1 text-xs font-normal text-base-content/50">
+                  <RefreshCw className="w-3 h-3 animate-spin" />
+                  syncing
+                </span>
+              )}
+            </h1>
             <p className="text-sm text-base-content/60">
               {totalAdded} words · {studyingCount} studying
             </p>

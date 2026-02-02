@@ -104,7 +104,8 @@ export interface VocabularyStore {
   // Quiz actions
   updateModalityKnowledge: (
     conceptId: string,
-    modality: Modality,
+    questionModality: Modality,
+    answerModality: Modality,
     correct: boolean,
     learningFocus: LearningFocus
   ) => void;
@@ -252,30 +253,54 @@ export function useVocabularyStore(): VocabularyStore {
   );
 
   // Update modality knowledge after quiz answer
+  // Updates BOTH question and answer modalities with different rates
   const updateModalityKnowledge = useCallback((
     conceptId: string,
-    modality: Modality,
+    questionModality: Modality,
+    answerModality: Modality,
     correct: boolean,
     learningFocus: LearningFocus
   ) => {
-    setConcepts(prev => prev.map(c => {
-      if (c.id !== conceptId) return c;
+    setConcepts(prev => {
+      const updatedConcepts = prev.map(c => {
+        if (c.id !== conceptId) return c;
+        
+        // Update both modalities with different rates
+        // Answer modality = higher rates (active recall)
+        // Question modality = lower rates (passive recognition)
+        let updatedModality = { ...c.modality };
+        
+        // Always update answer modality (primary test - higher rates)
+        updatedModality[answerModality] = updateModalityScore(
+          c.modality[answerModality], 
+          correct, 
+          true  // isAnswerModality = true (higher rates)
+        );
+        
+        // Also update question modality if different (secondary benefit - lower rates)
+        if (questionModality !== answerModality) {
+          updatedModality[questionModality] = updateModalityScore(
+            c.modality[questionModality], 
+            correct, 
+            false  // isAnswerModality = false (lower rates)
+          );
+        }
+        
+        // Recompute overall knowledge
+        const newKnowledge = computeConceptKnowledge(updatedModality, learningFocus);
+        
+        return {
+          ...c,
+          modality: updatedModality,
+          knowledge: newKnowledge,
+        };
+      });
       
-      // Update the specific modality score
-      const updatedModality = {
-        ...c.modality,
-        [modality]: updateModalityScore(c.modality[modality], correct),
-      };
+      // Immediately save to localStorage to ensure persistence before navigation
+      saveProgress(updatedConcepts);
       
-      // Recompute overall knowledge
-      const newKnowledge = computeConceptKnowledge(updatedModality, learningFocus);
-      
-      return {
-        ...c,
-        modality: updatedModality,
-        knowledge: newKnowledge,
-      };
-    }));
+      return updatedConcepts;
+    });
   }, []);
 
   // Record a progress snapshot

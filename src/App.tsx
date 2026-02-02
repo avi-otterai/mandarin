@@ -136,6 +136,7 @@ function AppContent({
                 settingsStore={settingsStore}
                 onSync={onSync}
                 onShowHelp={() => setShowHelpModal(true)}
+                onRefresh={auth.user ? () => store.loadFromCloud(auth.user!.id) : undefined}
               />
             } 
           />

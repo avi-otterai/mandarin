@@ -183,9 +183,10 @@ export function QuizPage({ store, settingsStore, onShowHelp }: QuizPageProps) {
       };
     });
     
-    // Update modality knowledge in store
+    // Update modality knowledge in store (both question and answer modalities)
     store.updateModalityKnowledge(
       currentQuestion.concept.id,
+      currentQuestion.questionModality,
       currentQuestion.answerModality,
       correct,
       settings.learningFocus

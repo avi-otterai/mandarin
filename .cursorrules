@@ -50,22 +50,12 @@ git merge feature/your-feature-name
 git push origin main
 ```
 
-## User's Learning Goals
-- **Target**: Learn Mandarin Chinese from HSK 1 level
-- **Learning priority** (in order):
-  1. **Pinyin** - Foundation, already comfortable
-  2. **Pronunciation** - Speaking practice, listening comprehension
-  3. **Reading** - Character recognition
-  4. **Tones** - Currently struggling, needs focused practice
-  5. **Writing** - Lowest priority, optional
-- **Learning style**: Audio/speaking first, reading second, SRS-based retention
-
 ## Tech Stack
 - React 19 + TypeScript
 - Vite (build tool)
 - Tailwind CSS v4 + daisyUI v5
 - localStorage (current storage)
-- Supabase (planned for cloud sync)
+- Supabase (for cloud sync)
 
 ## Running Locally
 ```bash
@@ -128,34 +118,15 @@ The repo uses `github.com-avi` alias which maps to personal SSH key (`~/.ssh/id_
 ### Binary Categories (ONLY 2)
 | Status | Checkbox | understanding | In Revise? |
 |--------|----------|---------------|------------|
-| **Known** | ✓ Checked | >= 80 | **YES** |
-| **Unknown** | ☐ Unchecked | < 80 | **NO** |
+| **Known** | ✓ Checked | spectrum | **YES** |
+| **Unknown** | ☐ Unchecked | spectrum | **NO** |
 
-### How It Works
-1. **Importing chapters** adds words to `concepts` list with `understanding: 0` (unknown)
-2. **Checking the ✓ checkbox** sets `understanding: 100` → word is now "known"
-3. **RevisePage filters by `understanding >= 80`** - ONLY known words appear!
 
-### Why This Design
+### Why Vocab-led design
 - **Avoids overwhelm**: User only sees words they've explicitly selected
 - **Controlled learning**: Start with a few checked words, expand gradually
 - **Intentional vocabulary**: Revise tab is never cluttered with unselected words
 
-### Code Implementation
-```typescript
-// VocabularyPage: Checkbox toggles known status
-checked={concept.understanding >= 80}
-onChange={() => store.toggleKnown(concept.id)}
-
-// RevisePage: CRITICAL FILTER - only known words!
-const knownWords = store.concepts.filter(c => c.understanding >= 80 && !c.paused);
-```
-
-### ⚠️ DO NOT:
-- Remove the `understanding >= 80` filter from RevisePage
-- Show unchecked words in Revise sessions
-- Add intermediate mastery levels (keep it binary: known/unknown)
-- Confuse "known" with "memorized" - known just means "selected to study"
 
 ## Data Storage
 - **Local**: localStorage (key: `langseed_progress`) - instant reads/writes
@@ -175,6 +146,7 @@ const knownWords = store.concepts.filter(c => c.understanding >= 80 && !c.paused
 
 ### Primary User
 - **Email**: your-email@example.com
+- **Password**: saved in `.env` as `VITE_DEV_USER_PASSWORD`
 
 ### Vocabulary Preferences
 - **Selected Chapters**: 1, 2, 3, 4, 5, 6 (HSK1 chapters)

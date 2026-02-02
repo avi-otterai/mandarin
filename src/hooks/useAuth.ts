@@ -7,11 +7,15 @@ import type { User, Session } from '@supabase/supabase-js';
 const DEV_USER_EMAIL = 'your-email@example.com';
 const DEV_USER_PASSWORD = import.meta.env.VITE_DEV_USER_PASSWORD || '';
 
+// Guest mode storage key
+const GUEST_MODE_KEY = 'langseed_guest_mode';
+
 interface AuthState {
   user: User | null;
   session: Session | null;
   loading: boolean;
   error: string | null;
+  isGuest: boolean;
 }
 
 export function useAuth() {
@@ -20,9 +24,18 @@ export function useAuth() {
     session: null,
     loading: true,
     error: null,
+    isGuest: false,
   });
   
   const autoLoginAttempted = useRef(false);
+  
+  // Check for existing guest session on mount
+  useEffect(() => {
+    const wasGuest = localStorage.getItem(GUEST_MODE_KEY) === 'true';
+    if (wasGuest) {
+      setState(prev => ({ ...prev, isGuest: true, loading: false }));
+    }
+  }, []);
 
   // Auto-login function for dev mode
   const autoLoginDev = useCallback(async () => {
@@ -57,6 +70,13 @@ export function useAuth() {
   }, []);
 
   useEffect(() => {
+    // If already in guest mode, don't check Supabase
+    const wasGuest = localStorage.getItem(GUEST_MODE_KEY) === 'true';
+    if (wasGuest) {
+      setState(prev => ({ ...prev, isGuest: true, loading: false }));
+      return;
+    }
+    
     if (!isSupabaseConfigured()) {
       setState(prev => ({ ...prev, loading: false }));
       return;
@@ -73,6 +93,7 @@ export function useAuth() {
           session,
           loading: false,
           error: null,
+          isGuest: false,
         });
       } else {
         // No session - try auto-login in dev mode
@@ -100,6 +121,9 @@ export function useAuth() {
   const signIn = useCallback(async (email: string, password: string) => {
     setState(prev => ({ ...prev, loading: true, error: null }));
     
+    // Clear guest mode when signing in
+    localStorage.removeItem(GUEST_MODE_KEY);
+    
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -115,12 +139,39 @@ export function useAuth() {
       user: data.user,
       session: data.session,
       loading: false,
+      isGuest: false,
     }));
     
     return { success: true, error: null };
   }, []);
+  
+  const signInAsGuest = useCallback(() => {
+    localStorage.setItem(GUEST_MODE_KEY, 'true');
+    setState(prev => ({
+      ...prev,
+      user: null,
+      session: null,
+      loading: false,
+      error: null,
+      isGuest: true,
+    }));
+    return { success: true, error: null };
+  }, []);
 
   const signOut = useCallback(async () => {
+    // If guest mode, just clear it
+    if (state.isGuest) {
+      localStorage.removeItem(GUEST_MODE_KEY);
+      setState({
+        user: null,
+        session: null,
+        loading: false,
+        error: null,
+        isGuest: false,
+      });
+      return { success: true, error: null };
+    }
+    
     setState(prev => ({ ...prev, loading: true }));
     
     const { error } = await supabase.auth.signOut();
@@ -135,10 +186,11 @@ export function useAuth() {
       session: null,
       loading: false,
       error: null,
+      isGuest: false,
     });
     
     return { success: true, error: null };
-  }, []);
+  }, [state.isGuest]);
 
   const clearError = useCallback(() => {
     setState(prev => ({ ...prev, error: null }));
@@ -147,9 +199,10 @@ export function useAuth() {
   return {
     ...state,
     signIn,
+    signInAsGuest,
     signOut,
     clearError,
-    isAuthenticated: !!state.user,
+    isAuthenticated: !!state.user || state.isGuest,
     isConfigured: isSupabaseConfigured(),
   };
 }

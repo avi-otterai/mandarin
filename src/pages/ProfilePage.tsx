@@ -50,6 +50,7 @@ interface ProfilePageProps {
   userEmail?: string;
   onShowHelp?: () => void;
   onRefreshProgress?: () => Promise<void>;
+  isGuest?: boolean;
 }
 
 // Progress bar component
@@ -72,7 +73,7 @@ function ProgressBar({ value, max = 100, color = 'primary', size = 'md' }: {
   );
 }
 
-export function ProfilePage({ settingsStore, vocabStore, onSave, onLogout, userEmail, onShowHelp, onRefreshProgress }: ProfilePageProps) {
+export function ProfilePage({ settingsStore, vocabStore, onSave, onLogout, userEmail, onShowHelp, onRefreshProgress, isGuest }: ProfilePageProps) {
   const { settings, isSyncing, syncError, hasUnsyncedChanges, lastSyncTime } = settingsStore;
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -226,44 +227,58 @@ export function ProfilePage({ settingsStore, vocabStore, onSave, onLogout, userE
               </button>
             )}
             
-            <button
-              className={`btn btn-sm gap-2 ${
-                saveSuccess ? 'btn-success' : 
-                syncError ? 'btn-error' : 
-                hasUnsyncedChanges ? 'btn-warning' : 
-                'btn-primary'
-              }`}
-              onClick={handleSave}
-              disabled={saving || isSyncing}
-            >
-              {saving || isSyncing ? (
-                <><Loader2 className="w-4 h-4 animate-spin" />Saving...</>
-              ) : saveSuccess ? (
-                <><Check className="w-4 h-4" />Saved</>
-              ) : syncError ? (
-                <><AlertTriangle className="w-4 h-4" />Retry</>
-              ) : (
-                <><Save className="w-4 h-4" />Save</>
+            {!isGuest && (
+              <button
+                className={`btn btn-sm gap-2 ${
+                  saveSuccess ? 'btn-success' : 
+                  syncError ? 'btn-error' : 
+                  hasUnsyncedChanges ? 'btn-warning' : 
+                  'btn-primary'
+                }`}
+                onClick={handleSave}
+                disabled={saving || isSyncing}
+              >
+                {saving || isSyncing ? (
+                  <><Loader2 className="w-4 h-4 animate-spin" />Saving...</>
+                ) : saveSuccess ? (
+                  <><Check className="w-4 h-4" />Saved</>
+                ) : syncError ? (
+                  <><AlertTriangle className="w-4 h-4" />Retry</>
+                ) : (
+                  <><Save className="w-4 h-4" />Save</>
+                )}
+              </button>
+            )}
+            {isGuest && (
+              <span className="badge badge-warning badge-outline gap-1">Guest Mode</span>
+            )}
+          </div>
+        </div>
+        
+        {!isGuest && (
+          <>
+            <div className="flex items-center gap-2 mt-2 text-xs text-base-content/50">
+              <span>Last saved: {formatLastSync(lastSyncTime)}</span>
+              {hasUnsyncedChanges && (
+                <span className="badge badge-xs badge-warning">unsaved changes</span>
               )}
-            </button>
-          </div>
-        </div>
-        
-        <div className="flex items-center gap-2 mt-2 text-xs text-base-content/50">
-          <span>Last saved: {formatLastSync(lastSyncTime)}</span>
-          {hasUnsyncedChanges && (
-            <span className="badge badge-xs badge-warning">unsaved changes</span>
-          )}
-        </div>
-        
-        {syncError && (
-          <div className="alert alert-error alert-sm mt-2 py-2">
-            <AlertTriangle className="w-4 h-4" />
-            <span className="text-sm">{syncError}</span>
-            <button className="btn btn-ghost btn-xs" onClick={settingsStore.clearSyncError}>
-              Dismiss
-            </button>
-          </div>
+            </div>
+            
+            {syncError && (
+              <div className="alert alert-error alert-sm mt-2 py-2">
+                <AlertTriangle className="w-4 h-4" />
+                <span className="text-sm">{syncError}</span>
+                <button className="btn btn-ghost btn-xs" onClick={settingsStore.clearSyncError}>
+                  Dismiss
+                </button>
+              </div>
+            )}
+          </>
+        )}
+        {isGuest && (
+          <p className="text-xs text-base-content/50 mt-2">
+            Progress saved locally on this device
+          </p>
         )}
       </header>
 
@@ -643,20 +658,60 @@ export function ProfilePage({ settingsStore, vocabStore, onSave, onLogout, userE
           <h2 className="text-lg font-semibold">Account</h2>
           
           <div className="bg-base-200 rounded-xl p-4 space-y-4">
-            {userEmail && (
-              <div>
-                <p className="text-sm text-base-content/60">Signed in as</p>
-                <p className="font-medium">{userEmail}</p>
-              </div>
+            {isGuest ? (
+              <>
+                <div className="flex items-start gap-3">
+                  <div className="badge badge-warning badge-lg">Guest</div>
+                  <div className="flex-1">
+                    <p className="font-medium">Guest Mode</p>
+                    <p className="text-sm text-base-content/60">
+                      Your progress is saved locally on this device only.
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="alert alert-info py-3">
+                  <div className="text-left">
+                    <p className="text-sm font-medium">🔒 Want cloud sync?</p>
+                    <p className="text-xs opacity-80 mt-1">
+                      Access is invite-only. Email{' '}
+                      <a 
+                        href="mailto:your-email@example.com?subject=Saras Access Request" 
+                        className="link link-hover font-medium"
+                      >
+                        your-email@example.com
+                      </a>
+                      {' '}to request an account.
+                    </p>
+                  </div>
+                </div>
+                
+                <button
+                  className="btn btn-outline btn-warning w-full"
+                  onClick={onLogout}
+                >
+                  <LogOut className="w-4 h-4" />
+                  Exit Guest Mode
+                </button>
+              </>
+            ) : (
+              <>
+                {userEmail && (
+                  <div>
+                    <p className="text-sm text-base-content/60">Signed in as</p>
+                    <p className="font-medium">{userEmail}</p>
+                  </div>
+                )}
+                
+                <button
+                  className="btn btn-outline btn-error w-full"
+                  onClick={onLogout}
+                >
+                  <LogOut className="w-4 h-4" />
+                  Sign Out
+                </button>
+              </>
             )}
-            
-            <button
-              className="btn btn-outline btn-error w-full"
-              onClick={onLogout}
-            >
-              <LogOut className="w-4 h-4" />
-              Sign Out
-            </button>
           </div>
           
           <button

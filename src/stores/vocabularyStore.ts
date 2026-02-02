@@ -95,7 +95,7 @@ export interface VocabularyStore {
   
   // Actions
   importHSK1: () => void;
-  importChapters: (fromChapter: number, toChapter: number) => void;
+  importChapters: (fromChapter: number, toChapter: number, startStudying?: boolean) => void;
   removeChapters: (fromChapter: number, toChapter: number) => void;
   togglePaused: (conceptId: string) => void;
   getConceptById: (id: string) => Concept | undefined;
@@ -212,7 +212,7 @@ export function useVocabularyStore(): VocabularyStore {
     setConcepts(prev => [...prev, ...newConcepts]);
   }, [addedWords]);
 
-  const importChapters = useCallback((fromChapter: number, toChapter: number) => {
+  const importChapters = useCallback((fromChapter: number, toChapter: number, startStudying = false) => {
     const vocab = hsk1Data as VocabWord[];
     const newConcepts: Concept[] = [];
     
@@ -223,7 +223,7 @@ export function useVocabularyStore(): VocabularyStore {
           id: generateId(),
           modality: createInitialModality(word.chapter),
           knowledge: 50,
-          paused: true,  // Words start as "unknown" - user checks to make them "studying"
+          paused: !startStudying,  // If startStudying is true, words are NOT paused
         });
       }
     });

@@ -168,6 +168,7 @@ Averages are computed only for modalities you've actually tested.
 | localStorage | `langseed_progress` | concepts with modality scores |
 | localStorage | `langseed_settings` | user preferences |
 | localStorage | `langseed_progress_cache` | cached progress snapshots for charts |
+| localStorage | `langseed_vocab_sort` | vocabulary table sort column & direction |
 | Supabase | `vocabulary` | Static HSK vocabulary (shared across all users) |
 | Supabase | `user_progress` | User's learning state per vocabulary item |
 | Supabase | `quiz_attempts` | All quiz answers (source of truth for progress) |
@@ -181,9 +182,24 @@ Averages are computed only for modalities you've actually tested.
 
 ## 🔐 Authentication
 
-- **Supabase Auth** with email/password login
-- No public signup (private use only)
-- All data isolated per user via RLS
+### Two Modes
+
+| Mode | Cloud Sync | Data Persistence | Signup |
+|------|------------|------------------|--------|
+| **Guest Mode** | ❌ None | localStorage only (device-local) | Open |
+| **Signed In** | ✅ Supabase | localStorage + cloud sync | Invite-only |
+
+### Guest Mode
+- Try the app without an account
+- Progress saved locally on your device
+- Chapter 1 words pre-loaded as "studying"
+- No cloud backup (data lost if browser storage cleared)
+
+### Signed In Mode
+- **Invite-only**: Email your-email@example.com to request access
+- Full cloud sync to Supabase
+- Data persists across devices
+- Row Level Security (RLS) isolates user data
 
 ---
 
@@ -389,6 +405,7 @@ CREATE TABLE user_settings (
 - [x] **Modality-level knowledge tracking**
 - [x] **Progress dashboard with charts**
 - [x] **Chapter-based initial knowledge priors**
+- [x] **Guest mode** (try without account, local storage only)
 - [ ] Quick add/remove vocab from Quiz (suggest words, easy toggle without leaving quiz)
 - [ ] Smart word selection (75% easy / 25% hard blend based on knowledge)
 - [ ] Historical progress timeline (bar chart of "words likely correct" over time)

@@ -11,14 +11,49 @@ interface VocabularyPageProps {
   onSync?: () => void;
   onShowHelp?: () => void;
   onRefresh?: () => Promise<void>;
+  isGuest?: boolean;
 }
 
 type SortField = 'pinyin' | 'word' | 'meaning' | 'part_of_speech' | 'chapter' | 'knowledge';
 type SortDir = 'asc' | 'desc';
 
-export function VocabularyPage({ store, settingsStore, onSync, onShowHelp, onRefresh }: VocabularyPageProps) {
-  const [sortField, setSortField] = useState<SortField>('chapter');
-  const [sortDir, setSortDir] = useState<SortDir>('asc');
+const SORT_STORAGE_KEY = 'langseed_vocab_sort';
+
+interface SortPreference {
+  field: SortField;
+  dir: SortDir;
+}
+
+function loadSortPreference(): SortPreference {
+  try {
+    const stored = localStorage.getItem(SORT_STORAGE_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      // Validate the stored values
+      const validFields: SortField[] = ['pinyin', 'word', 'meaning', 'part_of_speech', 'chapter', 'knowledge'];
+      const validDirs: SortDir[] = ['asc', 'desc'];
+      if (validFields.includes(parsed.field) && validDirs.includes(parsed.dir)) {
+        return parsed;
+      }
+    }
+  } catch {
+    // Ignore parse errors, use defaults
+  }
+  return { field: 'chapter', dir: 'asc' };
+}
+
+function saveSortPreference(pref: SortPreference): void {
+  try {
+    localStorage.setItem(SORT_STORAGE_KEY, JSON.stringify(pref));
+  } catch {
+    // Ignore storage errors (quota exceeded, etc.)
+  }
+}
+
+export function VocabularyPage({ store, settingsStore, onSync, onShowHelp, onRefresh, isGuest }: VocabularyPageProps) {
+  const initialSort = loadSortPreference();
+  const [sortField, setSortField] = useState<SortField>(initialSort.field);
+  const [sortDir, setSortDir] = useState<SortDir>(initialSort.dir);
   const [filterChapter, setFilterChapter] = useState<string>('all');
   const [filterStudying, setFilterStudying] = useState<'all' | 'studying' | 'paused'>('all');
   const [selectedConcept, setSelectedConcept] = useState<Concept | null>(null);
@@ -100,12 +135,17 @@ export function VocabularyPage({ store, settingsStore, onSync, onShowHelp, onRef
   }, [store.concepts, filterChapter, filterStudying, sortField, sortDir]);
   
   const handleSort = (field: SortField) => {
+    let newDir: SortDir;
     if (sortField === field) {
-      setSortDir(sortDir === 'asc' ? 'desc' : 'asc');
+      newDir = sortDir === 'asc' ? 'desc' : 'asc';
+      setSortDir(newDir);
     } else {
+      newDir = 'asc';
       setSortField(field);
-      setSortDir('asc');
+      setSortDir(newDir);
     }
+    // Persist to localStorage
+    saveSortPreference({ field, dir: newDir });
   };
   
   const SortIcon = ({ field }: { field: SortField }) => {
@@ -189,7 +229,7 @@ export function VocabularyPage({ store, settingsStore, onSync, onShowHelp, onRef
                 <HelpCircle className="w-5 h-5" />
               </button>
             )}
-            {onSync && (
+            {onSync && !isGuest && (
               <button
                 className={`btn btn-sm gap-1 ${getSyncButtonClass()}`}
                 onClick={store.syncError ? store.clearSyncError : onSync}
@@ -218,6 +258,11 @@ export function VocabularyPage({ store, settingsStore, onSync, onShowHelp, onRef
                   </>
                 )}
               </button>
+            )}
+            {isGuest && (
+              <span className="badge badge-warning badge-outline gap-1">
+                <span>Guest Mode</span>
+              </span>
             )}
             {store.concepts.length === 0 && (
               <button 

@@ -19,13 +19,18 @@ function App() {
   const settingsStore = useSettingsStore();
   const auth = useAuth();
   
-  // Load data from cloud on login
+  // Load data from cloud on login (skip for guest mode)
   useEffect(() => {
-    if (auth.isAuthenticated && auth.user) {
+    if (auth.isAuthenticated && auth.user && !auth.isGuest) {
       store.loadFromCloud(auth.user.id);
       settingsStore.loadFromCloud(auth.user.id);
     }
-  }, [auth.isAuthenticated, auth.user?.id]);
+    // For guest mode, initialize with chapter 1 if no data exists
+    // Pass true to startStudying so chapter 1 words are marked as studying (not paused)
+    if (auth.isGuest && store.concepts.length === 0) {
+      store.importChapters(1, 1, true);
+    }
+  }, [auth.isAuthenticated, auth.user?.id, auth.isGuest]);
 
   // Show loading state while checking auth
   if (auth.loading) {
@@ -44,6 +49,7 @@ function App() {
     return (
       <LoginPage
         onLogin={auth.signIn}
+        onGuestLogin={auth.signInAsGuest}
         loading={auth.loading}
         error={auth.error}
         onClearError={auth.clearError}
@@ -52,13 +58,15 @@ function App() {
   }
 
   const handleSync = () => {
-    if (auth.user) {
+    // Don't sync for guest users
+    if (auth.user && !auth.isGuest) {
       store.syncToCloud(auth.user.id);
     }
   };
 
   const handleSettingsSave = async () => {
-    if (auth.user) {
+    // Don't sync for guest users
+    if (auth.user && !auth.isGuest) {
       await settingsStore.syncToCloud(auth.user.id);
     }
   };
@@ -71,6 +79,7 @@ function App() {
         auth={auth} 
         onSync={handleSync}
         onSettingsSave={handleSettingsSave}
+        isGuest={auth.isGuest}
       />
     </BrowserRouter>
   );
@@ -83,12 +92,14 @@ function AppContent({
   auth, 
   onSync,
   onSettingsSave,
+  isGuest,
 }: { 
   store: ReturnType<typeof useVocabularyStore>;
   settingsStore: ReturnType<typeof useSettingsStore>;
   auth: ReturnType<typeof useAuth>;
   onSync: () => void;
   onSettingsSave: () => Promise<void>;
+  isGuest: boolean;
 }) {
   const location = useLocation();
   
@@ -136,7 +147,8 @@ function AppContent({
                 settingsStore={settingsStore}
                 onSync={onSync}
                 onShowHelp={() => setShowHelpModal(true)}
-                onRefresh={auth.user ? () => store.loadFromCloud(auth.user!.id) : undefined}
+                onRefresh={auth.user && !isGuest ? () => store.loadFromCloud(auth.user!.id) : undefined}
+                isGuest={isGuest}
               />
             } 
           />
@@ -171,9 +183,10 @@ function AppContent({
                 vocabStore={store}
                 onSave={onSettingsSave}
                 onLogout={() => auth.signOut()}
-                userEmail={auth.user?.email}
+                userEmail={isGuest ? undefined : auth.user?.email}
                 onShowHelp={() => setShowHelpModal(true)}
-                onRefreshProgress={auth.user ? () => store.loadFromCloud(auth.user!.id) : undefined}
+                onRefreshProgress={auth.user && !isGuest ? () => store.loadFromCloud(auth.user!.id) : undefined}
+                isGuest={isGuest}
               />
             } 
           />

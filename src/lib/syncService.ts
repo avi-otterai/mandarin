@@ -1,4 +1,4 @@
-// Sync service for Supabase cloud storage
+// Sync service for Supabase cloud storage (normalized schema)
 import { supabase, isSupabaseConfigured } from './supabase';
 import type { Concept, ConceptModality } from '../types/vocabulary';
 import { createInitialModality } from '../utils/knowledge';
@@ -7,39 +7,6 @@ export interface SyncResult {
   success: boolean;
   error?: string;
   conceptsUploaded?: number;
-}
-
-// Check if a string is a valid UUID
-function isValidUUID(str: string): boolean {
-  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-  return uuidRegex.test(str);
-}
-
-// Convert old-format IDs to UUIDs for sync
-function migrateIds(concepts: Concept[]): Concept[] {
-  return concepts.map(c => {
-    if (isValidUUID(c.id)) {
-      return c;
-    }
-    return { ...c, id: crypto.randomUUID() };
-  });
-}
-
-// Convert local Concept to Supabase insert format
-function conceptToInsert(concept: Concept, userId: string) {
-  return {
-    id: concept.id,
-    user_id: userId,
-    word: concept.word,
-    pinyin: concept.pinyin,
-    part_of_speech: concept.part_of_speech,
-    meaning: concept.meaning,
-    chapter: concept.chapter,
-    source: concept.source,
-    modality: concept.modality,
-    knowledge: concept.knowledge,
-    paused: concept.paused,
-  };
 }
 
 // Check if modality object is valid (has all required fields with proper structure)
@@ -56,35 +23,41 @@ function isValidModality(modality: unknown): modality is ConceptModality {
   return true;
 }
 
-// Convert Supabase row to local Concept format
-function rowToConcept(row: {
+// Type for the joined query result (Supabase returns single relations as objects)
+interface JoinedProgressRow {
   id: string;
-  word: string;
-  pinyin: string;
-  part_of_speech: string;
-  meaning: string;
-  chapter: number;
-  source: string;
-  modality?: ConceptModality | Record<string, never>;  // Can be empty object {}
-  knowledge?: number;
-  understanding?: number;  // Legacy field
+  vocabulary_id: string;
+  knowledge: number;
+  modality: ConceptModality | Record<string, never>;
   paused: boolean;
-}): Concept {
-  // Handle migration from old schema (understanding) to new schema (modality + knowledge)
-  // Check if modality is valid (not empty object or missing fields)
-  const modality = isValidModality(row.modality) ? row.modality : createInitialModality(row.chapter);
-  const knowledge = row.knowledge ?? row.understanding ?? 50;
+  vocabulary: {
+    id: string;
+    word: string;
+    pinyin: string;
+    part_of_speech: string;
+    meaning: string;
+    chapter: number;
+    source: string;
+  } | null;
+}
+
+// Convert joined row to local Concept format
+function rowToConcept(row: JoinedProgressRow): Concept | null {
+  const vocab = row.vocabulary;
+  if (!vocab) return null; // Skip if vocabulary relation is missing
+  // Handle migration from empty modality
+  const modality = isValidModality(row.modality) ? row.modality : createInitialModality(vocab.chapter);
   
   return {
-    id: row.id,
-    word: row.word,
-    pinyin: row.pinyin,
-    part_of_speech: row.part_of_speech as Concept['part_of_speech'],
-    meaning: row.meaning,
-    chapter: row.chapter,
-    source: row.source,
+    id: row.vocabulary_id, // Use vocabulary_id as the concept ID for consistency
+    word: vocab.word,
+    pinyin: vocab.pinyin,
+    part_of_speech: vocab.part_of_speech as Concept['part_of_speech'],
+    meaning: vocab.meaning,
+    chapter: vocab.chapter,
+    source: vocab.source,
     modality,
-    knowledge,
+    knowledge: row.knowledge,
     paused: row.paused,
   };
 }
@@ -99,25 +72,79 @@ export async function fetchFromCloud(userId: string): Promise<{
   }
 
   try {
-    // Fetch concepts
-    const { data: conceptRows, error: conceptsError } = await supabase
-      .from('concepts')
-      .select('*')
+    // Fetch user_progress with joined vocabulary data
+    const { data: progressRows, error: progressError } = await supabase
+      .from('user_progress')
+      .select(`
+        id,
+        vocabulary_id,
+        knowledge,
+        modality,
+        paused,
+        vocabulary (
+          id,
+          word,
+          pinyin,
+          part_of_speech,
+          meaning,
+          chapter,
+          source
+        )
+      `)
       .eq('user_id', userId);
 
-    if (conceptsError) {
-      return { concepts: [], error: conceptsError.message };
+    if (progressError) {
+      return { concepts: [], error: progressError.message };
     }
 
-    return {
-      concepts: (conceptRows || []).map(rowToConcept),
-    };
+    const concepts = (progressRows as unknown as JoinedProgressRow[] || [])
+      .map(rowToConcept)
+      .filter((c): c is Concept => c !== null);
+    
+    return { concepts };
   } catch (err) {
     return { 
       concepts: [], 
       error: err instanceof Error ? err.message : 'Unknown error' 
     };
   }
+}
+
+// Get or create vocabulary entry for a word
+async function getOrCreateVocabularyId(concept: Concept): Promise<string | undefined> {
+  // First, try to find existing vocabulary entry
+  const { data: existing, error: findError } = await supabase
+    .from('vocabulary')
+    .select('id')
+    .eq('word', concept.word)
+    .eq('pinyin', concept.pinyin)
+    .eq('meaning', concept.meaning)
+    .single();
+
+  if (existing && !findError) {
+    return existing.id;
+  }
+
+  // If not found, create it (this should rarely happen as vocabulary is pre-populated)
+  const { data: created, error: createError } = await supabase
+    .from('vocabulary')
+    .insert({
+      word: concept.word,
+      pinyin: concept.pinyin,
+      part_of_speech: concept.part_of_speech,
+      meaning: concept.meaning,
+      chapter: concept.chapter,
+      source: concept.source,
+    })
+    .select('id')
+    .single();
+
+  if (createError) {
+    console.error('Failed to create vocabulary entry:', createError);
+    return undefined;
+  }
+
+  return created?.id;
 }
 
 // Save all data to Supabase (upsert)
@@ -131,12 +158,24 @@ export async function saveToCloud(
   }
 
   try {
-    // Migrate any old-format IDs to valid UUIDs
-    const migratedConcepts = migrateIds(concepts);
-    
-    // Delete existing concepts for this user (clean sync)
+    // Build a map of word+pinyin+meaning to vocabulary_id
+    const { data: vocabRows, error: vocabError } = await supabase
+      .from('vocabulary')
+      .select('id, word, pinyin, meaning');
+
+    if (vocabError) {
+      return { success: false, error: vocabError.message };
+    }
+
+    const vocabMap = new Map<string, string>();
+    for (const row of vocabRows || []) {
+      const key = `${row.word}|${row.pinyin}|${row.meaning}`;
+      vocabMap.set(key, row.id);
+    }
+
+    // Delete existing progress for this user (clean sync)
     const { error: deleteError } = await supabase
-      .from('concepts')
+      .from('user_progress')
       .delete()
       .eq('user_id', userId);
 
@@ -144,12 +183,42 @@ export async function saveToCloud(
       return { success: false, error: deleteError.message };
     }
 
-    // Insert concepts
-    if (migratedConcepts.length > 0) {
-      const conceptInserts = migratedConcepts.map(c => conceptToInsert(c, userId));
+    // Prepare progress records
+    const progressInserts: Array<{
+      user_id: string;
+      vocabulary_id: string;
+      knowledge: number;
+      modality: ConceptModality;
+      paused: boolean;
+    }> = [];
+
+    for (const concept of concepts) {
+      const key = `${concept.word}|${concept.pinyin}|${concept.meaning}`;
+      let vocabularyId = vocabMap.get(key);
+
+      // If vocabulary doesn't exist, create it
+      if (!vocabularyId) {
+        vocabularyId = await getOrCreateVocabularyId(concept);
+        if (!vocabularyId) {
+          console.warn(`Skipping concept "${concept.word}" - couldn't get vocabulary ID`);
+          continue;
+        }
+      }
+
+      progressInserts.push({
+        user_id: userId,
+        vocabulary_id: vocabularyId,
+        knowledge: concept.knowledge,
+        modality: concept.modality,
+        paused: concept.paused,
+      });
+    }
+
+    // Insert progress records
+    if (progressInserts.length > 0) {
       const { error: insertError } = await supabase
-        .from('concepts')
-        .insert(conceptInserts);
+        .from('user_progress')
+        .insert(progressInserts);
 
       if (insertError) {
         return { success: false, error: insertError.message };
@@ -158,7 +227,7 @@ export async function saveToCloud(
 
     return {
       success: true,
-      conceptsUploaded: migratedConcepts.length,
+      conceptsUploaded: progressInserts.length,
     };
   } catch (err) {
     return { 

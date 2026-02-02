@@ -168,11 +168,14 @@ Averages are computed only for modalities you've actually tested.
 | localStorage | `langseed_progress` | concepts with modality scores |
 | localStorage | `langseed_settings` | user preferences |
 | localStorage | `langseed_progress_cache` | cached progress snapshots for charts |
-| Supabase | `concepts` | Vocabulary with modality knowledge (JSONB) |
+| Supabase | `vocabulary` | Static HSK vocabulary (shared across all users) |
+| Supabase | `user_progress` | User's learning state per vocabulary item |
 | Supabase | `quiz_attempts` | All quiz answers (source of truth for progress) |
 | Supabase | `user_settings` | User settings (JSONB) |
 
-**Row Level Security (RLS)**: Each user can only access their own data.
+**Normalized Schema**: Vocabulary reference data is stored once, user progress links to it.
+
+**Row Level Security (RLS)**: Each user can only access their own data. Vocabulary is publicly readable (reference data).
 
 ---
 
@@ -291,46 +294,65 @@ src/
 
 ---
 
-## 🗃️ Supabase Schema
+## 🗃️ Supabase Schema (Normalized)
 
-### Table: `concepts`
+### Table: `vocabulary` (Static reference data)
 
 ```sql
-CREATE TABLE concepts (
+CREATE TABLE vocabulary (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID REFERENCES auth.users(id) NOT NULL,
   word TEXT NOT NULL,
   pinyin TEXT NOT NULL,
-  meaning TEXT NOT NULL,
   part_of_speech TEXT NOT NULL,
+  meaning TEXT NOT NULL,
   chapter INTEGER NOT NULL,
-  source TEXT NOT NULL,
-  paused BOOLEAN DEFAULT false,
-  modality JSONB NOT NULL,  -- { character: {...}, pinyin: {...}, ... }
-  knowledge INTEGER NOT NULL DEFAULT 50,
+  source TEXT NOT NULL DEFAULT 'hsk1',
   created_at TIMESTAMPTZ DEFAULT now(),
-  updated_at TIMESTAMPTZ DEFAULT now(),
-  UNIQUE(user_id, word)
+  UNIQUE(word, pinyin, meaning)
 );
+
+-- Public read access (reference data shared across all users)
+CREATE POLICY "Vocabulary is publicly readable" ON vocabulary FOR SELECT USING (true);
 ```
 
-### Table: `quiz_attempts`
+### Table: `user_progress` (User-specific learning state)
+
+```sql
+CREATE TABLE user_progress (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+  vocabulary_id UUID REFERENCES vocabulary(id) ON DELETE CASCADE NOT NULL,
+  knowledge INTEGER NOT NULL DEFAULT 50 CHECK (knowledge >= 0 AND knowledge <= 100),
+  modality JSONB NOT NULL DEFAULT '{}',  -- { character: {...}, pinyin: {...}, ... }
+  paused BOOLEAN NOT NULL DEFAULT false,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now(),
+  UNIQUE(user_id, vocabulary_id)
+);
+
+-- RLS: Users can only access their own progress
+CREATE POLICY "Users can view their own progress" ON user_progress
+  FOR SELECT USING (user_id = (select auth.uid()));
+```
+
+### Table: `quiz_attempts` (Analytics)
 
 ```sql
 CREATE TABLE quiz_attempts (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES auth.users(id) NOT NULL,
-  timestamp TIMESTAMPTZ DEFAULT now(),
-  concept_id UUID REFERENCES concepts(id) NOT NULL,
-  question_modality TEXT NOT NULL,
-  answer_modality TEXT NOT NULL,
-  option_concept_ids UUID[] NOT NULL,
-  selected_index INTEGER NOT NULL,
+  vocabulary_id UUID REFERENCES vocabulary(id) ON DELETE CASCADE NOT NULL,
+  task_type TEXT NOT NULL,              -- e.g., 'character_to_meaning'
+  question_modality TEXT NOT NULL,       -- e.g., 'character'
+  answer_modality TEXT NOT NULL,         -- e.g., 'meaning'
   correct BOOLEAN NOT NULL,
-  predicted_correct INTEGER NOT NULL DEFAULT 50
+  response_time_ms INTEGER,
+  knowledge_before INTEGER NOT NULL,
+  knowledge_after INTEGER NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT now()
 );
 
-CREATE INDEX idx_quiz_attempts_user_time ON quiz_attempts(user_id, timestamp DESC);
+CREATE INDEX idx_quiz_attempts_vocabulary_id ON quiz_attempts(vocabulary_id);
 ```
 
 ### Table: `user_settings`
@@ -338,11 +360,20 @@ CREATE INDEX idx_quiz_attempts_user_time ON quiz_attempts(user_id, timestamp DES
 ```sql
 CREATE TABLE user_settings (
   user_id UUID PRIMARY KEY REFERENCES auth.users(id),
-  settings JSONB NOT NULL,
+  settings JSONB NOT NULL DEFAULT '{}',
   created_at TIMESTAMPTZ DEFAULT now(),
   updated_at TIMESTAMPTZ DEFAULT now()
 );
 ```
+
+### Schema Benefits
+
+| Old (denormalized) | New (normalized) |
+|--------------------|------------------|
+| `concepts` duplicated per user | `vocabulary` stored once |
+| 162 rows × N users | 162 vocab + 162 × N user_progress |
+| Fixing typos required updating every user | Fix once in vocabulary |
+| Mixed static + user data | Clear separation of concerns |
 
 ---
 
@@ -358,7 +389,9 @@ CREATE TABLE user_settings (
 - [x] **Modality-level knowledge tracking**
 - [x] **Progress dashboard with charts**
 - [x] **Chapter-based initial knowledge priors**
-- [ ] Smart word selection (75% easy / 25% hard blend)
+- [ ] Quick add/remove vocab from Quiz (suggest words, easy toggle without leaving quiz)
+- [ ] Smart word selection (75% easy / 25% hard blend based on knowledge)
+- [ ] Historical progress timeline (bar chart of "words likely correct" over time)
 - [ ] Prediction calibration tracking
 - [ ] ElevenLabs premium TTS integration
 - [ ] Tone-specific practice mode

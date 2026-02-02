@@ -1,19 +1,50 @@
-// Supabase database types (auto-generated structure)
+// Supabase database types - matches normalized schema
 
 export interface Database {
   public: {
     Tables: {
-      concepts: {
+      // Static vocabulary reference data (shared across all users)
+      vocabulary: {
         Row: {
           id: string;
-          user_id: string;
           word: string;
           pinyin: string;
           part_of_speech: string;
           meaning: string;
           chapter: number;
           source: string;
-          understanding: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          word: string;
+          pinyin: string;
+          part_of_speech: string;
+          meaning: string;
+          chapter: number;
+          source?: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          word?: string;
+          pinyin?: string;
+          part_of_speech?: string;
+          meaning?: string;
+          chapter?: number;
+          source?: string;
+          created_at?: string;
+        };
+      };
+      
+      // User-specific learning progress
+      user_progress: {
+        Row: {
+          id: string;
+          user_id: string;
+          vocabulary_id: string;
+          knowledge: number;
+          modality: Record<string, unknown>;
           paused: boolean;
           created_at: string;
           updated_at: string;
@@ -21,13 +52,9 @@ export interface Database {
         Insert: {
           id?: string;
           user_id: string;
-          word: string;
-          pinyin: string;
-          part_of_speech: string;
-          meaning: string;
-          chapter: number;
-          source: string;
-          understanding?: number;
+          vocabulary_id: string;
+          knowledge?: number;
+          modality?: Record<string, unknown>;
           paused?: boolean;
           created_at?: string;
           updated_at?: string;
@@ -35,54 +62,77 @@ export interface Database {
         Update: {
           id?: string;
           user_id?: string;
-          word?: string;
-          pinyin?: string;
-          part_of_speech?: string;
-          meaning?: string;
-          chapter?: number;
-          source?: string;
-          understanding?: number;
+          vocabulary_id?: string;
+          knowledge?: number;
+          modality?: Record<string, unknown>;
           paused?: boolean;
           created_at?: string;
           updated_at?: string;
         };
       };
-      srs_records: {
+      
+      // User settings/preferences
+      user_settings: {
         Row: {
-          id: string;
           user_id: string;
-          concept_id: string;
-          question_type: 'pinyin' | 'yes_no' | 'multiple_choice';
-          tier: number;
-          next_review: string | null;
-          streak: number;
-          lapses: number;
+          settings: Record<string, unknown>;
           created_at: string;
           updated_at: string;
         };
         Insert: {
-          id?: string;
           user_id: string;
-          concept_id: string;
-          question_type: 'pinyin' | 'yes_no' | 'multiple_choice';
-          tier?: number;
-          next_review?: string | null;
-          streak?: number;
-          lapses?: number;
+          settings?: Record<string, unknown>;
           created_at?: string;
           updated_at?: string;
         };
         Update: {
-          id?: string;
           user_id?: string;
-          concept_id?: string;
-          question_type?: 'pinyin' | 'yes_no' | 'multiple_choice';
-          tier?: number;
-          next_review?: string | null;
-          streak?: number;
-          lapses?: number;
+          settings?: Record<string, unknown>;
           created_at?: string;
           updated_at?: string;
+        };
+      };
+      
+      // Quiz attempt records for analytics
+      quiz_attempts: {
+        Row: {
+          id: string;
+          user_id: string;
+          vocabulary_id: string;
+          task_type: string;
+          question_modality: string;
+          answer_modality: string;
+          correct: boolean;
+          response_time_ms: number | null;
+          knowledge_before: number;
+          knowledge_after: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          vocabulary_id: string;
+          task_type: string;
+          question_modality: string;
+          answer_modality: string;
+          correct: boolean;
+          response_time_ms?: number | null;
+          knowledge_before: number;
+          knowledge_after: number;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          vocabulary_id?: string;
+          task_type?: string;
+          question_modality?: string;
+          answer_modality?: string;
+          correct?: boolean;
+          response_time_ms?: number | null;
+          knowledge_before?: number;
+          knowledge_after?: number;
+          created_at?: string;
         };
       };
     };
@@ -90,7 +140,10 @@ export interface Database {
 }
 
 // Helper types for easier access
-export type ConceptRow = Database['public']['Tables']['concepts']['Row'];
-export type ConceptInsert = Database['public']['Tables']['concepts']['Insert'];
-export type SRSRecordRow = Database['public']['Tables']['srs_records']['Row'];
-export type SRSRecordInsert = Database['public']['Tables']['srs_records']['Insert'];
+export type VocabularyRow = Database['public']['Tables']['vocabulary']['Row'];
+export type VocabularyInsert = Database['public']['Tables']['vocabulary']['Insert'];
+export type UserProgressRow = Database['public']['Tables']['user_progress']['Row'];
+export type UserProgressInsert = Database['public']['Tables']['user_progress']['Insert'];
+export type UserSettingsRow = Database['public']['Tables']['user_settings']['Row'];
+export type QuizAttemptRow = Database['public']['Tables']['quiz_attempts']['Row'];
+export type QuizAttemptInsert = Database['public']['Tables']['quiz_attempts']['Insert'];

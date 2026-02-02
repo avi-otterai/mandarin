@@ -274,13 +274,8 @@ export function StudyPage({ store, settingsStore, onShowHelp }: StudyPageProps) 
     <div className="h-full bg-gradient-to-b from-base-100 to-base-200 flex flex-col overflow-hidden">
       {/* Header */}
       <header className="flex-shrink-0 bg-base-100 border-b border-base-300 px-4 py-3">
-        <div className="flex items-center justify-between mb-2">
-          <div>
-            <h1 className="text-xl font-bold">Study</h1>
-            <p className="text-sm text-base-content/60">
-              Card {currentIndex + 1} / {sessionWords.length}
-            </p>
-          </div>
+        <div className="flex items-center justify-between">
+          <h1 className="text-xl font-bold">Study</h1>
           <div className="flex items-center gap-2">
             {onShowHelp && (
               <button
@@ -300,13 +295,6 @@ export function StudyPage({ store, settingsStore, onShowHelp }: StudyPageProps) 
             </button>
           </div>
         </div>
-        
-        {/* Progress bar */}
-        <progress 
-          className="progress progress-primary w-full h-1.5" 
-          value={currentIndex + 1} 
-          max={sessionWords.length}
-        />
       </header>
 
       {/* Flashcard */}
@@ -423,43 +411,28 @@ export function StudyPage({ store, settingsStore, onShowHelp }: StudyPageProps) 
           </div>
         )}
 
-        {/* Navigation */}
-        <div className="flex items-center justify-between mt-4 shrink-0">
+        {/* Navigation - simple prev/next */}
+        <div className="flex items-center justify-center gap-6 mt-4 shrink-0">
           <button 
-            className="btn btn-circle btn-primary btn-outline"
+            className="btn btn-circle btn-lg btn-primary btn-outline"
             onClick={goPrev}
+            title="Previous"
           >
-            <ChevronLeft className="w-5 h-5" />
+            <ChevronLeft className="w-6 h-6" />
           </button>
           
-          <div className="flex gap-1.5 max-w-[60%] overflow-hidden">
-            {sessionWords.slice(0, 20).map((_, idx) => (
-              <button
-                key={idx}
-                className={`w-2 h-2 rounded-full transition-all flex-shrink-0 ${
-                  idx === currentIndex 
-                    ? 'bg-primary w-5' 
-                    : 'bg-base-content/20'
-                }`}
-                onClick={() => setCurrentIndex(idx)}
-              />
-            ))}
-            {sessionWords.length > 20 && (
-              <span className="text-xs text-base-content/40">...</span>
-            )}
-          </div>
-          
           <button 
-            className="btn btn-circle btn-primary"
+            className="btn btn-circle btn-lg btn-primary"
             onClick={goNext}
+            title="Next"
           >
-            <ChevronRight className="w-5 h-5" />
+            <ChevronRight className="w-6 h-6" />
           </button>
         </div>
 
         {/* Hint text */}
         <p className="text-center text-xs text-base-content/40 mt-3 shrink-0">
-          Tap any section to reveal/hide · Unlimited practice
+          Tap any section to reveal/hide
         </p>
       </div>
     </div>

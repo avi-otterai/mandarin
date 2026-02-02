@@ -80,14 +80,17 @@ No complex mastery levels - just known or unknown. (SRS tracking for recall stre
 ## Features
 
 ### Vocabulary Tab
-- **Table view** with sortable columns: Character, Pinyin, Meaning, Type, Chapter, Known (✓)
-- **Sticky header** - header stays visible while scrolling
-- **Filters**:
-  - By chapter (Ch. 1-15)
-  - By known status (All / Known ✓ / Unknown)
+- **Table view** with sortable columns: Pinyin, 字 (Character), Meaning, Type, Chapter, Known (✓)
+  - Pinyin-first order optimized for learners
+  - On mobile: Type and Chapter columns hidden to save space
+  - Table scrolls horizontally on narrow screens (no frozen columns)
+- **Sticky header** - column headers stay visible while scrolling vertically
+- **Filters** (compact single row):
+  - By chapter (Ch 1-15)
+  - By known status (✓ + ○ / ✓ only / ○ only)
 - **Mass actions**:
-  - "Mark all known" - check all words in current view (adds to Revise)
-  - "Mark unknown" - uncheck words (removes from Revise)
+  - "Mark ✓" - mark all filtered words as known (adds to Revise)
+  - "Mark ○" - mark all filtered as unknown (removes from Revise)
 - **Checkbox (✓ column)**: Check = "known" = word will appear in Revise sessions
 - **Save button**: Syncs vocabulary progress to cloud
 - Click any character to see details + SRS progress

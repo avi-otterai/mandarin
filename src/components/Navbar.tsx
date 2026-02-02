@@ -1,66 +1,52 @@
 import { Link, useLocation } from 'react-router-dom';
-import { BookOpen, GraduationCap, Settings, Check } from 'lucide-react';
+import { BookOpen, GraduationCap, Zap, User } from 'lucide-react';
 
 interface NavbarProps {
-  reviewedToday: boolean;
   hasUnsyncedSettings?: boolean;
+  quizCompletedToday?: boolean;
 }
 
-export function Navbar({ reviewedToday, hasUnsyncedSettings }: NavbarProps) {
+export function Navbar({ hasUnsyncedSettings, quizCompletedToday }: NavbarProps) {
   const location = useLocation();
+  
+  const tabs = [
+    { path: '/vocab', icon: BookOpen, label: 'Vocab' },
+    { path: '/study', icon: GraduationCap, label: 'Study' },
+    { path: '/quiz', icon: Zap, label: 'Quiz', quizStatus: quizCompletedToday },
+    { path: '/profile', icon: User, label: 'Profile', showBadge: hasUnsyncedSettings },
+  ];
   
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-base-200 border-t border-base-300 z-50">
       <div className="flex justify-around items-center h-16 max-w-lg mx-auto safe-area-inset-bottom">
-        <Link
-          to="/vocab"
-          className={`flex flex-col items-center justify-center flex-1 h-full transition-colors ${
-            location.pathname === '/vocab' 
-              ? 'text-primary bg-base-300/50' 
-              : 'text-base-content/60 hover:text-base-content'
-          }`}
-        >
-          <BookOpen className="w-6 h-6" />
-          <span className="text-xs mt-1">Vocabulary</span>
-        </Link>
-        
-        <Link
-          to="/revise"
-          className={`flex flex-col items-center justify-center flex-1 h-full transition-colors relative ${
-            location.pathname === '/revise' 
-              ? 'text-primary bg-base-300/50' 
-              : 'text-base-content/60 hover:text-base-content'
-          }`}
-        >
-          <div className="relative">
-            <GraduationCap className="w-6 h-6" />
-            {reviewedToday ? (
-              <span className="absolute -top-1.5 -right-1.5 w-4 h-4 flex items-center justify-center bg-success text-success-content rounded-full">
-                <Check className="w-3 h-3" strokeWidth={3} />
-              </span>
-            ) : (
-              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-error rounded-full" />
-            )}
-          </div>
-          <span className="text-xs mt-1">Revise</span>
-        </Link>
-        
-        <Link
-          to="/settings"
-          className={`flex flex-col items-center justify-center flex-1 h-full transition-colors relative ${
-            location.pathname === '/settings' 
-              ? 'text-primary bg-base-300/50' 
-              : 'text-base-content/60 hover:text-base-content'
-          }`}
-        >
-          <div className="relative">
-            <Settings className="w-6 h-6" />
-            {hasUnsyncedSettings && (
-              <span className="absolute -top-1 -right-1 w-2 h-2 bg-warning rounded-full" />
-            )}
-          </div>
-          <span className="text-xs mt-1">Settings</span>
-        </Link>
+        {tabs.map(({ path, icon: Icon, label, showBadge, quizStatus }) => {
+          const isActive = location.pathname === path;
+          
+          return (
+            <Link
+              key={path}
+              to={path}
+              className={`flex flex-col items-center justify-center flex-1 h-full transition-colors ${
+                isActive 
+                  ? 'text-primary bg-base-300/50' 
+                  : 'text-base-content/60 hover:text-base-content'
+              }`}
+            >
+              <div className="relative">
+                <Icon className="w-6 h-6" />
+                {showBadge && (
+                  <span className="absolute -top-1 -right-1 w-2 h-2 bg-warning rounded-full" />
+                )}
+                {quizStatus !== undefined && (
+                  <span className={`absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full ${
+                    quizStatus ? 'bg-success' : 'bg-error'
+                  }`} />
+                )}
+              </div>
+              <span className="text-xs mt-1">{label}</span>
+            </Link>
+          );
+        })}
       </div>
     </nav>
   );

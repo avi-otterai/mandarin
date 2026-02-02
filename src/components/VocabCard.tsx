@@ -1,20 +1,19 @@
 import { useState, useCallback } from 'react';
-import { Check, RotateCcw, Volume2, Loader2 } from 'lucide-react';
-import type { Concept, SRSRecord } from '../types/vocabulary';
-import { tierToColorClass, formatTimeUntilReview } from '../utils/srs';
+import { Pause, Play, Volume2, Loader2 } from 'lucide-react';
+import type { Concept, Modality } from '../types/vocabulary';
+import { MODALITY_INFO } from '../types/vocabulary';
 import { speak, stopSpeaking, isTTSSupported, getVoiceForCurrentBrowser } from '../services/ttsService';
 import type { AudioSettings } from '../types/settings';
 
 interface VocabCardProps {
   concept: Concept;
-  srsRecords: SRSRecord[];
-  onToggleKnown: () => void;
+  onTogglePaused: () => void;
   onClose: () => void;
   audioSettings?: Partial<AudioSettings>;
 }
 
-export function VocabCard({ concept, srsRecords, onToggleKnown, onClose, audioSettings }: VocabCardProps) {
-  const isKnown = concept.understanding >= 80;
+export function VocabCard({ concept, onTogglePaused, onClose, audioSettings }: VocabCardProps) {
+  const isPaused = concept.paused;
   const [isPlaying, setIsPlaying] = useState(false);
   const ttsSupported = isTTSSupported();
   
@@ -39,6 +38,15 @@ export function VocabCard({ concept, srsRecords, onToggleKnown, onClose, audioSe
       setIsPlaying(false);
     }
   }, [concept.word, ttsSupported, isPlaying, audioSettings]);
+  
+  const modalities: Modality[] = ['character', 'pinyin', 'meaning', 'audio'];
+  
+  // Color class based on knowledge level
+  const getKnowledgeColor = (knowledge: number): string => {
+    if (knowledge >= 80) return 'text-success';
+    if (knowledge >= 50) return 'text-warning';
+    return 'text-error/70';
+  };
   
   return (
     <>
@@ -85,43 +93,55 @@ export function VocabCard({ concept, srsRecords, onToggleKnown, onClose, audioSe
               </p>
             </div>
             
-            {/* SRS Progress */}
-            {srsRecords.length > 0 && (
-              <div className="mb-4">
-                <h3 className="text-sm font-semibold mb-2 text-base-content/70">Learning Progress</h3>
-                <div className="grid grid-cols-3 gap-2">
-                  {srsRecords.map(record => (
+            {/* Modality Knowledge */}
+            <div className="mb-4">
+              <h3 className="text-sm font-semibold mb-2 text-base-content/70">Knowledge by Modality</h3>
+              <div className="grid grid-cols-2 gap-2">
+                {modalities.map(mod => {
+                  const info = MODALITY_INFO[mod];
+                  const score = concept.modality[mod];
+                  
+                  return (
                     <div 
-                      key={record.id}
-                      className={`bg-base-300 rounded-lg p-2 text-center ${tierToColorClass(record.tier)}`}
+                      key={mod}
+                      className="bg-base-300 rounded-lg p-3"
                     >
-                      <div className="text-xs opacity-70">
-                        {record.questionType === 'pinyin' ? 'Pinyin' : 
-                         record.questionType === 'yes_no' ? 'Yes/No' : 'Choice'}
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-sm flex items-center gap-1">
+                          <span>{info.emoji}</span>
+                          <span>{info.label}</span>
+                        </span>
+                        <span className={`font-bold ${getKnowledgeColor(score.knowledge)}`}>
+                          {score.knowledge}%
+                        </span>
                       </div>
-                      <div className="font-bold">
-                        {Math.round((record.tier / 7) * 100)}%
-                      </div>
-                      <div className="text-xs opacity-60">
-                        {formatTimeUntilReview(record.nextReview)}
+                      <progress 
+                        className="progress progress-primary w-full h-1.5" 
+                        value={score.knowledge} 
+                        max="100"
+                      />
+                      <div className="text-xs text-base-content/50 mt-1">
+                        {score.attempts > 0 
+                          ? `${score.successes}/${score.attempts} correct`
+                          : 'Not tested yet'}
                       </div>
                     </div>
-                  ))}
-                </div>
+                  );
+                })}
               </div>
-            )}
+            </div>
             
-            {/* Understanding bar */}
+            {/* Overall Knowledge */}
             <div className="mb-4">
               <div className="flex justify-between text-sm mb-1">
-                <span>Mastery</span>
-                <span className={tierToColorClass(Math.round(concept.understanding / 14.3))}>
-                  {concept.understanding}%
+                <span>Overall Knowledge</span>
+                <span className={getKnowledgeColor(concept.knowledge)}>
+                  {concept.knowledge}%
                 </span>
               </div>
               <progress 
                 className="progress progress-primary w-full" 
-                value={concept.understanding} 
+                value={concept.knowledge} 
                 max="100"
               />
             </div>
@@ -129,18 +149,18 @@ export function VocabCard({ concept, srsRecords, onToggleKnown, onClose, audioSe
             {/* Actions */}
             <div className="card-actions justify-between">
               <button 
-                className={`btn ${isKnown ? 'btn-warning' : 'btn-success'}`}
-                onClick={onToggleKnown}
+                className={`btn ${isPaused ? 'btn-success' : 'btn-warning'}`}
+                onClick={onTogglePaused}
               >
-                {isKnown ? (
+                {isPaused ? (
                   <>
-                    <RotateCcw className="w-4 h-4" />
-                    Reset to Learning
+                    <Play className="w-4 h-4" />
+                    Start Studying
                   </>
                 ) : (
                   <>
-                    <Check className="w-4 h-4" />
-                    Mark as Known
+                    <Pause className="w-4 h-4" />
+                    Pause Word
                   </>
                 )}
               </button>

@@ -1,10 +1,11 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Navbar } from './components/Navbar';
 import { HelpModal } from './components/HelpModal';
 import { VocabularyPage } from './pages/VocabularyPage';
-import { RevisePage, hasReviewedToday } from './pages/RevisePage';
-import { SettingsPage } from './pages/SettingsPage';
+import { StudyPage } from './pages/StudyPage';
+import { QuizPage, hasCompletedQuizToday } from './pages/QuizPage';
+import { ProfilePage } from './pages/ProfilePage';
 import { LoginPage } from './pages/LoginPage';
 import { useVocabularyStore } from './stores/vocabularyStore';
 import { useSettingsStore } from './stores/settingsStore';
@@ -38,7 +39,7 @@ function App() {
     );
   }
 
-  // Show login page if not authenticated (and Supabase is configured)
+  // Show login page if not authenticated
   if (auth.isConfigured && !auth.isAuthenticated) {
     return (
       <LoginPage
@@ -91,47 +92,42 @@ function AppContent({
 }) {
   const location = useLocation();
   
-  // Track if user reviewed today - re-check on route change
-  const [reviewedToday, setReviewedToday] = useState(hasReviewedToday);
-  
   // Help modal state
   const [showHelpModal, setShowHelpModal] = useState(false);
   
-  // Auto-show help modal for new users (first time)
+  // Quiz completion state - re-check when route changes
+  const [quizCompletedToday, setQuizCompletedToday] = useState(hasCompletedQuizToday());
+  
+  useEffect(() => {
+    // Re-check quiz completion when navigating away from quiz
+    setQuizCompletedToday(hasCompletedQuizToday());
+  }, [location.pathname]);
+  
+  // Auto-show help modal for new users
   useEffect(() => {
     const hasSeenOnboarding = localStorage.getItem(ONBOARDING_KEY);
     if (!hasSeenOnboarding) {
-      // Small delay so the app renders first
       const timer = setTimeout(() => setShowHelpModal(true), 500);
       return () => clearTimeout(timer);
     }
   }, []);
   
-  // Mark onboarding as seen when modal is closed
   const handleCloseHelp = () => {
     setShowHelpModal(false);
     localStorage.setItem(ONBOARDING_KEY, 'true');
   };
-  
-  useEffect(() => {
-    // Re-check reviewed status when navigating (e.g., after completing a session)
-    setReviewedToday(hasReviewedToday());
-  }, [location.pathname]);
-  
-  // Callback for when review session completes - updates immediately without route change
-  const handleReviewComplete = useCallback(() => {
-    setReviewedToday(true);
-  }, []);
 
   return (
     <div className="h-dvh flex flex-col bg-base-100 text-base-content overflow-hidden">
       {/* Help modal */}
       <HelpModal isOpen={showHelpModal} onClose={handleCloseHelp} />
       
-      {/* Main content area - accounts for fixed navbar */}
+      {/* Main content area */}
       <main className="flex-1 overflow-hidden pb-16">
         <Routes>
-          <Route path="/" element={<Navigate to="/revise" replace />} />
+          {/* Default to Quiz tab */}
+          <Route path="/" element={<Navigate to="/quiz" replace />} />
+          
           <Route 
             path="/vocab" 
             element={
@@ -143,22 +139,35 @@ function AppContent({
               />
             } 
           />
+          
           <Route 
-            path="/revise" 
+            path="/study" 
             element={
-              <RevisePage 
+              <StudyPage 
                 store={store} 
                 settingsStore={settingsStore} 
-                onReviewComplete={handleReviewComplete}
                 onShowHelp={() => setShowHelpModal(true)}
               />
             } 
           />
+          
           <Route 
-            path="/settings" 
+            path="/quiz" 
             element={
-              <SettingsPage 
+              <QuizPage 
+                store={store} 
+                settingsStore={settingsStore} 
+                onShowHelp={() => setShowHelpModal(true)}
+              />
+            } 
+          />
+          
+          <Route 
+            path="/profile" 
+            element={
+              <ProfilePage 
                 settingsStore={settingsStore}
+                vocabStore={store}
                 onSave={onSettingsSave}
                 onLogout={() => auth.signOut()}
                 userEmail={auth.user?.email}
@@ -166,13 +175,17 @@ function AppContent({
               />
             } 
           />
+          
+          {/* Legacy routes - redirect to new names */}
+          <Route path="/revise" element={<Navigate to="/study" replace />} />
+          <Route path="/settings" element={<Navigate to="/profile" replace />} />
         </Routes>
       </main>
       
       {/* Fixed bottom navigation */}
       <Navbar 
-        reviewedToday={reviewedToday}
         hasUnsyncedSettings={settingsStore.hasUnsyncedChanges}
+        quizCompletedToday={quizCompletedToday}
       />
     </div>
   );

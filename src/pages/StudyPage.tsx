@@ -1,18 +1,15 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Volume2, ChevronLeft, ChevronRight, Shuffle, Loader2, BookOpen, CheckSquare, HelpCircle } from 'lucide-react';
+import { Volume2, ChevronLeft, ChevronRight, Shuffle, Loader2, BookOpen, HelpCircle } from 'lucide-react';
 import type { VocabularyStore } from '../stores/vocabularyStore';
 import type { SettingsStore } from '../stores/settingsStore';
 import type { Concept } from '../types/vocabulary';
 import type { FocusLevel } from '../types/settings';
 import { speak, stopSpeaking, isTTSSupported, getVoiceForCurrentBrowser } from '../services/ttsService';
 
-const LAST_REVIEW_KEY = 'langseed_last_review';
-
-interface RevisePageProps {
+interface StudyPageProps {
   store: VocabularyStore;
   settingsStore?: SettingsStore;
-  onReviewComplete?: () => void;
   onShowHelp?: () => void;
 }
 
@@ -20,13 +17,12 @@ interface RevisePageProps {
 type RevealField = 'character' | 'pinyin' | 'meaning' | 'audio';
 
 // Convert focus level (0-3) to weight for probability calculation
-// 0 = skip (never reveal), 3 = high priority (most likely to reveal)
 function focusToWeight(level: FocusLevel): number {
   const weightMap: Record<FocusLevel, number> = {
-    0: 0,    // Skip - never auto-reveal this field
-    1: 15,   // Low priority
-    2: 35,   // Medium priority
-    3: 50,   // High priority
+    0: 0,
+    1: 15,
+    2: 35,
+    3: 50,
   };
   return weightMap[level];
 }
@@ -47,7 +43,7 @@ function pickRevealedField(weights: Record<RevealField, number>): RevealField {
       return field as RevealField;
     }
   }
-  return 'pinyin'; // fallback
+  return 'pinyin';
 }
 
 // Shuffle array (Fisher-Yates)
@@ -60,70 +56,11 @@ function shuffleArray<T>(array: T[]): T[] {
   return shuffled;
 }
 
-// Fire confetti celebration using dynamic import
-async function fireConfetti() {
-  try {
-    const confettiModule = await import('canvas-confetti');
-    const confetti = confettiModule.default;
-    
-    // Big center burst
-    confetti({
-      particleCount: 150,
-      spread: 100,
-      origin: { y: 0.6 },
-    });
-    
-    // Left cannon
-    setTimeout(() => {
-      confetti({
-        particleCount: 50,
-        angle: 60,
-        spread: 55,
-        origin: { x: 0 },
-      });
-    }, 250);
-    
-    // Right cannon
-    setTimeout(() => {
-      confetti({
-        particleCount: 50,
-        angle: 120,
-        spread: 55,
-        origin: { x: 1 },
-      });
-    }, 400);
-  } catch (err) {
-    console.error('Confetti error:', err);
-  }
-}
-
-// Check if reviewed today
-export function hasReviewedToday(): boolean {
-  try {
-    const lastReview = localStorage.getItem(LAST_REVIEW_KEY);
-    if (!lastReview) return false;
-    
-    const lastDate = new Date(lastReview);
-    const today = new Date();
-    
-    return lastDate.toDateString() === today.toDateString();
-  } catch {
-    return false;
-  }
-}
-
-// Mark today as reviewed
-function markReviewedToday() {
-  localStorage.setItem(LAST_REVIEW_KEY, new Date().toISOString());
-}
-
-export function RevisePage({ store, settingsStore, onReviewComplete, onShowHelp }: RevisePageProps) {
-  // Session words - randomly selected from known words
+export function StudyPage({ store, settingsStore, onShowHelp }: StudyPageProps) {
+  // Session words - randomly selected from studying words
   const [sessionWords, setSessionWords] = useState<Concept[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [cardStates, setCardStates] = useState<Map<string, FlashcardState>>(new Map());
-  const [sessionComplete, setSessionComplete] = useState(false);
-  const confettiFiredRef = useRef(false);
   
   // TTS state
   const [isPlaying, setIsPlaying] = useState(false);
@@ -137,7 +74,6 @@ export function RevisePage({ store, settingsStore, onReviewComplete, onShowHelp 
   // Build reveal weights from settings
   const revealWeights = useMemo((): Record<RevealField, number> => {
     if (!settings) {
-      // Default weights if no settings available
       return {
         pinyin: 50,
         meaning: 35,
@@ -153,22 +89,19 @@ export function RevisePage({ store, settingsStore, onReviewComplete, onShowHelp 
     };
   }, [settings]);
   
-  // Get KNOWN words - ONLY words user has explicitly checked in Vocabulary tab
-  // "Known" = checkbox checked (understanding >= 80) = user wants to learn this word
-  // "Unknown" = not checked = user doesn't want to study this yet (avoids overwhelm)
-  // This is the CRITICAL filter - Revise should NEVER show unchecked words!
-  const knownWords = useMemo(() => {
-    return store.concepts.filter(c => c.understanding >= 80 && !c.paused);
+  // Get words for study - non-paused concepts
+  const studyWords = useMemo(() => {
+    return store.concepts.filter(c => !c.paused);
   }, [store.concepts]);
 
-  // Initialize a new revision session
+  // Initialize a new study session
   const startNewSession = useCallback(() => {
-    const wordList = shuffleMode ? shuffleArray(knownWords) : knownWords;
+    const wordList = shuffleMode ? shuffleArray(studyWords) : studyWords;
     const selected = wordList.slice(0, cardsPerSession);
     setSessionWords(selected);
     setCurrentIndex(0);
     
-    // Initialize card states with random reveal for each word based on settings
+    // Initialize card states with random reveal for each word
     const newStates = new Map<string, FlashcardState>();
     selected.forEach(word => {
       const revealField = pickRevealedField(revealWeights);
@@ -177,20 +110,20 @@ export function RevisePage({ store, settingsStore, onReviewComplete, onShowHelp 
           character: revealField === 'character',
           pinyin: revealField === 'pinyin',
           meaning: revealField === 'meaning',
-          audio: true, // Audio always visible (doesn't reveal text info)
+          audio: true,
         },
         initiallyRevealed: revealField,
       });
     });
     setCardStates(newStates);
-  }, [knownWords, cardsPerSession, shuffleMode, revealWeights]);
+  }, [studyWords, cardsPerSession, shuffleMode, revealWeights]);
 
   // Start session on mount or when words change
   useEffect(() => {
-    if (knownWords.length > 0 && sessionWords.length === 0) {
+    if (studyWords.length > 0 && sessionWords.length === 0) {
       startNewSession();
     }
-  }, [knownWords, sessionWords.length, startNewSession]);
+  }, [studyWords, sessionWords.length, startNewSession]);
 
   // Current word
   const currentWord = sessionWords[currentIndex];
@@ -216,7 +149,7 @@ export function RevisePage({ store, settingsStore, onReviewComplete, onShowHelp 
     });
   }, [currentWord]);
 
-  // Reveal all text fields (audio is always visible)
+  // Reveal all text fields
   const revealAll = useCallback(() => {
     if (!currentWord) return;
     
@@ -230,7 +163,7 @@ export function RevisePage({ store, settingsStore, onReviewComplete, onShowHelp 
             character: true,
             pinyin: true,
             meaning: true,
-            audio: true, // Keep as true (always visible)
+            audio: true,
           },
         });
       }
@@ -238,25 +171,24 @@ export function RevisePage({ store, settingsStore, onReviewComplete, onShowHelp 
     });
   }, [currentWord]);
 
-  // Check if all text fields are revealed (audio is always visible)
+  // Check if all text fields are revealed
   const allRevealed = currentState && 
     currentState.revealed.character && 
     currentState.revealed.pinyin && 
     currentState.revealed.meaning;
 
-  // Navigation
+  // Navigation - wrap around for unlimited study
   const goNext = useCallback(() => {
-    // Allow going past last card to trigger session complete
-    if (currentIndex < sessionWords.length) {
-      setCurrentIndex(prev => prev + 1);
+    if (sessionWords.length > 0) {
+      setCurrentIndex(prev => (prev + 1) % sessionWords.length);
     }
-  }, [currentIndex, sessionWords.length]);
+  }, [sessionWords.length]);
 
   const goPrev = useCallback(() => {
-    if (currentIndex > 0) {
-      setCurrentIndex(prev => prev - 1);
+    if (sessionWords.length > 0) {
+      setCurrentIndex(prev => (prev - 1 + sessionWords.length) % sessionWords.length);
     }
-  }, [currentIndex]);
+  }, [sessionWords.length]);
 
   // Handle audio play
   const handlePlayAudio = useCallback(async () => {
@@ -288,7 +220,6 @@ export function RevisePage({ store, settingsStore, onReviewComplete, onShowHelp 
     const prevWordId = prevWordIdRef.current;
     prevWordIdRef.current = currentWordId;
     
-    // Auto-play when moving to a new card
     if (currentWordId && currentWordId !== prevWordId && settings?.autoPlayAudio && ttsSupported) {
       handlePlayAudio();
     }
@@ -303,68 +234,26 @@ export function RevisePage({ store, settingsStore, onReviewComplete, onShowHelp 
     };
   }, [currentIndex, ttsSupported]);
 
-  // Check if audio is available
   const isAudioAvailable = ttsSupported;
 
-  // Session complete - fire confetti and mark as reviewed today
-  useEffect(() => {
-    if (sessionComplete && !confettiFiredRef.current) {
-      confettiFiredRef.current = true;
-      markReviewedToday();
-      // Notify parent immediately so navbar updates
-      onReviewComplete?.();
-      // Fire confetti
-      fireConfetti();
-    }
-  }, [sessionComplete, onReviewComplete]);
-  
-  // Detect session completion
-  useEffect(() => {
-    if (sessionWords.length > 0 && currentIndex >= sessionWords.length && !sessionComplete) {
-      setSessionComplete(true);
-    }
-  }, [currentIndex, sessionWords.length, sessionComplete]);
-
-  // No words to study - enhanced empty state with guidance
-  if (knownWords.length === 0) {
+  // No words to study
+  if (studyWords.length === 0) {
     return (
       <div className="h-full flex flex-col overflow-hidden">
         <header className="flex-shrink-0 bg-base-100/95 backdrop-blur border-b border-base-300 px-4 py-3">
-          <h1 className="text-xl font-bold text-center">Revise</h1>
+          <h1 className="text-xl font-bold text-center">Study</h1>
         </header>
         
         <div className="flex-1 overflow-auto p-4">
           <div className="max-w-lg mx-auto">
             <div className="card bg-base-200">
               <div className="card-body items-center text-center py-10">
-                <div className="text-6xl mb-4">🎯</div>
-                <h2 className="text-2xl font-bold">Ready to Learn?</h2>
+                <div className="text-6xl mb-4">📚</div>
+                <h2 className="text-2xl font-bold">No Words Yet</h2>
                 <p className="text-base-content/60 mt-2 max-w-xs">
-                  Select the words you want to study first, then come back here to practice!
+                  Import some vocabulary first to start studying!
                 </p>
                 
-                {/* Steps */}
-                <div className="mt-6 space-y-3 text-left w-full max-w-xs">
-                  <div className="flex items-center gap-3 p-3 bg-base-100 rounded-xl">
-                    <div className="bg-primary/10 p-2 rounded-lg shrink-0">
-                      <BookOpen className="w-5 h-5 text-primary" />
-                    </div>
-                    <div className="text-sm">
-                      <span className="font-medium">1.</span> Go to <span className="font-semibold text-primary">Vocabulary</span>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-3 p-3 bg-base-100 rounded-xl">
-                    <div className="bg-success/10 p-2 rounded-lg shrink-0">
-                      <CheckSquare className="w-5 h-5 text-success" />
-                    </div>
-                    <div className="text-sm">
-                      <span className="font-medium">2.</span> Check <CheckSquare className="w-3.5 h-3.5 inline text-success" /> words to learn
-                    </div>
-                  </div>
-                </div>
-                
-                {/* CTA Button */}
                 <Link 
                   to="/vocab"
                   className="btn btn-primary mt-6 gap-2"
@@ -380,42 +269,6 @@ export function RevisePage({ store, settingsStore, onReviewComplete, onShowHelp 
     );
   }
 
-  // Session complete screen
-  if (sessionComplete) {
-    return (
-      <div className="h-full flex flex-col overflow-hidden">
-        <header className="flex-shrink-0 bg-base-100/95 backdrop-blur border-b border-base-300 px-4 py-3">
-          <h1 className="text-xl font-bold text-center">Revise</h1>
-        </header>
-        
-        <div className="flex-1 overflow-auto p-4">
-          <div className="max-w-lg mx-auto">
-            <div className="card bg-base-200">
-              <div className="card-body items-center text-center py-12">
-                <div className="text-6xl mb-4">🎉</div>
-                <h2 className="text-2xl font-bold">Session Complete!</h2>
-                <p className="text-base-content/60 mt-2">
-                  You reviewed {sessionWords.length} words.
-                </p>
-                <button 
-                  className="btn btn-primary mt-6"
-                  onClick={() => {
-                    confettiFiredRef.current = false;
-                    setSessionComplete(false);
-                    startNewSession();
-                  }}
-                >
-                  <Shuffle className="w-5 h-5" />
-                  Start New Session
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   // Main flashcard view
   return (
     <div className="h-full bg-gradient-to-b from-base-100 to-base-200 flex flex-col overflow-hidden">
@@ -423,9 +276,9 @@ export function RevisePage({ store, settingsStore, onReviewComplete, onShowHelp 
       <header className="flex-shrink-0 bg-base-100 border-b border-base-300 px-4 py-3">
         <div className="flex items-center justify-between mb-2">
           <div>
-            <h1 className="text-xl font-bold">Revise</h1>
+            <h1 className="text-xl font-bold">Study</h1>
             <p className="text-sm text-base-content/60">
-              {currentIndex + 1} / {sessionWords.length} cards
+              Card {currentIndex + 1} / {sessionWords.length}
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -537,7 +390,7 @@ export function RevisePage({ store, settingsStore, onReviewComplete, onShowHelp 
                 </div>
               </div>
 
-              {/* Audio Section - Always visible (no text to hide) */}
+              {/* Audio Section */}
               <div>
                 <span className="text-xs font-medium text-base-content/50 uppercase tracking-wider mb-1 block">
                   Audio
@@ -573,27 +426,27 @@ export function RevisePage({ store, settingsStore, onReviewComplete, onShowHelp 
         {/* Navigation */}
         <div className="flex items-center justify-between mt-4 shrink-0">
           <button 
-            className={`btn btn-circle ${currentIndex === 0 ? 'btn-disabled' : 'btn-primary btn-outline'}`}
+            className="btn btn-circle btn-primary btn-outline"
             onClick={goPrev}
-            disabled={currentIndex === 0}
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
           
-          <div className="flex gap-1.5">
-            {sessionWords.map((_, idx) => (
+          <div className="flex gap-1.5 max-w-[60%] overflow-hidden">
+            {sessionWords.slice(0, 20).map((_, idx) => (
               <button
                 key={idx}
-                className={`w-2 h-2 rounded-full transition-all ${
+                className={`w-2 h-2 rounded-full transition-all flex-shrink-0 ${
                   idx === currentIndex 
                     ? 'bg-primary w-5' 
-                    : idx < currentIndex
-                    ? 'bg-primary/50'
                     : 'bg-base-content/20'
                 }`}
                 onClick={() => setCurrentIndex(idx)}
               />
             ))}
+            {sessionWords.length > 20 && (
+              <span className="text-xs text-base-content/40">...</span>
+            )}
           </div>
           
           <button 
@@ -606,7 +459,7 @@ export function RevisePage({ store, settingsStore, onReviewComplete, onShowHelp 
 
         {/* Hint text */}
         <p className="text-center text-xs text-base-content/40 mt-3 shrink-0">
-          Tap any section to reveal/hide
+          Tap any section to reveal/hide · Unlimited practice
         </p>
       </div>
     </div>

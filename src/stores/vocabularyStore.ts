@@ -1,20 +1,16 @@
 // Vocabulary store with localStorage persistence + Supabase cloud sync
-// Manages concepts and SRS records
+// Manages concepts with modality-level knowledge tracking
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import type { Concept, SRSRecord, VocabWord, QuestionType } from '../types/vocabulary';
-import { 
-  calculateUnderstanding, 
-  createInitialSRSRecords, 
-  recordAnswer as recordSRSAnswer,
-  isDue,
-  QUESTION_TYPES
-} from '../utils/srs';
+import type { Concept, VocabWord, Modality, ProgressSnapshot } from '../types/vocabulary';
+import { createInitialModality, computeConceptKnowledge, updateModalityScore, computeModalityAverages, countByKnowledge } from '../utils/knowledge';
 import { fetchFromCloud, saveToCloud, type SyncResult } from '../lib/syncService';
+import type { LearningFocus } from '../types/settings';
 import hsk1Data from '../data/hsk1_vocabulary.json';
 
 const STORAGE_KEY = 'langseed_progress';
 const LAST_SYNC_KEY = 'langseed_last_sync';
+const PROGRESS_CACHE_KEY = 'langseed_progress_cache';
 
 // Generate UUID (compatible with Supabase)
 function generateId(): string {
@@ -22,28 +18,26 @@ function generateId(): string {
 }
 
 // Load progress from localStorage
-function loadProgress(): { concepts: Concept[]; srsRecords: SRSRecord[] } {
+function loadProgress(): { concepts: Concept[] } {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
       const data = JSON.parse(stored);
       return {
         concepts: data.concepts || [],
-        srsRecords: data.srsRecords || [],
       };
     }
   } catch (e) {
     console.error('Failed to load progress:', e);
   }
-  return { concepts: [], srsRecords: [] };
+  return { concepts: [] };
 }
 
 // Save progress to localStorage
-function saveProgress(concepts: Concept[], srsRecords: SRSRecord[]): void {
+function saveProgress(concepts: Concept[]): void {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
       concepts,
-      srsRecords,
       lastUpdated: new Date().toISOString(),
     }));
   } catch (e) {
@@ -51,18 +45,47 @@ function saveProgress(concepts: Concept[], srsRecords: SRSRecord[]): void {
   }
 }
 
+// Load progress cache from localStorage
+function loadProgressCache(): ProgressSnapshot[] {
+  try {
+    const stored = localStorage.getItem(PROGRESS_CACHE_KEY);
+    if (stored) {
+      const data = JSON.parse(stored);
+      return data.snapshots || [];
+    }
+  } catch (e) {
+    console.error('Failed to load progress cache:', e);
+  }
+  return [];
+}
+
+// Save progress snapshot to cache
+function saveProgressSnapshot(snapshot: ProgressSnapshot): void {
+  try {
+    const existing = loadProgressCache();
+    // Keep last 100 snapshots
+    const updated = [...existing, snapshot].slice(-100);
+    localStorage.setItem(PROGRESS_CACHE_KEY, JSON.stringify({
+      snapshots: updated,
+      lastUpdated: new Date().toISOString(),
+    }));
+  } catch (e) {
+    console.error('Failed to save progress cache:', e);
+  }
+}
+
 export interface VocabularyStore {
   // Data
   concepts: Concept[];
-  srsRecords: SRSRecord[];
   hsk1Vocab: VocabWord[];
   
   // Computed
-  addedWords: Set<string>;  // Words that have been imported (exist in concepts list)
-  dueCount: number;
-  newCount: number;
+  addedWords: Set<string>;
   availableChapters: number[];
-  knownCount: number;       // Words marked as "known" (understanding >= 80) - ONLY these appear in Revise
+  studyingCount: number;  // Words not paused
+  
+  // Progress stats
+  progressSnapshots: ProgressSnapshot[];
   
   // Sync state
   isSyncing: boolean;
@@ -74,24 +97,33 @@ export interface VocabularyStore {
   importHSK1: () => void;
   importChapters: (fromChapter: number, toChapter: number) => void;
   removeChapters: (fromChapter: number, toChapter: number) => void;
-  toggleKnown: (conceptId: string) => void;
-  markAsKnown: (word: string) => void;
-  initializeSRS: (conceptId: string) => void;
-  recordAnswer: (srsId: string, correct: boolean) => void;
+  togglePaused: (conceptId: string) => void;
   getConceptById: (id: string) => Concept | undefined;
-  getSRSForConcept: (conceptId: string) => SRSRecord[];
-  getNextPractice: () => { type: 'definition'; concept: Concept } | { type: 'srs'; record: SRSRecord; concept: Concept } | null;
-  resetProgress: () => void;
+  getConceptByWord: (word: string) => Concept | undefined;
+  
+  // Quiz actions
+  updateModalityKnowledge: (
+    conceptId: string,
+    modality: Modality,
+    correct: boolean,
+    learningFocus: LearningFocus
+  ) => void;
+  
+  // Progress
+  recordProgressSnapshot: (sessionAttempts: number, sessionCorrect: number) => void;
+  getModalityAverages: () => Record<Modality, number>;
+  getKnowledgeCounts: () => { above80: number; above50: number; below50: number };
   
   // Cloud sync actions
   syncToCloud: (userId: string) => Promise<SyncResult>;
   loadFromCloud: (userId: string) => Promise<void>;
   clearSyncError: () => void;
+  resetProgress: () => void;
 }
 
 export function useVocabularyStore(): VocabularyStore {
   const [concepts, setConcepts] = useState<Concept[]>([]);
-  const [srsRecords, setSrsRecords] = useState<SRSRecord[]>([]);
+  const [progressSnapshots, setProgressSnapshots] = useState<ProgressSnapshot[]>([]);
   const [initialized, setInitialized] = useState(false);
   
   // Sync state
@@ -106,72 +138,51 @@ export function useVocabularyStore(): VocabularyStore {
   });
   const [lastLocalChangeTime, setLastLocalChangeTime] = useState<string | null>(null);
 
-  // Load data on mount and sync meanings from source JSON
+  // Load data on mount
   useEffect(() => {
-    const { concepts: loadedConcepts, srsRecords: loadedSRS } = loadProgress();
+    const { concepts: loadedConcepts } = loadProgress();
     
     // Sync meanings from source JSON (ensures meanings are up-to-date after JSON edits)
     const vocab = hsk1Data as VocabWord[];
     const vocabMap = new Map(vocab.map(v => [v.word, v]));
     
-    let syncCount = 0;
     const updatedConcepts = loadedConcepts.map(c => {
       const sourceWord = vocabMap.get(c.word);
       if (sourceWord && sourceWord.meaning !== c.meaning) {
-        syncCount++;
         return { ...c, meaning: sourceWord.meaning };
       }
       return c;
     });
     
-    // Save synced data immediately to persist updates
-    if (syncCount > 0) {
-      saveProgress(updatedConcepts, loadedSRS);
-    }
-    
     setConcepts(updatedConcepts);
-    setSrsRecords(loadedSRS);
+    setProgressSnapshots(loadProgressCache());
     setInitialized(true);
   }, []);
 
-  // Save data on change (debounced) and track change time
+  // Save data on change
   useEffect(() => {
     if (initialized) {
-      saveProgress(concepts, srsRecords);
+      saveProgress(concepts);
       setLastLocalChangeTime(new Date().toISOString());
     }
-  }, [concepts, srsRecords, initialized]);
+  }, [concepts, initialized]);
   
   // Track if there are unsynced changes
   const hasUnsyncedChanges = useMemo(() => {
     if (!lastLocalChangeTime) return false;
-    if (!lastSyncTime) return concepts.length > 0 || srsRecords.length > 0;
+    if (!lastSyncTime) return concepts.length > 0;
     return new Date(lastLocalChangeTime) > new Date(lastSyncTime);
-  }, [lastLocalChangeTime, lastSyncTime, concepts.length, srsRecords.length]);
+  }, [lastLocalChangeTime, lastSyncTime, concepts.length]);
 
   // Computed values
-  // Words that have been imported/added to the concepts list
   const addedWords = useMemo(() => 
     new Set(concepts.map(c => c.word)),
     [concepts]
   );
   
-  // "Known" words = checked in Vocabulary (understanding >= 80)
-  // CRITICAL: Only known words appear in Revise sessions!
-  // Unknown words (not checked) are excluded to avoid overwhelming the user
-  const knownCount = useMemo(() => 
-    concepts.filter(c => c.understanding >= 80).length,
+  const studyingCount = useMemo(() => 
+    concepts.filter(c => !c.paused).length,
     [concepts]
-  );
-
-  const dueCount = useMemo(() => 
-    srsRecords.filter(r => r.tier < 7 && isDue(r)).length,
-    [srsRecords]
-  );
-
-  const newCount = useMemo(() => 
-    concepts.filter(c => !srsRecords.some(r => r.conceptId === c.id)).length,
-    [concepts, srsRecords]
   );
 
   // Get all available chapters from HSK1 data
@@ -190,8 +201,9 @@ export function useVocabularyStore(): VocabularyStore {
         newConcepts.push({
           ...word,
           id: generateId(),
-          understanding: 0,
-          paused: false,
+          modality: createInitialModality(word.chapter),
+          knowledge: 50, // Will be computed properly when learningFocus is available
+          paused: true,  // Words start as "unknown" - user checks to make them "studying"
         });
       }
     });
@@ -199,7 +211,6 @@ export function useVocabularyStore(): VocabularyStore {
     setConcepts(prev => [...prev, ...newConcepts]);
   }, [addedWords]);
 
-  // Import specific chapter range
   const importChapters = useCallback((fromChapter: number, toChapter: number) => {
     const vocab = hsk1Data as VocabWord[];
     const newConcepts: Concept[] = [];
@@ -209,8 +220,9 @@ export function useVocabularyStore(): VocabularyStore {
         newConcepts.push({
           ...word,
           id: generateId(),
-          understanding: 0,
-          paused: false,
+          modality: createInitialModality(word.chapter),
+          knowledge: 50,
+          paused: true,  // Words start as "unknown" - user checks to make them "studying"
         });
       }
     });
@@ -218,131 +230,15 @@ export function useVocabularyStore(): VocabularyStore {
     setConcepts(prev => [...prev, ...newConcepts]);
   }, [addedWords]);
 
-  // Remove concepts from specific chapter range
   const removeChapters = useCallback((fromChapter: number, toChapter: number) => {
     setConcepts(prev => prev.filter(c => c.chapter < fromChapter || c.chapter > toChapter));
-    // Also remove associated SRS records
-    setSrsRecords(prev => {
-      const conceptIds = concepts
-        .filter(c => c.chapter >= fromChapter && c.chapter <= toChapter)
-        .map(c => c.id);
-      return prev.filter(r => !conceptIds.includes(r.conceptId));
-    });
-  }, [concepts]);
+  }, []);
 
-  const toggleKnown = useCallback((conceptId: string) => {
+  const togglePaused = useCallback((conceptId: string) => {
     setConcepts(prev => prev.map(c => {
       if (c.id !== conceptId) return c;
-      const newUnderstanding = c.understanding >= 80 ? 0 : 100;
-      return { ...c, understanding: newUnderstanding };
+      return { ...c, paused: !c.paused };
     }));
-    
-    // Also update SRS records for this concept
-    setSrsRecords(prev => {
-      const conceptRecords = prev.filter(r => r.conceptId === conceptId);
-      if (conceptRecords.length === 0) {
-        // Create graduated SRS records for "known" status
-        const concept = concepts.find(c => c.id === conceptId);
-        if (concept && concept.understanding < 80) {
-          // Marking as known - create tier 7 records
-          return [...prev, ...QUESTION_TYPES.map(qt => ({
-            id: generateId(),
-            conceptId,
-            questionType: qt as QuestionType,
-            tier: 7,
-            nextReview: null,
-            streak: 0,
-            lapses: 0,
-          }))];
-        }
-      } else {
-        // Toggle existing records
-        const currentTier = conceptRecords[0].tier;
-        const newTier = currentTier >= 7 ? 0 : 7;
-        return prev.map(r => {
-          if (r.conceptId !== conceptId) return r;
-          return {
-            ...r,
-            tier: newTier,
-            nextReview: newTier >= 7 ? null : new Date().toISOString(),
-          };
-        });
-      }
-      return prev;
-    });
-  }, [concepts]);
-
-  const markAsKnown = useCallback((word: string) => {
-    const vocab = hsk1Data as VocabWord[];
-    const wordData = vocab.find(v => v.word === word);
-    
-    if (!wordData || addedWords.has(word)) return;
-    
-    const conceptId = generateId();
-    const newConcept: Concept = {
-      ...wordData,
-      id: conceptId,
-      understanding: 100,
-      paused: false,
-    };
-    
-    setConcepts(prev => [...prev, newConcept]);
-    
-    // Create graduated SRS records
-    const newSRS: SRSRecord[] = QUESTION_TYPES.map(qt => ({
-      id: generateId(),
-      conceptId,
-      questionType: qt as QuestionType,
-      tier: 7,
-      nextReview: null,
-      streak: 0,
-      lapses: 0,
-    }));
-    
-    setSrsRecords(prev => [...prev, ...newSRS]);
-  }, [addedWords]);
-
-  const initializeSRS = useCallback((conceptId: string) => {
-    // Check if SRS records already exist
-    const existingRecords = srsRecords.filter(r => r.conceptId === conceptId);
-    if (existingRecords.length > 0) return;
-    
-    // Create new SRS records at tier 0
-    const newRecords = createInitialSRSRecords(conceptId).map(r => ({
-      ...r,
-      id: generateId(),
-    }));
-    
-    setSrsRecords(prev => [...prev, ...newRecords]);
-    
-    // Update concept understanding
-    setConcepts(prev => prev.map(c => {
-      if (c.id !== conceptId) return c;
-      return { ...c, understanding: calculateUnderstanding(newRecords as SRSRecord[]) };
-    }));
-  }, [srsRecords]);
-
-  const recordAnswer = useCallback((srsId: string, correct: boolean) => {
-    setSrsRecords(prev => {
-      const updated = prev.map(r => {
-        if (r.id !== srsId) return r;
-        return recordSRSAnswer(r, correct);
-      });
-      
-      // Update concept understanding
-      const record = updated.find(r => r.id === srsId);
-      if (record) {
-        const conceptRecords = updated.filter(r => r.conceptId === record.conceptId);
-        const newUnderstanding = calculateUnderstanding(conceptRecords);
-        
-        setConcepts(c => c.map(concept => {
-          if (concept.id !== record.conceptId) return concept;
-          return { ...concept, understanding: newUnderstanding };
-        }));
-      }
-      
-      return updated;
-    });
   }, []);
 
   const getConceptById = useCallback((id: string) => 
@@ -350,45 +246,69 @@ export function useVocabularyStore(): VocabularyStore {
     [concepts]
   );
 
-  const getSRSForConcept = useCallback((conceptId: string) => 
-    srsRecords.filter(r => r.conceptId === conceptId),
-    [srsRecords]
+  const getConceptByWord = useCallback((word: string) => 
+    concepts.find(c => c.word === word),
+    [concepts]
   );
 
-  const getNextPractice = useCallback(() => {
-    // Priority 1: Due SRS reviews
-    const dueRecords = srsRecords
-      .filter(r => r.tier < 7 && isDue(r))
-      .sort((a, b) => {
-        if (!a.nextReview) return 1;
-        if (!b.nextReview) return -1;
-        return new Date(a.nextReview).getTime() - new Date(b.nextReview).getTime();
-      });
+  // Update modality knowledge after quiz answer
+  const updateModalityKnowledge = useCallback((
+    conceptId: string,
+    modality: Modality,
+    correct: boolean,
+    learningFocus: LearningFocus
+  ) => {
+    setConcepts(prev => prev.map(c => {
+      if (c.id !== conceptId) return c;
+      
+      // Update the specific modality score
+      const updatedModality = {
+        ...c.modality,
+        [modality]: updateModalityScore(c.modality[modality], correct),
+      };
+      
+      // Recompute overall knowledge
+      const newKnowledge = computeConceptKnowledge(updatedModality, learningFocus);
+      
+      return {
+        ...c,
+        modality: updatedModality,
+        knowledge: newKnowledge,
+      };
+    }));
+  }, []);
+
+  // Record a progress snapshot
+  const recordProgressSnapshot = useCallback((sessionAttempts: number, sessionCorrect: number) => {
+    const snapshot: ProgressSnapshot = {
+      timestamp: new Date().toISOString(),
+      totalWords: concepts.filter(c => !c.paused).length,
+      wordsAbove50: concepts.filter(c => !c.paused && c.knowledge > 50).length,
+      wordsAbove80: concepts.filter(c => !c.paused && c.knowledge > 80).length,
+      avgKnowledge: computeModalityAverages(concepts.filter(c => !c.paused)),
+      sessionAttempts,
+      sessionCorrect,
+    };
     
-    if (dueRecords.length > 0) {
-      const record = dueRecords[0];
-      const concept = concepts.find(c => c.id === record.conceptId);
-      if (concept && !concept.paused) {
-        return { type: 'srs' as const, record, concept };
-      }
-    }
-    
-    // Priority 2: New definitions (concepts without SRS records)
-    const conceptsWithoutSRS = concepts.filter(c => 
-      !c.paused && !srsRecords.some(r => r.conceptId === c.id)
-    );
-    
-    if (conceptsWithoutSRS.length > 0) {
-      return { type: 'definition' as const, concept: conceptsWithoutSRS[0] };
-    }
-    
-    return null;
-  }, [concepts, srsRecords]);
+    saveProgressSnapshot(snapshot);
+    setProgressSnapshots(prev => [...prev, snapshot].slice(-100));
+  }, [concepts]);
+
+  // Get modality averages for active concepts
+  const getModalityAverages = useCallback(() => {
+    return computeModalityAverages(concepts.filter(c => !c.paused));
+  }, [concepts]);
+
+  // Get knowledge counts
+  const getKnowledgeCounts = useCallback(() => {
+    return countByKnowledge(concepts.filter(c => !c.paused));
+  }, [concepts]);
 
   const resetProgress = useCallback(() => {
     setConcepts([]);
-    setSrsRecords([]);
+    setProgressSnapshots([]);
     localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(PROGRESS_CACHE_KEY);
   }, []);
 
   // Cloud sync: Save to Supabase
@@ -397,7 +317,8 @@ export function useVocabularyStore(): VocabularyStore {
     setSyncError(null);
     
     try {
-      const result = await saveToCloud(userId, concepts, srsRecords);
+      // Note: syncService needs to be updated to handle new concept structure
+      const result = await saveToCloud(userId, concepts, []);
       
       if (result.success) {
         const now = new Date().toISOString();
@@ -415,7 +336,7 @@ export function useVocabularyStore(): VocabularyStore {
     } finally {
       setIsSyncing(false);
     }
-  }, [concepts, srsRecords]);
+  }, [concepts]);
 
   // Cloud sync: Load from Supabase
   const loadFromCloud = useCallback(async (userId: string): Promise<void> => {
@@ -423,17 +344,28 @@ export function useVocabularyStore(): VocabularyStore {
     setSyncError(null);
     
     try {
-      const { concepts: cloudConcepts, srsRecords: cloudSRS, error } = await fetchFromCloud(userId);
+      const { concepts: cloudConcepts, error } = await fetchFromCloud(userId);
       
       if (error) {
         setSyncError(error);
         return;
       }
       
-      // If cloud has data, use it; otherwise keep local data
-      if (cloudConcepts.length > 0 || cloudSRS.length > 0) {
-        setConcepts(cloudConcepts);
-        setSrsRecords(cloudSRS);
+      if (cloudConcepts.length > 0) {
+        // Migrate old concepts to new structure if needed
+        const migratedConcepts = cloudConcepts.map(c => {
+          // If concept doesn't have modality field, create it
+          if (!c.modality) {
+            return {
+              ...c,
+              modality: createInitialModality(c.chapter),
+              knowledge: (c as unknown as { understanding?: number }).understanding ?? 50, // Use old understanding or default
+            };
+          }
+          return c;
+        });
+        
+        setConcepts(migratedConcepts as Concept[]);
         
         const now = new Date().toISOString();
         setLastSyncTime(now);
@@ -452,13 +384,11 @@ export function useVocabularyStore(): VocabularyStore {
 
   return {
     concepts,
-    srsRecords,
     hsk1Vocab: hsk1Data as VocabWord[],
     addedWords,
-    dueCount,
-    newCount,
     availableChapters,
-    knownCount,
+    studyingCount,
+    progressSnapshots,
     // Sync state
     isSyncing,
     syncError,
@@ -468,17 +398,19 @@ export function useVocabularyStore(): VocabularyStore {
     importHSK1,
     importChapters,
     removeChapters,
-    toggleKnown,
-    markAsKnown,
-    initializeSRS,
-    recordAnswer,
+    togglePaused,
     getConceptById,
-    getSRSForConcept,
-    getNextPractice,
-    resetProgress,
+    getConceptByWord,
+    // Quiz actions
+    updateModalityKnowledge,
+    // Progress
+    recordProgressSnapshot,
+    getModalityAverages,
+    getKnowledgeCounts,
     // Cloud sync
     syncToCloud,
     loadFromCloud,
     clearSyncError,
+    resetProgress,
   };
 }

@@ -1,172 +1,209 @@
 # Saras - Chinese Learning App
 
-A React/TypeScript webapp for learning Mandarin Chinese using spaced repetition.
+A React/TypeScript webapp for learning Mandarin Chinese with adaptive quiz-based learning.
 
-## Data Storage
+---
 
-### Hybrid: localStorage + Supabase Cloud
+## 🎯 Learning Philosophy
 
-**Local (instant)**: All changes save to localStorage immediately for fast interactions.
+### Core Principles
 
-**Cloud (manual sync)**: Click the **Save** button to sync to Supabase for cross-device backup.
+| Principle | Implementation |
+|-----------|----------------|
+| **70-80% success rate** | Quiz selects words you're likely to get right, keeping you motivated |
+| **Modality-level tracking** | Track knowledge separately for character, pinyin, meaning, and audio |
+| **Encouraging progression** | Mistakes hurt less than successes help — recovery is always possible |
+| **Progress visibility** | See your growth over time with modality breakdown charts |
+
+### Knowledge Model
+
+Each word has **4 modality scores** (0-100):
+- **Character** - Can you recognize/produce the Chinese characters?
+- **Pinyin** - Can you recall the romanized pronunciation?
+- **Meaning** - Can you recall the English translation?
+- **Audio** - Can you recognize/produce from spoken audio?
+
+**Overall word knowledge** = weighted average of modality scores (weighted by your Learning Focus settings).
+
+### Quiz Task Types (12 combinations)
+
+```
+Question → Answer
+
+character → pinyin     | character → meaning   | character → audio
+pinyin → character     | pinyin → meaning      | pinyin → audio  
+meaning → character    | meaning → pinyin      | meaning → audio
+audio → character      | audio → pinyin        | audio → meaning
+```
+
+Each quiz question tests one input modality (question) and one output modality (answer).
+
+---
+
+## 📱 App Structure
+
+### 4 Tabs
+
+| Tab | Purpose | Mode |
+|-----|---------|------|
+| **Vocabulary** | Import chapters, browse words, toggle study status | Browse |
+| **Study** | Self-paced flashcards, tap to reveal, unlimited | Passive |
+| **Quiz** | Active MCQ testing, daily goal, tracks progress | Active |
+| **Profile** | Progress dashboard + settings | Config |
+
+**Default tab**: Quiz (where the daily learning happens)
+
+---
+
+## 🧠 Data Model
+
+### Concept (User's vocabulary item)
+
+```typescript
+interface Concept {
+  id: string;
+  
+  // Base vocab data
+  word: string;           // 你好
+  pinyin: string;         // nǐhǎo
+  meaning: string;        // hello
+  partOfSpeech: string;   // interjection
+  chapter: number;        // 1
+  
+  // Per-modality knowledge scores
+  modality: {
+    character: { knowledge: number; attempts: number; successes: number; lastAttempt: string | null };
+    pinyin:    { knowledge: number; attempts: number; successes: number; lastAttempt: string | null };
+    meaning:   { knowledge: number; attempts: number; successes: number; lastAttempt: string | null };
+    audio:     { knowledge: number; attempts: number; successes: number; lastAttempt: string | null };
+  };
+  
+  // Computed: weighted average of modality.*.knowledge
+  knowledge: number;
+  paused: boolean;
+}
+```
+
+### QuizAttempt (Stored on each answer)
+
+```typescript
+interface QuizAttempt {
+  id: string;
+  userId: string;
+  timestamp: string;
+  
+  conceptId: string;
+  questionModality: 'character' | 'pinyin' | 'meaning' | 'audio';
+  answerModality: 'character' | 'pinyin' | 'meaning' | 'audio';
+  
+  optionConceptIds: [string, string, string, string];  // 4 options
+  selectedIndex: 0 | 1 | 2 | 3;
+  correct: boolean;
+  
+  predictedCorrect: number;  // For future calibration
+}
+```
+
+### Knowledge Update Formula
+
+```typescript
+// On correct answer: move toward 100 (25% of remaining distance)
+// On incorrect: move toward 0 (17.5% of current value)
+// Asymmetric = mistakes hurt less than successes help
+
+newKnowledge = correct
+  ? current + (100 - current) * 0.25
+  : current - current * 0.175;
+```
+
+**Example recovery**: 80 → wrong → 66 → right → 74 → right → 81 ✓
+
+### Initial Knowledge (Chapter Prior)
+
+Earlier chapters = more common words = higher starting knowledge:
+- Chapter 1: 70 (你, 好, 您)
+- Chapter 8: 50 (medium frequency)
+- Chapter 15: 30 (less common)
+
+---
+
+## 📊 Progress Tracking
+
+### Modality Breakdown (Current snapshot)
+
+```
+📝 Character   ████████░░ 78%
+🔤 Pinyin      ██████████ 92%
+💬 Meaning     █████████░ 85%
+🔊 Audio       █████░░░░░ 52%
+```
+
+### Timeline (Historical)
+
+Shows "words above 50% knowledge" over time, computed from quiz attempt history.
+
+### Data Flow
+
+1. **Quiz answer** → Save `QuizAttempt` to Supabase (async, non-blocking)
+2. **Update local** → Recalculate modality knowledge from answer
+3. **Cache progress** → Store computed progress in localStorage for fast chart rendering
+4. **Runtime compute** → Timeline derived from quiz history on demand
+
+---
+
+## 🗄️ Data Storage
+
+### Hybrid: localStorage + Supabase
 
 | Storage | Key/Table | Data |
 |---------|-----------|------|
-| localStorage | `langseed_progress` | concepts, srsRecords, lastUpdated |
-| localStorage | `langseed_settings` | user preferences (theme, learning focus, etc.) |
-| localStorage | `langseed_last_review` | ISO timestamp of last completed review session |
-| Supabase | `concepts` | Vocabulary with user preferences |
-| Supabase | `srs_records` | SRS progress per word |
+| localStorage | `langseed_progress` | concepts with modality scores |
+| localStorage | `langseed_settings` | user preferences |
+| localStorage | `langseed_progress_cache` | cached progress snapshots for charts |
+| Supabase | `concepts` | Vocabulary with modality knowledge (JSONB) |
+| Supabase | `quiz_attempts` | All quiz answers (source of truth for progress) |
 | Supabase | `user_settings` | User settings (JSONB) |
 
 **Row Level Security (RLS)**: Each user can only access their own data.
 
 ---
 
-## Authentication
+## 🔐 Authentication
 
-The app uses **Supabase Auth** with email/password login.
-
+- **Supabase Auth** with email/password login
 - No public signup (private use only)
-- Create your account via Supabase Dashboard
-- All data is isolated per user via RLS
+- All data isolated per user via RLS
 
 ---
 
-## Learning Goals (from user preferences)
+## ⚙️ Settings
 
-**Priority order:**
-1. **Pinyin** - Foundation, already comfortable
-2. **Pronunciation** - Speaking practice, listening comprehension  
-3. **Reading** - Character recognition
-4. **Tones** - Struggling, needs focused practice
-5. **Writing** - Lowest priority, optional
+### Learning Focus (0-3 weights)
 
-**Current level:** HSK 1
+Controls:
+1. Which quiz task types are selected (higher weight = more questions)
+2. Which flashcard field is revealed first in Study tab
+3. How overall word knowledge is computed (weighted average)
 
----
+| Level | Meaning |
+|-------|---------|
+| 0 | Skip - never test this modality |
+| 1 | Low priority |
+| 2 | Medium priority |
+| 3 | High priority |
 
-## Terminology: Known vs Unknown Words
+### Other Settings
 
-**This is the most important concept in the app!**
-
-| Term | Meaning | In Revise? |
-|------|---------|------------|
-| **Known** ✓ | Word is checked in Vocabulary tab. User wants to learn this word. | **YES** |
-| **Unknown** | Word is NOT checked. User hasn't selected it yet (to avoid overwhelm). | **NO** |
-
-### How It Works
-
-1. **Import chapters** → Words are added to Vocabulary (but marked as "unknown" by default)
-2. **Check the ✓ checkbox** → Word becomes "known" = you want to learn it
-3. **Only checked (known) words appear in Revise sessions!**
-
-### Why This Matters
-
-- **Avoids overwhelm**: You only see words you've explicitly chosen to learn
-- **Controlled vocab**: Start small (check a few words), gradually expand
-- **Focused learning**: Revise tab shows ONLY your selected vocabulary
-
-### Binary System
-
-There are only **2 categories**:
-- ✓ **Known** = checked = will appear in Revise
-- ☐ **Unknown** = not checked = won't appear in Revise
-
-No complex mastery levels - just known or unknown. (SRS tracking for recall strength is separate and granular.)
+- **Cards per session**: Quiz questions per session (5-50)
+- **Theme**: 8 themes (light, dark, wooden, ocean, forest, sunset, sakura, ink)
+- **Character size**: small / medium / large
+- **Pinyin display**: tone marks (māma) or numbers (ma1ma1)
+- **Audio**: Voice selection, speech rate, auto-play
 
 ---
 
-## Features
+## 🛠️ Tech Stack
 
-### Vocabulary Tab
-- **Table view** with sortable columns: Pinyin, 字 (Character), Meaning, Type, Chapter, Known (✓)
-  - Pinyin-first order optimized for learners
-  - On mobile: Type and Chapter columns hidden to save space
-  - Table scrolls horizontally on narrow screens (no frozen columns)
-- **Sticky header** - column headers stay visible while scrolling vertically
-- **Filters** (compact single row):
-  - By chapter (Ch 1-15)
-  - By known status (✓ + ○ / ✓ only / ○ only)
-- **Mass actions**:
-  - "Mark ✓" - mark all filtered words as known (adds to Revise)
-  - "Mark ○" - mark all filtered as unknown (removes from Revise)
-- **Checkbox (✓ column)**: Check = "known" = word will appear in Revise sessions
-- **Save button**: Syncs vocabulary progress to cloud
-- Click any character to see details + SRS progress
-
-### Revise Tab (Flashcard Review)
-- **Flashcard-style** vocabulary review with reveal/hide mechanics
-- **Session-based**: Randomly selects from your KNOWN words (configurable in Settings)
-- **CRITICAL**: Only words with ✓ checkbox in Vocabulary appear here!
-- **Four reveal fields** (tap to show/hide):
-  - **Character** (汉字) - Chinese character
-  - **Pinyin** - Pronunciation with tone marks
-  - **Meaning** - English translation + part of speech
-  - **Audio** - Speaker button with Text-to-Speech pronunciation
-- **Weighted reveal**: One field is randomly shown initially based on your Learning Focus settings:
-  - Default weights: Pinyin 50%, Meaning 35%, Character 15%, Audio 0%
-  - Customize in Settings → Learning Focus
-- **Session completion**: 🎉 Confetti celebration when you finish all cards
-- **Daily tracking**: Completing a session marks today as "reviewed" (stored in localStorage)
-- **Navigation**: Previous/Next buttons, progress bar, dot indicators, shuffle button
-
-**⚠️ Known Words Only:**
-- Revise ONLY shows words you've checked (✓) in the Vocabulary tab
-- If you see "No Words Yet" - go to Vocabulary and check some words!
-- This prevents overwhelm by keeping your study set focused and intentional
-
-### Navigation Bar
-**Fixed bottom navigation** with 3 tabs - always visible on mobile:
-- **Vocabulary**: Browse and manage your word list
-- **Revise**: Flashcard practice (default landing page)
-- **Settings**: Customize your experience
-
-**Status indicators**:
-- **Revise tab**: Shows ✓ (green badge) if you've reviewed today, or ⚠ (orange badge) if not
-- **Settings tab**: Shows orange dot if there are unsynced settings changes
-
-**Mobile optimized**: Uses dynamic viewport height (`dvh`) and fixed positioning for reliable mobile layout without double-scroll issues.
-
-### Onboarding & Help
-- **Auto-show welcome modal** for new users (first visit)
-- **Help button (?)** in each page header - always accessible to re-open the guide
-- **Welcome modal** explains all 3 tabs with icons and tips
-- **Enhanced empty state** on Revise page guides users to Vocabulary if no words are selected
-
-### Settings Tab
-- **Cards per Session**: Configure how many words to review (5-50)
-- **Learning Focus**: Set priority for each field (0=Skip, 1=Low, 2=Med, 3=High):
-  - Character recognition
-  - Pinyin recall
-  - Meaning/translation
-  - Audio/pronunciation
-- **Theme Selection**: 8 themes with live preview:
-  - Light, Dark, Wooden, Ocean, Forest, Sunset, Sakura, Ink
-- **Display Options**:
-  - Character size (small/medium/large)
-  - Pinyin display (tones: māma vs numbers: ma1ma)
-  - Show example sentences
-- **Audio & Pronunciation**:
-  - Chinese voice selection (auto-detects available system voices)
-  - **Per-browser voice preferences**: Different browsers have different TTS voices available. Your voice selection is saved per-browser (Safari, Chrome, Cursor Browser, etc.) so each device uses its best available voice
-  - Shows "Saving for: [Browser Name]" to indicate which browser's preference you're editing
-  - Warning shown if saved voice isn't available in current browser
-  - Speech speed control (0.5x - 1.5x)
-  - Auto-play audio when revealed
-  - Test voice preview button
-- **Accessibility**: Reduced motion option
-- **Account**: Sign out and reset to defaults
-- **Save button**: Syncs settings to Supabase for cross-device persistence
-
-### Cloud Sync
-- **Save button** in header syncs local data to Supabase
-- **Sync indicator** shows if changes are pending
-- **Auto-load** from cloud on login
-
----
-
-## Tech Stack
 - React 19 + TypeScript
 - Vite (build tool)
 - Tailwind CSS v4 + daisyUI v5
@@ -175,7 +212,7 @@ No complex mastery levels - just known or unknown. (SRS tracking for recall stre
 
 ---
 
-## Setup
+## 🚀 Setup
 
 ### 1. Clone & Install
 
@@ -187,8 +224,6 @@ npm install
 
 ### 2. Configure Supabase
 
-Copy `.env.example` to `.env` and fill in your Supabase credentials:
-
 ```bash
 cp .env.example .env
 ```
@@ -197,18 +232,10 @@ Edit `.env`:
 ```
 VITE_SUPABASE_URL=https://your-project-id.supabase.co
 VITE_SUPABASE_ANON_KEY=your-anon-key-here
-
-# Optional: Auto-login for development (only works in dev mode)
-VITE_DEV_USER_PASSWORD=your-password-here
+VITE_DEV_USER_PASSWORD=your-password-here  # Optional: auto-login in dev
 ```
 
-**Dev Auto-Login**: If you set `VITE_DEV_USER_PASSWORD`, the app will automatically log in as `your-email@example.com` when running `npm run dev`. This is useful for local development to avoid repeated logins.
-
-### 3. Create Supabase User
-
-Go to your Supabase Dashboard → Authentication → Users → Add user
-
-### 4. Run Locally
+### 3. Run Locally
 
 ```bash
 npm run dev
@@ -218,137 +245,130 @@ Open http://localhost:5173/
 
 ---
 
-## Deploying to Netlify
-
-### GitHub Auto-Deployment (Recommended)
-
-Connect GitHub for automatic deploys on every push to `main`:
-
-1. **Create site**: Go to [app.netlify.com](https://app.netlify.com) → **Add new site** → **Import an existing project**
-2. **Connect GitHub**: Click "Deploy with GitHub" → Authorize → Select `avi-otterai/mandarin`
-3. **Verify build settings** (auto-detected from `netlify.toml`):
-   - Branch: `main`
-   - Build command: `npm run build`
-   - Publish directory: `dist`
-4. **Add environment variables** (CRITICAL!):
-   - `VITE_SUPABASE_URL` → your Supabase project URL (from `.env`)
-   - `VITE_SUPABASE_ANON_KEY` → your anon key (from `.env`)
-5. **Deploy!** Click "Deploy site"
-
-**✅ Auto-deploy enabled**: Every push to `main` triggers a new build automatically.
-
-### Manual Deploy (Alternative)
-
-```bash
-npm run build
-# Drag & drop 'dist' folder to Netlify dashboard
-```
-
-### Netlify Configuration
-
-The `netlify.toml` file handles:
-- Build command and publish directory
-- SPA routing (redirects all routes to `index.html`)
-- Security headers (X-Frame-Options, CSP, etc.)
-
----
-
-## Project Structure
+## 📁 Project Structure
 
 ```
-avi-mandarin/
-├── src/
-│   ├── components/
-│   │   ├── Navbar.tsx        # Bottom navigation (3 tabs)
-│   │   ├── HelpModal.tsx     # Onboarding/help modal
-│   │   └── VocabCard.tsx     # Word detail modal
-│   ├── pages/
-│   │   ├── VocabularyPage.tsx # Table + filters
-│   │   ├── RevisePage.tsx     # Flashcard review
-│   │   ├── SettingsPage.tsx   # User preferences
-│   │   └── LoginPage.tsx      # Authentication
-│   ├── stores/
-│   │   ├── vocabularyStore.ts # Vocab state + localStorage + sync
-│   │   └── settingsStore.ts   # Settings state + localStorage + sync
-│   ├── hooks/
-│   │   └── useAuth.ts         # Supabase auth hook
-│   ├── lib/
-│   │   ├── supabase.ts        # Supabase client
-│   │   └── syncService.ts     # Cloud sync logic
-│   ├── services/
-│   │   └── ttsService.ts      # Text-to-Speech (browser API)
-│   ├── types/
-│   │   ├── vocabulary.ts      # Vocab types
-│   │   ├── settings.ts        # Settings types
-│   │   └── database.ts        # Supabase types
-│   ├── utils/
-│   │   ├── srs.ts            # SRS algorithm
-│   │   └── pinyin.ts         # Pinyin matching
-│   └── data/
-│       └── hsk1_vocabulary.json
-├── .env.example              # Environment template
-├── netlify.toml              # Netlify config
-├── index.html
-├── package.json
-└── README.md
+src/
+├── components/
+│   ├── Navbar.tsx           # Bottom navigation (4 tabs)
+│   ├── HelpModal.tsx        # Onboarding/help modal
+│   ├── VocabCard.tsx        # Word detail modal
+│   └── ProgressDashboard.tsx # Progress charts
+├── pages/
+│   ├── VocabularyPage.tsx   # Word list + filters
+│   ├── StudyPage.tsx        # Self-paced flashcards
+│   ├── QuizPage.tsx         # Active MCQ quiz
+│   ├── ProfilePage.tsx      # Progress + settings
+│   └── LoginPage.tsx        # Authentication
+├── stores/
+│   ├── vocabularyStore.ts   # Vocab state + modality knowledge
+│   └── settingsStore.ts     # Settings state
+├── lib/
+│   ├── supabase.ts          # Supabase client
+│   ├── syncService.ts       # Cloud sync logic
+│   └── quizService.ts       # Quiz attempt writes
+├── services/
+│   └── ttsService.ts        # Text-to-Speech
+├── types/
+│   ├── vocabulary.ts        # Concept, QuizAttempt types
+│   ├── settings.ts          # Settings types
+│   └── database.ts          # Supabase types
+├── utils/
+│   ├── knowledge.ts         # Knowledge scoring
+│   ├── quiz.ts              # Quiz generation
+│   └── pinyin.ts            # Pinyin utilities
+└── data/
+    └── hsk1_vocabulary.json # HSK1 word list (150 words, 15 chapters)
 ```
 
 ---
 
-## Supabase Schema
+## 🗃️ Supabase Schema
 
-### Tables
+### Table: `concepts`
 
-**concepts**
-- `id`, `user_id`, `word`, `pinyin`, `part_of_speech`, `meaning`, `chapter`, `source`, `understanding`, `paused`, `created_at`, `updated_at`
+```sql
+CREATE TABLE concepts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES auth.users(id) NOT NULL,
+  word TEXT NOT NULL,
+  pinyin TEXT NOT NULL,
+  meaning TEXT NOT NULL,
+  part_of_speech TEXT NOT NULL,
+  chapter INTEGER NOT NULL,
+  source TEXT NOT NULL,
+  paused BOOLEAN DEFAULT false,
+  modality JSONB NOT NULL,  -- { character: {...}, pinyin: {...}, ... }
+  knowledge INTEGER NOT NULL DEFAULT 50,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now(),
+  UNIQUE(user_id, word)
+);
+```
 
-**srs_records**
-- `id`, `user_id`, `concept_id`, `question_type`, `tier`, `next_review`, `streak`, `lapses`, `created_at`, `updated_at`
+### Table: `quiz_attempts`
 
-**user_settings**
-- `user_id` (primary key), `settings` (JSONB), `created_at`, `updated_at`
-- Stores: cardsPerSession, learningFocus, theme, pinyinDisplay, characterSize, autoPlayAudio, showExampleSentences, shuffleMode, reducedMotion, audio (including voicesByBrowser for per-browser voice preferences)
+```sql
+CREATE TABLE quiz_attempts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES auth.users(id) NOT NULL,
+  timestamp TIMESTAMPTZ DEFAULT now(),
+  concept_id UUID REFERENCES concepts(id) NOT NULL,
+  question_modality TEXT NOT NULL,
+  answer_modality TEXT NOT NULL,
+  option_concept_ids UUID[] NOT NULL,
+  selected_index INTEGER NOT NULL,
+  correct BOOLEAN NOT NULL,
+  predicted_correct INTEGER NOT NULL DEFAULT 50
+);
 
-### RLS Policies
-All tables have Row Level Security enabled:
-- Users can only SELECT/INSERT/UPDATE/DELETE their own rows
-- Enforced via `auth.uid() = user_id`
+CREATE INDEX idx_quiz_attempts_user_time ON quiz_attempts(user_id, timestamp DESC);
+```
+
+### Table: `user_settings`
+
+```sql
+CREATE TABLE user_settings (
+  user_id UUID PRIMARY KEY REFERENCES auth.users(id),
+  settings JSONB NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+```
 
 ---
 
-## TODO / Roadmap
+## ✅ Roadmap
 
-- [x] Vocabulary table with sorting
-- [x] Chapter filtering
-- [x] Mass known/unknown toggle
-- [x] Sticky table header
-- [x] SRS practice (3 question types)
-- [x] localStorage persistence
-- [x] Supabase auth + cloud sync
-- [x] Manual save button with sync indicator
-- [x] Netlify deployment config
-- [x] Flashcard-style revise with reveal/hide mechanics
-- [x] Settings tab with themes & learning focus
-- [x] Configurable words per session
-- [x] Custom reveal weights
-- [x] 8 custom themes (light, dark, wooden, ocean, forest, sunset, sakura, ink)
-- [x] Confetti celebration on session completion
-- [x] Revise tab indicator (✓ if reviewed today, ! if not)
-- [x] Fix: Next button now works on last card to complete session
-- [x] Browser TTS for Chinese pronunciation (voice selection, speed control)
-- [x] Fixed mobile layout: bottom navigation always visible, proper scroll handling
-- [x] Default landing page changed to Revise tab
-- [x] Onboarding: Help modal for new users, ? icon in header, enhanced empty state
-- [x] Per-browser voice preferences (different browsers have different TTS voices)
-- [x] Dev auto-login for local development (set VITE_DEV_USER_PASSWORD in .env)
-- [x] Settings properly load from cloud on page reload
-- [ ] ElevenLabs premium TTS integration (multiple voices, styles)
+- [x] Vocabulary table with sorting and filters
+- [x] Self-paced flashcard Study tab
+- [x] localStorage + Supabase sync
+- [x] 8 custom themes
+- [x] Browser TTS with per-browser voice preferences
+- [x] Onboarding help modal
+- [x] **Quiz tab with MCQ testing**
+- [x] **Modality-level knowledge tracking**
+- [x] **Progress dashboard with charts**
+- [x] **Chapter-based initial knowledge priors**
+- [ ] Smart word selection (75% easy / 25% hard blend)
+- [ ] Prediction calibration tracking
+- [ ] ElevenLabs premium TTS integration
 - [ ] Tone-specific practice mode
-- [ ] Progress stats / charts
-- [ ] **Session tracking in Supabase**: Record each revision session (timestamp, cards reviewed, per-card recall feedback - e.g., "knew it" vs "didn't know" for each hidden modality)
 
 ---
 
-## Data
+## 📖 Terminology
 
-HSK 1 vocabulary is stored in `src/data/hsk1_vocabulary.json` with ~150 words across 15 chapters.
+| Term | Definition |
+|------|------------|
+| **Modality** | One of 4 aspects: character, pinyin, meaning, audio |
+| **Knowledge** | 0-100 score representing probability of correct recall |
+| **Quiz Task** | A question testing one modality → another (12 types) |
+| **Study** | Passive flashcard review (self-paced, no tracking) |
+| **Quiz** | Active MCQ testing (tracked, contributes to progress) |
+
+---
+
+## 📄 License
+
+Private use only.

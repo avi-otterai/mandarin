@@ -1,12 +1,12 @@
 // Sync service for Supabase cloud storage
 import { supabase, isSupabaseConfigured } from './supabase';
-import type { Concept, SRSRecord } from '../types/vocabulary';
+import type { Concept, ConceptModality } from '../types/vocabulary';
+import { createInitialModality } from '../utils/knowledge';
 
 export interface SyncResult {
   success: boolean;
   error?: string;
   conceptsUploaded?: number;
-  srsRecordsUploaded?: number;
 }
 
 // Check if a string is a valid UUID
@@ -16,32 +16,13 @@ function isValidUUID(str: string): boolean {
 }
 
 // Convert old-format IDs to UUIDs for sync
-// Returns a map of oldId -> newUUID for concept ID remapping
-function migrateIds(concepts: Concept[], srsRecords: SRSRecord[]): {
-  migratedConcepts: Concept[];
-  migratedSrsRecords: SRSRecord[];
-} {
-  // Create mapping from old concept IDs to new UUIDs
-  const conceptIdMap = new Map<string, string>();
-  
-  const migratedConcepts = concepts.map(c => {
+function migrateIds(concepts: Concept[]): Concept[] {
+  return concepts.map(c => {
     if (isValidUUID(c.id)) {
-      conceptIdMap.set(c.id, c.id);
       return c;
     }
-    const newId = crypto.randomUUID();
-    conceptIdMap.set(c.id, newId);
-    return { ...c, id: newId };
+    return { ...c, id: crypto.randomUUID() };
   });
-  
-  // Migrate SRS records with new IDs and remapped concept IDs
-  const migratedSrsRecords = srsRecords.map(r => {
-    const newId = isValidUUID(r.id) ? r.id : crypto.randomUUID();
-    const newConceptId = conceptIdMap.get(r.conceptId) || r.conceptId;
-    return { ...r, id: newId, conceptId: newConceptId };
-  });
-  
-  return { migratedConcepts, migratedSrsRecords };
 }
 
 // Convert local Concept to Supabase insert format
@@ -55,23 +36,24 @@ function conceptToInsert(concept: Concept, userId: string) {
     meaning: concept.meaning,
     chapter: concept.chapter,
     source: concept.source,
-    understanding: concept.understanding,
+    modality: concept.modality,
+    knowledge: concept.knowledge,
     paused: concept.paused,
   };
 }
 
-// Convert local SRSRecord to Supabase insert format
-function srsRecordToInsert(record: SRSRecord, userId: string) {
-  return {
-    id: record.id,
-    user_id: userId,
-    concept_id: record.conceptId,
-    question_type: record.questionType,
-    tier: record.tier,
-    next_review: record.nextReview,
-    streak: record.streak,
-    lapses: record.lapses,
-  };
+// Check if modality object is valid (has all required fields with proper structure)
+function isValidModality(modality: unknown): modality is ConceptModality {
+  if (!modality || typeof modality !== 'object') return false;
+  const m = modality as Record<string, unknown>;
+  const requiredKeys = ['character', 'pinyin', 'meaning', 'audio'];
+  for (const key of requiredKeys) {
+    const score = m[key];
+    if (!score || typeof score !== 'object') return false;
+    const s = score as Record<string, unknown>;
+    if (typeof s.knowledge !== 'number') return false;
+  }
+  return true;
 }
 
 // Convert Supabase row to local Concept format
@@ -83,9 +65,16 @@ function rowToConcept(row: {
   meaning: string;
   chapter: number;
   source: string;
-  understanding: number;
+  modality?: ConceptModality | Record<string, never>;  // Can be empty object {}
+  knowledge?: number;
+  understanding?: number;  // Legacy field
   paused: boolean;
 }): Concept {
+  // Handle migration from old schema (understanding) to new schema (modality + knowledge)
+  // Check if modality is valid (not empty object or missing fields)
+  const modality = isValidModality(row.modality) ? row.modality : createInitialModality(row.chapter);
+  const knowledge = row.knowledge ?? row.understanding ?? 50;
+  
   return {
     id: row.id,
     word: row.word,
@@ -94,40 +83,19 @@ function rowToConcept(row: {
     meaning: row.meaning,
     chapter: row.chapter,
     source: row.source,
-    understanding: row.understanding,
+    modality,
+    knowledge,
     paused: row.paused,
-  };
-}
-
-// Convert Supabase row to local SRSRecord format
-function rowToSRSRecord(row: {
-  id: string;
-  concept_id: string;
-  question_type: string;
-  tier: number;
-  next_review: string | null;
-  streak: number;
-  lapses: number;
-}): SRSRecord {
-  return {
-    id: row.id,
-    conceptId: row.concept_id,
-    questionType: row.question_type as SRSRecord['questionType'],
-    tier: row.tier,
-    nextReview: row.next_review,
-    streak: row.streak,
-    lapses: row.lapses,
   };
 }
 
 // Fetch all data from Supabase for the current user
 export async function fetchFromCloud(userId: string): Promise<{
   concepts: Concept[];
-  srsRecords: SRSRecord[];
   error?: string;
 }> {
   if (!isSupabaseConfigured()) {
-    return { concepts: [], srsRecords: [], error: 'Supabase not configured' };
+    return { concepts: [], error: 'Supabase not configured' };
   }
 
   try {
@@ -138,27 +106,15 @@ export async function fetchFromCloud(userId: string): Promise<{
       .eq('user_id', userId);
 
     if (conceptsError) {
-      return { concepts: [], srsRecords: [], error: conceptsError.message };
-    }
-
-    // Fetch SRS records
-    const { data: srsRows, error: srsError } = await supabase
-      .from('srs_records')
-      .select('*')
-      .eq('user_id', userId);
-
-    if (srsError) {
-      return { concepts: [], srsRecords: [], error: srsError.message };
+      return { concepts: [], error: conceptsError.message };
     }
 
     return {
       concepts: (conceptRows || []).map(rowToConcept),
-      srsRecords: (srsRows || []).map(rowToSRSRecord),
     };
   } catch (err) {
     return { 
       concepts: [], 
-      srsRecords: [], 
       error: err instanceof Error ? err.message : 'Unknown error' 
     };
   }
@@ -168,7 +124,7 @@ export async function fetchFromCloud(userId: string): Promise<{
 export async function saveToCloud(
   userId: string,
   concepts: Concept[],
-  srsRecords: SRSRecord[]
+  _srsRecords: unknown[] = []  // Legacy parameter, ignored
 ): Promise<SyncResult> {
   if (!isSupabaseConfigured()) {
     return { success: false, error: 'Supabase not configured' };
@@ -176,55 +132,33 @@ export async function saveToCloud(
 
   try {
     // Migrate any old-format IDs to valid UUIDs
-    const { migratedConcepts, migratedSrsRecords } = migrateIds(concepts, srsRecords);
+    const migratedConcepts = migrateIds(concepts);
     
-    // First, delete existing data for this user (clean sync)
-    const { error: deleteConceptsError } = await supabase
-      .from('srs_records')
-      .delete()
-      .eq('user_id', userId);
-
-    if (deleteConceptsError) {
-      return { success: false, error: deleteConceptsError.message };
-    }
-
-    const { error: deleteSrsError } = await supabase
+    // Delete existing concepts for this user (clean sync)
+    const { error: deleteError } = await supabase
       .from('concepts')
       .delete()
       .eq('user_id', userId);
 
-    if (deleteSrsError) {
-      return { success: false, error: deleteSrsError.message };
+    if (deleteError) {
+      return { success: false, error: deleteError.message };
     }
 
     // Insert concepts
     if (migratedConcepts.length > 0) {
       const conceptInserts = migratedConcepts.map(c => conceptToInsert(c, userId));
-      const { error: insertConceptsError } = await supabase
+      const { error: insertError } = await supabase
         .from('concepts')
         .insert(conceptInserts);
 
-      if (insertConceptsError) {
-        return { success: false, error: insertConceptsError.message };
-      }
-    }
-
-    // Insert SRS records
-    if (migratedSrsRecords.length > 0) {
-      const srsInserts = migratedSrsRecords.map(r => srsRecordToInsert(r, userId));
-      const { error: insertSrsError } = await supabase
-        .from('srs_records')
-        .insert(srsInserts);
-
-      if (insertSrsError) {
-        return { success: false, error: insertSrsError.message };
+      if (insertError) {
+        return { success: false, error: insertError.message };
       }
     }
 
     return {
       success: true,
       conceptsUploaded: migratedConcepts.length,
-      srsRecordsUploaded: migratedSrsRecords.length,
     };
   } catch (err) {
     return { 

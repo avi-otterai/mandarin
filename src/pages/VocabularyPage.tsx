@@ -12,14 +12,14 @@ interface VocabularyPageProps {
   onShowHelp?: () => void;
 }
 
-type SortField = 'pinyin' | 'word' | 'meaning' | 'part_of_speech' | 'chapter' | 'understanding';
+type SortField = 'pinyin' | 'word' | 'meaning' | 'part_of_speech' | 'chapter' | 'knowledge';
 type SortDir = 'asc' | 'desc';
 
 export function VocabularyPage({ store, settingsStore, onSync, onShowHelp }: VocabularyPageProps) {
   const [sortField, setSortField] = useState<SortField>('chapter');
   const [sortDir, setSortDir] = useState<SortDir>('asc');
   const [filterChapter, setFilterChapter] = useState<string>('all');
-  const [filterKnown, setFilterKnown] = useState<'all' | 'known' | 'unknown'>('all');
+  const [filterStudying, setFilterStudying] = useState<'all' | 'studying' | 'paused'>('all');
   const [selectedConcept, setSelectedConcept] = useState<Concept | null>(null);
   
   // Auto-import HSK1 if no vocab exists
@@ -43,13 +43,11 @@ export function VocabularyPage({ store, settingsStore, onSync, onShowHelp }: Voc
       result = result.filter(c => c.chapter === parseInt(filterChapter));
     }
     
-    // Known/Unknown filter
-    // Known = checked (understanding >= 80) = user wants to learn this word
-    // Unknown = not checked = user hasn't selected this word yet
-    if (filterKnown === 'known') {
-      result = result.filter(c => c.understanding >= 80);
-    } else if (filterKnown === 'unknown') {
-      result = result.filter(c => c.understanding < 80);
+    // Studying/Paused filter
+    if (filterStudying === 'studying') {
+      result = result.filter(c => !c.paused);
+    } else if (filterStudying === 'paused') {
+      result = result.filter(c => c.paused);
     }
     
     return result.sort((a, b) => {
@@ -70,13 +68,13 @@ export function VocabularyPage({ store, settingsStore, onSync, onShowHelp }: Voc
         case 'chapter':
           comparison = a.chapter - b.chapter;
           break;
-        case 'understanding':
-          comparison = a.understanding - b.understanding;
+        case 'knowledge':
+          comparison = a.knowledge - b.knowledge;
           break;
       }
       return sortDir === 'asc' ? comparison : -comparison;
     });
-  }, [store.concepts, filterChapter, filterKnown, sortField, sortDir]);
+  }, [store.concepts, filterChapter, filterStudying, sortField, sortDir]);
   
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -97,25 +95,23 @@ export function VocabularyPage({ store, settingsStore, onSync, onShowHelp }: Voc
   };
 
   // Stats
-  // "Known" = checked words (understanding >= 80) = words user wants to learn
-  const knownCount = store.concepts.filter(c => c.understanding >= 80).length;
+  const studyingCount = store.concepts.filter(c => !c.paused).length;
   const totalAdded = store.concepts.length;
-  const filteredKnown = filteredConcepts.filter(c => c.understanding >= 80).length;
+  const filteredStudying = filteredConcepts.filter(c => !c.paused).length;
   
-  // Mass known/unknown toggle for filtered results
-  // "Known" = checked = user wants to learn this word (will appear in Revise)
-  const handleMarkAllKnown = () => {
+  // Mass toggle for filtered results
+  const handleMarkAllStudying = () => {
     filteredConcepts.forEach(c => {
-      if (c.understanding < 80) {
-        store.toggleKnown(c.id);
+      if (c.paused) {
+        store.togglePaused(c.id);
       }
     });
   };
   
-  const handleMarkAllUnknown = () => {
+  const handleMarkAllPaused = () => {
     filteredConcepts.forEach(c => {
-      if (c.understanding >= 80) {
-        store.toggleKnown(c.id);
+      if (!c.paused) {
+        store.togglePaused(c.id);
       }
     });
   };
@@ -149,7 +145,7 @@ export function VocabularyPage({ store, settingsStore, onSync, onShowHelp }: Voc
           <div>
             <h1 className="text-xl font-bold">Vocabulary</h1>
             <p className="text-sm text-base-content/60">
-              {totalAdded} words · {knownCount} known
+              {totalAdded} words · {studyingCount} studying
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -214,21 +210,21 @@ export function VocabularyPage({ store, settingsStore, onSync, onShowHelp }: Voc
             value={filterChapter}
             onChange={e => setFilterChapter(e.target.value)}
           >
-            <option value="all">Ch 1-{Math.max(...chapters)}</option>
+            <option value="all">Ch 1-{Math.max(...chapters, 1)}</option>
             {chapters.map(ch => (
               <option key={ch} value={ch}>Ch {ch}</option>
             ))}
           </select>
           
-          {/* Known/Unknown filter */}
+          {/* Studying/Paused filter */}
           <select
             className="select select-xs select-bordered bg-base-200 w-auto"
-            value={filterKnown}
-            onChange={e => setFilterKnown(e.target.value as 'all' | 'known' | 'unknown')}
+            value={filterStudying}
+            onChange={e => setFilterStudying(e.target.value as 'all' | 'studying' | 'paused')}
           >
-            <option value="all">✓ + ○</option>
-            <option value="known">✓ only</option>
-            <option value="unknown">○ only</option>
+            <option value="all">All</option>
+            <option value="studying">✓ Studying</option>
+            <option value="paused">○ Paused</option>
           </select>
           
           {/* Mass actions */}
@@ -236,21 +232,21 @@ export function VocabularyPage({ store, settingsStore, onSync, onShowHelp }: Voc
             <>
               <button 
                 className="btn btn-xs btn-outline btn-success gap-0.5"
-                onClick={handleMarkAllKnown}
-                disabled={filteredKnown === filteredConcepts.length}
-                title="Mark all filtered as known - adds to Revise"
+                onClick={handleMarkAllStudying}
+                disabled={filteredStudying === filteredConcepts.length}
+                title="Mark all filtered as studying"
               >
                 <CheckSquare className="w-3 h-3" />
-                Mark ✓ ({filteredConcepts.length - filteredKnown})
+                Study ({filteredConcepts.length - filteredStudying})
               </button>
               <button 
                 className="btn btn-xs btn-outline btn-warning gap-0.5"
-                onClick={handleMarkAllUnknown}
-                disabled={filteredKnown === 0}
-                title="Mark all filtered as unknown - removes from Revise"
+                onClick={handleMarkAllPaused}
+                disabled={filteredStudying === 0}
+                title="Pause all filtered words"
               >
                 <Square className="w-3 h-3" />
-                Mark ○ ({filteredKnown})
+                Pause ({filteredStudying})
               </button>
             </>
           )}
@@ -320,12 +316,18 @@ export function VocabularyPage({ store, settingsStore, onSync, onShowHelp }: Voc
                   </th>
                   <th 
                     className="cursor-pointer hover:bg-base-300 text-center whitespace-nowrap"
-                    onClick={() => handleSort('understanding')}
-                    title="Known - check to include in Revise sessions"
+                    onClick={() => handleSort('knowledge')}
+                    title="Knowledge level from quiz performance"
                   >
                     <div className="flex items-center justify-center gap-1">
-                      ✓ <SortIcon field="understanding" />
+                      % <SortIcon field="knowledge" />
                     </div>
+                  </th>
+                  <th 
+                    className="text-center whitespace-nowrap"
+                    title="Check to include in Quiz/Study"
+                  >
+                    ✓
                   </th>
                 </tr>
               </thead>
@@ -346,12 +348,22 @@ export function VocabularyPage({ store, settingsStore, onSync, onShowHelp }: Voc
                     </td>
                     <td className="text-xs opacity-70 hidden sm:table-cell">{formatPOS(concept.part_of_speech)}</td>
                     <td className="text-center text-sm hidden sm:table-cell">{concept.chapter}</td>
+                    <td className="text-center text-sm">
+                      <span className={`font-mono ${
+                        concept.knowledge >= 80 ? 'text-success' :
+                        concept.knowledge >= 50 ? 'text-warning' :
+                        'text-error/70'
+                      }`}>
+                        {concept.knowledge}
+                      </span>
+                    </td>
                     <td className="text-center">
                       <input
                         type="checkbox"
                         className="checkbox checkbox-success checkbox-sm"
-                        checked={concept.understanding >= 80}
-                        onChange={() => store.toggleKnown(concept.id)}
+                        checked={!concept.paused}
+                        onChange={() => store.togglePaused(concept.id)}
+                        title={concept.paused ? 'Click to start studying' : 'Click to pause'}
                       />
                     </td>
                   </tr>
@@ -366,9 +378,8 @@ export function VocabularyPage({ store, settingsStore, onSync, onShowHelp }: Voc
       {selectedConcept && (
         <VocabCard
           concept={selectedConcept}
-          srsRecords={store.getSRSForConcept(selectedConcept.id)}
-          onToggleKnown={() => {
-            store.toggleKnown(selectedConcept.id);
+          onTogglePaused={() => {
+            store.togglePaused(selectedConcept.id);
             const updated = store.concepts.find(c => c.id === selectedConcept.id);
             if (updated) setSelectedConcept(updated);
           }}

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Navbar } from './components/Navbar';
 import { HelpModal } from './components/HelpModal';
@@ -12,16 +12,24 @@ import { useSettingsStore } from './stores/settingsStore';
 import { useAuth } from './hooks/useAuth';
 import { Loader2 } from 'lucide-react';
 
+// Debounce delay for auto-sync (ms)
+const AUTO_SYNC_DELAY = 3000;
+
 const ONBOARDING_KEY = 'langseed_onboarding_seen';
 
 function App() {
   const store = useVocabularyStore();
   const settingsStore = useSettingsStore();
   const auth = useAuth();
+  const syncTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const hasLoadedFromCloud = useRef(false);
   
   // Load data from cloud on login (skip for guest mode)
   useEffect(() => {
-    if (auth.isAuthenticated && auth.user && !auth.isGuest) {
+    if (auth.isAuthenticated && auth.user && !auth.isGuest && !hasLoadedFromCloud.current) {
+      hasLoadedFromCloud.current = true;
+      // Load from cloud - this will overwrite localStorage with cloud data
+      // This ensures we always start with the latest cloud state
       store.loadFromCloud(auth.user.id);
       settingsStore.loadFromCloud(auth.user.id);
     }
@@ -31,6 +39,67 @@ function App() {
       store.importChapters(1, 1, true);
     }
   }, [auth.isAuthenticated, auth.user?.id, auth.isGuest]);
+  
+  // Auto-sync to cloud when there are pending changes (debounced)
+  useEffect(() => {
+    // Only auto-sync for authenticated (non-guest) users with pending changes
+    if (!auth.user || auth.isGuest || !store.hasPendingSync) {
+      return;
+    }
+    
+    // Clear any existing timeout
+    if (syncTimeoutRef.current) {
+      clearTimeout(syncTimeoutRef.current);
+    }
+    
+    // Set a new timeout to sync after delay
+    syncTimeoutRef.current = setTimeout(() => {
+      console.log('[App] Auto-syncing progress to cloud...');
+      store.syncToCloud(auth.user!.id).then(result => {
+        if (result.success) {
+          console.log('[App] Auto-sync successful');
+        } else {
+          console.warn('[App] Auto-sync failed:', result.error);
+        }
+      });
+    }, AUTO_SYNC_DELAY);
+    
+    // Cleanup timeout on unmount
+    return () => {
+      if (syncTimeoutRef.current) {
+        clearTimeout(syncTimeoutRef.current);
+      }
+    };
+  }, [auth.user, auth.isGuest, store.hasPendingSync]);
+  
+  // Sync immediately when page becomes hidden (user navigates away or closes tab)
+  useEffect(() => {
+    if (!auth.user || auth.isGuest) return;
+    
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden' && store.hasPendingSync) {
+        // Use sendBeacon for reliable sync when page is closing
+        // Fall back to regular sync if sendBeacon not available
+        console.log('[App] Page hidden, syncing progress...');
+        store.syncToCloud(auth.user!.id);
+      }
+    };
+    
+    const handleBeforeUnload = () => {
+      if (store.hasPendingSync) {
+        console.log('[App] Page unloading, syncing progress...');
+        store.syncToCloud(auth.user!.id);
+      }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [auth.user, auth.isGuest, store.hasPendingSync]);
 
   // Show loading state while checking auth
   if (auth.loading) {

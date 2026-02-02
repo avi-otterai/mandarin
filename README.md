@@ -169,6 +169,7 @@ Averages are computed only for modalities you've actually tested.
 | localStorage | `langseed_settings` | user preferences |
 | localStorage | `langseed_progress_cache` | cached progress snapshots for charts |
 | localStorage | `langseed_vocab_sort` | vocabulary table sort column & direction |
+| localStorage | `langseed_pending_sync` | flag indicating unsynced local changes |
 | Supabase | `vocabulary` | Static HSK vocabulary (shared across all users) |
 | Supabase | `user_progress` | User's learning state per vocabulary item |
 | Supabase | `quiz_attempts` | All quiz answers (source of truth for progress) |
@@ -177,6 +178,19 @@ Averages are computed only for modalities you've actually tested.
 **Normalized Schema**: Vocabulary reference data is stored once, user progress links to it.
 
 **Row Level Security (RLS)**: Each user can only access their own data. Vocabulary is publicly readable (reference data).
+
+### Auto-Sync Behavior
+
+For signed-in users, progress is automatically synced to Supabase:
+- **After quiz answers**: Syncs 3 seconds after the last answer (debounced)
+- **On page hide/close**: Syncs immediately when navigating away or closing the tab
+- **On app startup**: Loads from cloud to ensure consistency across devices
+
+**⚠️ Important**: Cloud data is the source of truth. If you have local progress that hasn't synced, it will be overwritten when loading from cloud.
+
+### ⚠️ Data Preservation Notes (For Developers)
+
+**DO NOT delete or reset the `user_progress` table for user `your-email@example.com`** - this account has active learning data that should be preserved. If schema changes are needed, migrate the data rather than resetting.
 
 ---
 

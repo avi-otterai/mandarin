@@ -11,6 +11,7 @@ import hsk1Data from '../data/hsk1_vocabulary.json';
 const STORAGE_KEY = 'langseed_progress';
 const LAST_SYNC_KEY = 'langseed_last_sync';
 const PROGRESS_CACHE_KEY = 'langseed_progress_cache';
+const PENDING_SYNC_KEY = 'langseed_pending_sync';
 
 // Generate UUID (compatible with Supabase)
 function generateId(): string {
@@ -92,6 +93,7 @@ export interface VocabularyStore {
   syncError: string | null;
   lastSyncTime: string | null;
   hasUnsyncedChanges: boolean;
+  hasPendingSync: boolean;  // True if there are changes waiting to sync
   
   // Actions
   importHSK1: () => void;
@@ -120,6 +122,8 @@ export interface VocabularyStore {
   loadFromCloud: (userId: string) => Promise<void>;
   clearSyncError: () => void;
   resetProgress: () => void;
+  markPendingSync: () => void;  // Mark that there are changes to sync
+  clearPendingSync: () => void;  // Clear pending sync flag
 }
 
 export function useVocabularyStore(): VocabularyStore {
@@ -138,6 +142,13 @@ export function useVocabularyStore(): VocabularyStore {
     }
   });
   const [lastLocalChangeTime, setLastLocalChangeTime] = useState<string | null>(null);
+  const [hasPendingSync, setHasPendingSync] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem(PENDING_SYNC_KEY) === 'true';
+    } catch {
+      return false;
+    }
+  });
 
   // Load data on mount
   useEffect(() => {
@@ -252,6 +263,26 @@ export function useVocabularyStore(): VocabularyStore {
     [concepts]
   );
 
+  // Mark that there are changes waiting to sync
+  const markPendingSync = useCallback(() => {
+    setHasPendingSync(true);
+    try {
+      localStorage.setItem(PENDING_SYNC_KEY, 'true');
+    } catch (e) {
+      console.error('Failed to mark pending sync:', e);
+    }
+  }, []);
+  
+  // Clear pending sync flag
+  const clearPendingSync = useCallback(() => {
+    setHasPendingSync(false);
+    try {
+      localStorage.removeItem(PENDING_SYNC_KEY);
+    } catch (e) {
+      console.error('Failed to clear pending sync:', e);
+    }
+  }, []);
+
   // Update modality knowledge after quiz answer
   // Updates BOTH question and answer modalities with different rates
   const updateModalityKnowledge = useCallback((
@@ -301,7 +332,10 @@ export function useVocabularyStore(): VocabularyStore {
       
       return updatedConcepts;
     });
-  }, []);
+    
+    // Mark that we have changes to sync to cloud
+    markPendingSync();
+  }, [markPendingSync]);
 
   // Record a progress snapshot
   const recordProgressSnapshot = useCallback((sessionAttempts: number, sessionCorrect: number) => {
@@ -349,6 +383,8 @@ export function useVocabularyStore(): VocabularyStore {
         const now = new Date().toISOString();
         setLastSyncTime(now);
         localStorage.setItem(LAST_SYNC_KEY, now);
+        // Clear pending sync flag on successful sync
+        clearPendingSync();
       } else {
         setSyncError(result.error || 'Sync failed');
       }
@@ -361,9 +397,11 @@ export function useVocabularyStore(): VocabularyStore {
     } finally {
       setIsSyncing(false);
     }
-  }, [concepts]);
+  }, [concepts, clearPendingSync]);
 
   // Cloud sync: Load from Supabase
+  // This function loads cloud data and uses it as the source of truth
+  // Local changes should be synced to cloud before calling this
   const loadFromCloud = useCallback(async (userId: string): Promise<void> => {
     setIsSyncing(true);
     setSyncError(null);
@@ -390,18 +428,29 @@ export function useVocabularyStore(): VocabularyStore {
           return c;
         });
         
+        // Cloud data is the source of truth - replace local data
         setConcepts(migratedConcepts as Concept[]);
+        
+        // Save to localStorage so it persists
+        saveProgress(migratedConcepts as Concept[]);
         
         const now = new Date().toISOString();
         setLastSyncTime(now);
         localStorage.setItem(LAST_SYNC_KEY, now);
+        
+        // Clear pending sync since we just loaded fresh data
+        clearPendingSync();
+        
+        console.log(`[VocabStore] Loaded ${migratedConcepts.length} concepts from cloud`);
+      } else {
+        console.log('[VocabStore] No cloud data found, keeping local data');
       }
     } catch (err) {
       setSyncError(err instanceof Error ? err.message : 'Failed to load from cloud');
     } finally {
       setIsSyncing(false);
     }
-  }, []);
+  }, [clearPendingSync]);
 
   const clearSyncError = useCallback(() => {
     setSyncError(null);
@@ -419,6 +468,7 @@ export function useVocabularyStore(): VocabularyStore {
     syncError,
     lastSyncTime,
     hasUnsyncedChanges,
+    hasPendingSync,
     // Actions
     importHSK1,
     importChapters,
@@ -437,5 +487,7 @@ export function useVocabularyStore(): VocabularyStore {
     loadFromCloud,
     clearSyncError,
     resetProgress,
+    markPendingSync,
+    clearPendingSync,
   };
 }

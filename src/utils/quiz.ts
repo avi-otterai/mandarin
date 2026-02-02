@@ -65,25 +65,82 @@ export function selectTaskType(learningFocus: LearningFocus): QuizTaskType {
 // ═══════════════════════════════════════════════════════════
 
 /**
+ * Get the value of a concept for a given modality (used for collision detection)
+ * For audio, use the word since that's what gets spoken
+ */
+function getModalityValue(concept: Concept, modality: Modality): string {
+  switch (modality) {
+    case 'character':
+      return concept.word;
+    case 'pinyin':
+      return concept.pinyin.toLowerCase(); // Normalize for comparison
+    case 'meaning':
+      return concept.meaning.toLowerCase(); // Normalize for comparison
+    case 'audio':
+      return concept.word; // Audio uses the character for TTS
+    default:
+      return '';
+  }
+}
+
+/**
+ * Check if a candidate would create a collision with target or selected distractors
+ * 
+ * A collision occurs when:
+ * 1. Candidate has same value as target for ANSWER modality (duplicate option)
+ * 2. Candidate has same value as target for QUESTION modality (equally correct answer)
+ * 3. Candidate has same value as an already-selected distractor for ANSWER modality
+ */
+function hasCollision(
+  candidate: Concept,
+  target: Concept,
+  selectedDistractors: Concept[],
+  questionModality: Modality,
+  answerModality: Modality
+): boolean {
+  const targetQuestionValue = getModalityValue(target, questionModality);
+  const targetAnswerValue = getModalityValue(target, answerModality);
+  const candidateQuestionValue = getModalityValue(candidate, questionModality);
+  const candidateAnswerValue = getModalityValue(candidate, answerModality);
+  
+  // Check collision with target's question value (would make distractor also correct)
+  if (candidateQuestionValue === targetQuestionValue) {
+    return true;
+  }
+  
+  // Check collision with target's answer value (duplicate display)
+  if (candidateAnswerValue === targetAnswerValue) {
+    return true;
+  }
+  
+  // Check collision with already-selected distractors' answer values
+  for (const selected of selectedDistractors) {
+    if (candidateAnswerValue === getModalityValue(selected, answerModality)) {
+      return true;
+    }
+  }
+  
+  return false;
+}
+
+/**
  * Select distractors for a quiz question
  * 
  * Strategy:
- * 1. Prefer words from nearby chapters (±3) for relevance
- * 2. Prefer same part of speech for plausible distractors
- * 3. Random selection from weighted pool
+ * 1. Exclude candidates that would create collisions (same answer or question value)
+ * 2. Prefer words from nearby chapters (±3) for relevance
+ * 3. Prefer same part of speech for plausible distractors
+ * 4. Random selection from weighted pool
  */
 export function selectDistractors(
   target: Concept,
   allConcepts: Concept[],
+  questionModality: Modality,
+  answerModality: Modality,
   count: number = 3
 ): Concept[] {
-  // Exclude the target
+  // Exclude the target itself
   const candidates = allConcepts.filter(c => c.id !== target.id && !c.paused);
-  
-  if (candidates.length < count) {
-    // Not enough candidates, return what we have
-    return shuffleArray(candidates).slice(0, count);
-  }
   
   // Score candidates by similarity (higher = better distractor)
   const scored = candidates.map(candidate => {
@@ -105,12 +162,25 @@ export function selectDistractors(
     return { concept: candidate, score };
   });
   
-  // Sort by score (descending) and take top candidates
+  // Sort by score (descending)
   scored.sort((a, b) => b.score - a.score);
   
-  // Take top N but shuffle them to add variety
-  const topCandidates = scored.slice(0, Math.min(count * 3, scored.length));
-  return shuffleArray(topCandidates.map(s => s.concept)).slice(0, count);
+  // Select distractors one by one, checking for collisions
+  const selectedDistractors: Concept[] = [];
+  
+  for (const { concept } of scored) {
+    if (selectedDistractors.length >= count) break;
+    
+    // Skip if this candidate would create a collision
+    if (hasCollision(concept, target, selectedDistractors, questionModality, answerModality)) {
+      continue;
+    }
+    
+    selectedDistractors.push(concept);
+  }
+  
+  // Shuffle the final selection to add variety
+  return shuffleArray(selectedDistractors);
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -128,8 +198,14 @@ export function generateQuestion(
   const taskType = selectTaskType(learningFocus);
   const { question: questionModality, answer: answerModality } = parseTaskType(taskType);
   
-  // Select 3 distractors
-  const distractors = selectDistractors(concept, allConcepts, 3);
+  // Select 3 distractors with collision detection for both modalities
+  const distractors = selectDistractors(
+    concept,
+    allConcepts,
+    questionModality,
+    answerModality,
+    3
+  );
   
   // Create options array: correct answer + distractors
   const options = [concept, ...distractors];

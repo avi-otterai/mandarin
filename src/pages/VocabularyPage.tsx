@@ -364,15 +364,16 @@ export function VocabularyPage({ store, settingsStore, onSync, onShowHelp, onRef
               </thead>
               <tbody>
                 {filteredConcepts.map(concept => (
-                  <tr key={concept.id} className="hover">
+                  <tr 
+                    key={concept.id} 
+                    className="hover cursor-pointer"
+                    onClick={() => setSelectedConcept(concept)}
+                  >
                     <td className="pinyin text-sm whitespace-nowrap">{concept.pinyin}</td>
                     <td className="whitespace-nowrap">
-                      <button 
-                        className="hanzi hanzi-table font-bold hover:text-primary cursor-pointer"
-                        onClick={() => setSelectedConcept(concept)}
-                      >
+                      <span className="hanzi hanzi-table font-bold">
                         {concept.word}
-                      </button>
+                      </span>
                     </td>
                     <td className="text-sm max-w-[200px] truncate" title={concept.meaning}>
                       {concept.meaning}
@@ -388,7 +389,7 @@ export function VocabularyPage({ store, settingsStore, onSync, onShowHelp, onRef
                         {concept.knowledge}
                       </span>
                     </td>
-                    <td className="text-center">
+                    <td className="text-center" onClick={e => e.stopPropagation()}>
                       <input
                         type="checkbox"
                         className="checkbox checkbox-success checkbox-sm"

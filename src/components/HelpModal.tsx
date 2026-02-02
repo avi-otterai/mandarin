@@ -9,7 +9,7 @@ export function HelpModal({ isOpen, onClose }: HelpModalProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 pb-20">
       {/* Backdrop */}
       <div 
         className="absolute inset-0 bg-black/60 backdrop-blur-sm"
@@ -17,7 +17,7 @@ export function HelpModal({ isOpen, onClose }: HelpModalProps) {
       />
       
       {/* Modal */}
-      <div className="relative bg-base-200 rounded-2xl shadow-2xl max-w-sm w-full border border-base-300 animate-in fade-in zoom-in-95 duration-200">
+      <div className="relative bg-base-200 rounded-2xl shadow-2xl max-w-sm w-full max-h-[calc(100vh-6rem)] overflow-y-auto border border-base-300 animate-in fade-in zoom-in-95 duration-200">
         {/* Close button */}
         <button 
           className="absolute top-3 right-3 btn btn-sm btn-circle btn-ghost"

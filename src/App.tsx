@@ -172,6 +172,7 @@ function AppContent({
                 onLogout={() => auth.signOut()}
                 userEmail={auth.user?.email}
                 onShowHelp={() => setShowHelpModal(true)}
+                onRefreshProgress={auth.user ? () => store.loadFromCloud(auth.user!.id) : undefined}
               />
             } 
           />

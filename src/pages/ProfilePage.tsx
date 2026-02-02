@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { 
   Save, 
   RefreshCw, 
@@ -11,7 +11,6 @@ import {
   Volume2,
   VolumeX,
   Eye,
-  Shuffle,
   Sparkles,
   Type,
   Moon,
@@ -20,7 +19,6 @@ import {
   Mic,
   HelpCircle,
   TrendingUp,
-  Target,
   BarChart3,
 } from 'lucide-react';
 import type { SettingsStore } from '../stores/settingsStore';
@@ -51,6 +49,7 @@ interface ProfilePageProps {
   onLogout: () => void;
   userEmail?: string;
   onShowHelp?: () => void;
+  onRefreshProgress?: () => Promise<void>;
 }
 
 // Progress bar component
@@ -73,7 +72,7 @@ function ProgressBar({ value, max = 100, color = 'primary', size = 'md' }: {
   );
 }
 
-export function ProfilePage({ settingsStore, vocabStore, onSave, onLogout, userEmail, onShowHelp }: ProfilePageProps) {
+export function ProfilePage({ settingsStore, vocabStore, onSave, onLogout, userEmail, onShowHelp, onRefreshProgress }: ProfilePageProps) {
   const { settings, isSyncing, syncError, hasUnsyncedChanges, lastSyncTime } = settingsStore;
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -88,7 +87,10 @@ export function ProfilePage({ settingsStore, vocabStore, onSave, onLogout, userE
   const [currentBrowser] = useState<BrowserType>(() => detectBrowser());
   const browserDisplayName = getBrowserDisplayName(currentBrowser);
   
-  // Progress stats
+  // Progress refresh state
+  const [isRefreshingProgress, setIsRefreshingProgress] = useState(false);
+  
+  // Progress stats (computed from cached/current data)
   const progressStats = useMemo(() => {
     const modalityAvgs = vocabStore.getModalityAverages();
     const knowledgeCounts = vocabStore.getKnowledgeCounts();
@@ -105,6 +107,22 @@ export function ProfilePage({ settingsStore, vocabStore, onSave, onLogout, userE
         : 0,
     };
   }, [vocabStore]);
+  
+  // Refresh progress on mount
+  const handleRefreshProgress = useCallback(async () => {
+    if (!onRefreshProgress || isRefreshingProgress) return;
+    setIsRefreshingProgress(true);
+    try {
+      await onRefreshProgress();
+    } finally {
+      setIsRefreshingProgress(false);
+    }
+  }, [onRefreshProgress, isRefreshingProgress]);
+  
+  // Auto-refresh progress when page mounts
+  useEffect(() => {
+    handleRefreshProgress();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   
   // Get current voice for this browser
   const getCurrentVoiceId = (): string => {
@@ -251,10 +269,18 @@ export function ProfilePage({ settingsStore, vocabStore, onSave, onLogout, userE
         
         {/* ========== PROGRESS DASHBOARD ========== */}
         <section className="space-y-4">
-          <h2 className="text-lg font-semibold flex items-center gap-2">
-            <TrendingUp className="w-5 h-5 text-success" />
-            Your Progress
-          </h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold flex items-center gap-2">
+              <TrendingUp className="w-5 h-5 text-success" />
+              Your Progress
+            </h2>
+            {isRefreshingProgress && (
+              <span className="flex items-center gap-1.5 text-xs text-base-content/50">
+                <Loader2 className="w-3 h-3 animate-spin" />
+                Syncing...
+              </span>
+            )}
+          </div>
           
           {progressStats.totalStudying === 0 ? (
             <div className="bg-base-200 rounded-xl p-6 text-center">
@@ -293,6 +319,9 @@ export function ProfilePage({ settingsStore, vocabStore, onSave, onLogout, userE
                   <h3 className="font-medium flex items-center gap-2">
                     <BarChart3 className="w-4 h-4 text-base-content/60" />
                     Modality Breakdown
+                    {isRefreshingProgress && (
+                      <Loader2 className="w-3 h-3 animate-spin text-base-content/40" />
+                    )}
                   </h3>
                   <span className="text-sm text-base-content/60">
                     Avg: {progressStats.overallAvg}%
@@ -319,51 +348,6 @@ export function ProfilePage({ settingsStore, vocabStore, onSave, onLogout, userE
                       </div>
                     );
                   })}
-                </div>
-              </div>
-              
-              {/* Knowledge Distribution */}
-              <div className="bg-base-200 rounded-xl p-4">
-                <h3 className="font-medium mb-3 flex items-center gap-2">
-                  <Target className="w-4 h-4 text-base-content/60" />
-                  Knowledge Distribution
-                </h3>
-                <div className="flex h-8 rounded-lg overflow-hidden">
-                  <div 
-                    className="bg-success transition-all"
-                    style={{ 
-                      width: `${(progressStats.knowledgeCounts.above80 / progressStats.totalStudying) * 100}%` 
-                    }}
-                    title={`Confident (>80%): ${progressStats.knowledgeCounts.above80}`}
-                  />
-                  <div 
-                    className="bg-warning transition-all"
-                    style={{ 
-                      width: `${(progressStats.knowledgeCounts.above50 / progressStats.totalStudying) * 100}%` 
-                    }}
-                    title={`Learning (50-80%): ${progressStats.knowledgeCounts.above50}`}
-                  />
-                  <div 
-                    className="bg-error/60 transition-all"
-                    style={{ 
-                      width: `${(progressStats.knowledgeCounts.below50 / progressStats.totalStudying) * 100}%` 
-                    }}
-                    title={`New (<50%): ${progressStats.knowledgeCounts.below50}`}
-                  />
-                </div>
-                <div className="flex justify-between text-xs mt-2 text-base-content/60">
-                  <span className="flex items-center gap-1">
-                    <span className="w-2 h-2 rounded bg-success" />
-                    &gt;80%
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <span className="w-2 h-2 rounded bg-warning" />
-                    50-80%
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <span className="w-2 h-2 rounded bg-error/60" />
-                    &lt;50%
-                  </span>
                 </div>
               </div>
             </>
@@ -414,25 +398,6 @@ export function ProfilePage({ settingsStore, vocabStore, onSave, onLogout, userE
               value={settings.cardsPerSession}
               onChange={(e) => settingsStore.setCardsPerSession(Number(e.target.value))}
               className="range range-primary range-sm w-full"
-            />
-          </div>
-
-          {/* Shuffle Mode */}
-          <div className="bg-base-200 rounded-xl p-4 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Shuffle className="w-5 h-5 text-base-content/60" />
-              <div>
-                <h3 className="font-medium">Shuffle Cards</h3>
-                <p className="text-sm text-base-content/60">
-                  Randomize order in Study tab
-                </p>
-              </div>
-            </div>
-            <input
-              type="checkbox"
-              className="toggle toggle-primary"
-              checked={settings.shuffleMode}
-              onChange={(e) => settingsStore.updateSettings({ shuffleMode: e.target.checked })}
             />
           </div>
         </section>

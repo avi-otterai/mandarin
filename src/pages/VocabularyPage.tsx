@@ -278,9 +278,8 @@ export function VocabularyPage({ store, settingsStore, onSync, onShowHelp }: Voc
             <table className="table table-sm table-zebra w-full">
               <thead className="text-xs sticky top-0 z-10">
                 <tr className="bg-base-200">
-                  {/* Pinyin - sticky left */}
                   <th 
-                    className="cursor-pointer hover:bg-base-300 whitespace-nowrap sticky left-0 z-20 bg-base-200"
+                    className="cursor-pointer hover:bg-base-300 whitespace-nowrap"
                     onClick={() => handleSort('pinyin')}
                   >
                     <div className="flex items-center gap-1">
@@ -288,7 +287,7 @@ export function VocabularyPage({ store, settingsStore, onSync, onShowHelp }: Voc
                     </div>
                   </th>
                   <th 
-                    className="cursor-pointer hover:bg-base-300 whitespace-nowrap min-w-[4rem]"
+                    className="cursor-pointer hover:bg-base-300 whitespace-nowrap"
                     onClick={() => handleSort('word')}
                   >
                     <div className="flex items-center gap-1">
@@ -319,9 +318,8 @@ export function VocabularyPage({ store, settingsStore, onSync, onShowHelp }: Voc
                       Ch <SortIcon field="chapter" />
                     </div>
                   </th>
-                  {/* Checkmark - sticky right */}
                   <th 
-                    className="cursor-pointer hover:bg-base-300 text-center whitespace-nowrap sticky right-0 z-20 bg-base-200"
+                    className="cursor-pointer hover:bg-base-300 text-center whitespace-nowrap"
                     onClick={() => handleSort('understanding')}
                     title="Known - check to include in Revise sessions"
                   >
@@ -334,8 +332,7 @@ export function VocabularyPage({ store, settingsStore, onSync, onShowHelp }: Voc
               <tbody>
                 {filteredConcepts.map(concept => (
                   <tr key={concept.id} className="hover">
-                    {/* Pinyin - sticky left */}
-                    <td className="pinyin text-sm sticky left-0 z-10 bg-inherit">{concept.pinyin}</td>
+                    <td className="pinyin text-sm whitespace-nowrap">{concept.pinyin}</td>
                     <td className="whitespace-nowrap">
                       <button 
                         className="hanzi hanzi-table font-bold hover:text-primary cursor-pointer"
@@ -349,8 +346,7 @@ export function VocabularyPage({ store, settingsStore, onSync, onShowHelp }: Voc
                     </td>
                     <td className="text-xs opacity-70 hidden sm:table-cell">{formatPOS(concept.part_of_speech)}</td>
                     <td className="text-center text-sm hidden sm:table-cell">{concept.chapter}</td>
-                    {/* Checkmark - sticky right */}
-                    <td className="text-center sticky right-0 z-10 bg-inherit">
+                    <td className="text-center">
                       <input
                         type="checkbox"
                         className="checkbox checkbox-success checkbox-sm"

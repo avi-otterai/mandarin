@@ -36,7 +36,7 @@ meaning → character    | meaning → pinyin      | meaning → audio
 audio → character      | audio → pinyin        | audio → meaning
 ```
 
-Each quiz question tests one input modality (question) and one output modality (answer).
+Each quiz question tests one input modality (question) and one output modality (answer). Both modalities are updated after answering (answer gets full update, question gets partial credit for recognition).
 
 ---
 
@@ -48,7 +48,7 @@ Each quiz question tests one input modality (question) and one output modality (
 |-----|---------|------|
 | **Vocabulary** | Import chapters, browse words, toggle study status | Browse |
 | **Study** | Self-paced flashcards, tap to reveal, unlimited | Passive |
-| **Quiz** | Active MCQ testing, daily goal, tracks progress | Active |
+| **Quiz** | Active MCQ, audio preview, daily goal, tracks progress | Active |
 | **Profile** | Progress dashboard + settings | Config |
 
 **Default tab**: Quiz (where the daily learning happens)
@@ -107,14 +107,20 @@ interface QuizAttempt {
 ### Knowledge Update Formula
 
 ```typescript
-// On correct answer: move toward 100 (25% of remaining distance)
+// ANSWER modality (active recall - full rates):
+// On correct: move toward 100 (25% of remaining distance)
 // On incorrect: move toward 0 (17.5% of current value)
-// Asymmetric = mistakes hurt less than successes help
-
 newKnowledge = correct
   ? current + (100 - current) * 0.25
   : current - current * 0.175;
+
+// QUESTION modality (passive recognition - half rates):
+newKnowledge = correct
+  ? current + (100 - current) * 0.125
+  : current - current * 0.0875;
 ```
+
+**Why both?** Reading "你好" to select its meaning tests your character recognition (question) AND meaning recall (answer). Both should improve!
 
 **Example recovery**: 80 → wrong → 66 → right → 74 → right → 81 ✓
 
@@ -129,7 +135,12 @@ Earlier chapters = more common words = higher starting knowledge:
 
 ## 📊 Progress Tracking
 
-### Modality Breakdown (Current snapshot)
+### Quick Stats
+- **Learning** - Words below 80% knowledge
+- **Confident** - Words above 80% knowledge  
+- **Unknown** - Words not yet imported (paused)
+
+### Modality Breakdown
 
 ```
 📝 Character   ████████░░ 78%
@@ -138,16 +149,13 @@ Earlier chapters = more common words = higher starting knowledge:
 🔊 Audio       █████░░░░░ 52%
 ```
 
-### Timeline (Historical)
-
-Shows "words above 50% knowledge" over time, computed from quiz attempt history.
+Averages are computed only for modalities you've actually tested.
 
 ### Data Flow
 
 1. **Quiz answer** → Save `QuizAttempt` to Supabase (async, non-blocking)
-2. **Update local** → Recalculate modality knowledge from answer
-3. **Cache progress** → Store computed progress in localStorage for fast chart rendering
-4. **Runtime compute** → Timeline derived from quiz history on demand
+2. **Update local** → Recalculate modality knowledge from answer (both question and answer modalities)
+3. **Auto-refresh** → Profile tab refreshes progress on open
 
 ---
 

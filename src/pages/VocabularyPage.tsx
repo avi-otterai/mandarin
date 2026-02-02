@@ -214,9 +214,9 @@ export function VocabularyPage({ store, settingsStore, onSync, onShowHelp }: Voc
             value={filterChapter}
             onChange={e => setFilterChapter(e.target.value)}
           >
-            <option value="all">All</option>
+            <option value="all">Ch 1-{Math.max(...chapters)}</option>
             {chapters.map(ch => (
-              <option key={ch} value={ch}>{ch}</option>
+              <option key={ch} value={ch}>Ch {ch}</option>
             ))}
           </select>
           
@@ -226,9 +226,9 @@ export function VocabularyPage({ store, settingsStore, onSync, onShowHelp }: Voc
             value={filterKnown}
             onChange={e => setFilterKnown(e.target.value as 'all' | 'known' | 'unknown')}
           >
-            <option value="all">All</option>
-            <option value="known">✓</option>
-            <option value="unknown">○</option>
+            <option value="all">✓ + ○</option>
+            <option value="known">✓ only</option>
+            <option value="unknown">○ only</option>
           </select>
           
           {/* Mass actions */}
@@ -241,7 +241,7 @@ export function VocabularyPage({ store, settingsStore, onSync, onShowHelp }: Voc
                 title="Mark all filtered as known - adds to Revise"
               >
                 <CheckSquare className="w-3 h-3" />
-                ✓ all ({filteredConcepts.length - filteredKnown})
+                Mark ✓ ({filteredConcepts.length - filteredKnown})
               </button>
               <button 
                 className="btn btn-xs btn-outline btn-warning gap-0.5"
@@ -250,7 +250,7 @@ export function VocabularyPage({ store, settingsStore, onSync, onShowHelp }: Voc
                 title="Mark all filtered as unknown - removes from Revise"
               >
                 <Square className="w-3 h-3" />
-                ○ all ({filteredKnown})
+                Mark ○ ({filteredKnown})
               </button>
             </>
           )}
@@ -275,23 +275,24 @@ export function VocabularyPage({ store, settingsStore, onSync, onShowHelp }: Voc
           </div>
         ) : (
           <div className="h-full overflow-auto">
-            <table className="table table-sm table-zebra table-sticky w-full">
-              <thead className="text-xs">
+            <table className="table table-sm table-zebra w-full">
+              <thead className="text-xs sticky top-0 z-10">
                 <tr className="bg-base-200">
+                  {/* Pinyin - sticky left */}
+                  <th 
+                    className="cursor-pointer hover:bg-base-300 whitespace-nowrap sticky left-0 z-20 bg-base-200"
+                    onClick={() => handleSort('pinyin')}
+                  >
+                    <div className="flex items-center gap-1">
+                      Pinyin <SortIcon field="pinyin" />
+                    </div>
+                  </th>
                   <th 
                     className="cursor-pointer hover:bg-base-300 whitespace-nowrap"
                     onClick={() => handleSort('word')}
                   >
                     <div className="flex items-center gap-1">
-                      Char <SortIcon field="word" />
-                    </div>
-                  </th>
-                  <th 
-                    className="cursor-pointer hover:bg-base-300 whitespace-nowrap"
-                    onClick={() => handleSort('pinyin')}
-                  >
-                    <div className="flex items-center gap-1">
-                      Pinyin <SortIcon field="pinyin" />
+                      字 <SortIcon field="word" />
                     </div>
                   </th>
                   <th 
@@ -303,7 +304,7 @@ export function VocabularyPage({ store, settingsStore, onSync, onShowHelp }: Voc
                     </div>
                   </th>
                   <th 
-                    className="cursor-pointer hover:bg-base-300 whitespace-nowrap"
+                    className="cursor-pointer hover:bg-base-300 whitespace-nowrap hidden sm:table-cell"
                     onClick={() => handleSort('part_of_speech')}
                   >
                     <div className="flex items-center gap-1">
@@ -311,17 +312,18 @@ export function VocabularyPage({ store, settingsStore, onSync, onShowHelp }: Voc
                     </div>
                   </th>
                   <th 
-                    className="cursor-pointer hover:bg-base-300 text-center whitespace-nowrap"
+                    className="cursor-pointer hover:bg-base-300 text-center whitespace-nowrap hidden sm:table-cell"
                     onClick={() => handleSort('chapter')}
                   >
                     <div className="flex items-center justify-center gap-1">
                       Ch <SortIcon field="chapter" />
                     </div>
                   </th>
+                  {/* Checkmark - sticky right */}
                   <th 
-                    className="cursor-pointer hover:bg-base-300 text-center whitespace-nowrap"
+                    className="cursor-pointer hover:bg-base-300 text-center whitespace-nowrap sticky right-0 z-20 bg-base-200"
                     onClick={() => handleSort('understanding')}
-                    title="Known - check to include in Revise sessions (only checked words appear in Revise)"
+                    title="Known - check to include in Revise sessions"
                   >
                     <div className="flex items-center justify-center gap-1">
                       ✓ <SortIcon field="understanding" />
@@ -332,6 +334,8 @@ export function VocabularyPage({ store, settingsStore, onSync, onShowHelp }: Voc
               <tbody>
                 {filteredConcepts.map(concept => (
                   <tr key={concept.id} className="hover">
+                    {/* Pinyin - sticky left */}
+                    <td className="pinyin text-sm sticky left-0 z-10 bg-inherit">{concept.pinyin}</td>
                     <td>
                       <button 
                         className="hanzi hanzi-table font-bold hover:text-primary cursor-pointer"
@@ -340,13 +344,13 @@ export function VocabularyPage({ store, settingsStore, onSync, onShowHelp }: Voc
                         {concept.word}
                       </button>
                     </td>
-                    <td className="pinyin text-sm">{concept.pinyin}</td>
                     <td className="text-sm max-w-[200px] truncate" title={concept.meaning}>
                       {concept.meaning}
                     </td>
-                    <td className="text-xs opacity-70">{formatPOS(concept.part_of_speech)}</td>
-                    <td className="text-center text-sm">{concept.chapter}</td>
-                    <td className="text-center">
+                    <td className="text-xs opacity-70 hidden sm:table-cell">{formatPOS(concept.part_of_speech)}</td>
+                    <td className="text-center text-sm hidden sm:table-cell">{concept.chapter}</td>
+                    {/* Checkmark - sticky right */}
+                    <td className="text-center sticky right-0 z-10 bg-inherit">
                       <input
                         type="checkbox"
                         className="checkbox checkbox-success checkbox-sm"

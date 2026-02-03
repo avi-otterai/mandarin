@@ -285,6 +285,16 @@ npm run dev
 
 Open http://localhost:5173/
 
+### Dev Mode Toggle
+
+When running locally with `VITE_DEV_USER_EMAIL` and `VITE_DEV_USER_PASSWORD` configured, a **yellow lightning bolt button** (⚡) appears in the top-right corner.
+
+Click it to quickly switch between:
+- **Dev User** - Full account with cloud sync
+- **Guest Mode** - Local-only storage for testing
+
+This makes it easy to test both modes without logging in/out.
+
 ---
 
 ## 📁 Project Structure
@@ -320,7 +330,7 @@ src/
 │   ├── quiz.ts              # Quiz generation
 │   └── pinyin.ts            # Pinyin utilities
 └── data/
-    └── hsk1_vocabulary.json # HSK1 word list (150 words, 15 chapters)
+    └── hsk1_vocabulary.json # HSK1 word list (188 words, 15 chapters)
 ```
 
 ---
@@ -402,7 +412,7 @@ CREATE TABLE user_settings (
 | Old (denormalized) | New (normalized) |
 |--------------------|------------------|
 | `concepts` duplicated per user | `vocabulary` stored once |
-| 162 rows × N users | 162 vocab + 162 × N user_progress |
+| 188 rows × N users | 188 vocab + 188 × N user_progress |
 | Fixing typos required updating every user | Fix once in vocabulary |
 | Mixed static + user data | Clear separation of concerns |
 
@@ -421,6 +431,8 @@ CREATE TABLE user_settings (
 - [x] **Progress dashboard with charts**
 - [x] **Chapter-based initial knowledge priors**
 - [x] **Guest mode** (try without account, local storage only)
+- [x] **Vocabulary auto-merge** (new words from JSON automatically added to existing users)
+- [x] **Dev mode toggle** (quick switch between guest/dev user on localhost)
 - [ ] Quick add/remove vocab from Quiz (suggest words, easy toggle without leaving quiz)
 - [ ] Smart word selection (75% easy / 25% hard blend based on knowledge)
 - [ ] Historical progress timeline (bar chart of "words likely correct" over time)

@@ -10,7 +10,14 @@ import { LoginPage } from './pages/LoginPage';
 import { useVocabularyStore } from './stores/vocabularyStore';
 import { useSettingsStore } from './stores/settingsStore';
 import { useAuth } from './hooks/useAuth';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Zap, User, LogIn } from 'lucide-react';
+
+// Dev mode detection
+const IS_DEV = import.meta.env.MODE === 'development';
+const IS_LOCALHOST = typeof window !== 'undefined' && 
+  (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+const DEV_USER_EMAIL = import.meta.env.VITE_DEV_USER_EMAIL || '';
+const DEV_USER_PASSWORD = import.meta.env.VITE_DEV_USER_PASSWORD || '';
 
 // Debounce delay for auto-sync (ms)
 const AUTO_SYNC_DELAY = 3000;
@@ -271,6 +278,97 @@ function AppContent({
         hasUnsyncedSettings={settingsStore.hasUnsyncedChanges}
         quizCompletedToday={quizCompletedToday}
       />
+      
+      {/* Dev Mode Toggle (localhost only) */}
+      {IS_DEV && IS_LOCALHOST && DEV_USER_EMAIL && DEV_USER_PASSWORD && (
+        <DevModePanel
+          isGuest={isGuest}
+          userEmail={auth.user?.email}
+          onSwitchToGuest={auth.signInAsGuest}
+          onSwitchToDevUser={() => auth.signIn(DEV_USER_EMAIL, DEV_USER_PASSWORD)}
+          onLogout={auth.signOut}
+        />
+      )}
+    </div>
+  );
+}
+
+// Floating dev panel for quick mode switching (localhost only)
+function DevModePanel({
+  isGuest,
+  userEmail,
+  onSwitchToGuest,
+  onSwitchToDevUser,
+  onLogout,
+}: {
+  isGuest: boolean;
+  userEmail?: string;
+  onSwitchToGuest: () => void;
+  onSwitchToDevUser: () => void;
+  onLogout: () => void;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  
+  return (
+    <div className="fixed top-2 right-2 z-50">
+      {/* Toggle button */}
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className={`btn btn-xs btn-circle ${isGuest ? 'btn-secondary' : 'btn-warning'}`}
+        title="Dev Mode Toggle"
+      >
+        <Zap className="w-3 h-3" />
+      </button>
+      
+      {/* Expanded panel */}
+      {isOpen && (
+        <div className="absolute top-8 right-0 p-3 rounded-lg bg-base-200 border border-warning/30 shadow-lg min-w-[180px]">
+          <div className="flex items-center gap-2 mb-2">
+            <Zap className="w-4 h-4 text-warning" />
+            <span className="text-xs font-bold text-warning">DEV MODE</span>
+          </div>
+          
+          {/* Current state */}
+          <div className="text-xs mb-2 p-2 rounded bg-base-100">
+            {isGuest ? (
+              <div className="flex items-center gap-1">
+                <User className="w-3 h-3 text-secondary" />
+                <span className="text-secondary font-medium">Guest Mode</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1">
+                <LogIn className="w-3 h-3 text-success" />
+                <span className="text-success font-medium truncate">{userEmail || 'Dev User'}</span>
+              </div>
+            )}
+          </div>
+          
+          {/* Switch buttons */}
+          <div className="flex flex-col gap-1">
+            {isGuest ? (
+              <button
+                onClick={() => { onSwitchToDevUser(); setIsOpen(false); }}
+                className="btn btn-xs btn-warning w-full"
+              >
+                Switch to Dev User
+              </button>
+            ) : (
+              <button
+                onClick={() => { onSwitchToGuest(); setIsOpen(false); }}
+                className="btn btn-xs btn-secondary w-full"
+              >
+                Switch to Guest
+              </button>
+            )}
+            <button
+              onClick={() => { onLogout(); setIsOpen(false); }}
+              className="btn btn-xs btn-ghost w-full text-base-content/50"
+            >
+              Logout
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

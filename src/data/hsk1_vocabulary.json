@@ -1,25 +1,33 @@
 [
   {
+    "word": "一",
+    "pinyin": "yī",
+    "part_of_speech": "numeral",
+    "meaning": "one",
+    "chapter": 1,
+    "source": "hsk1"
+  },
+  {
+    "word": "三",
+    "pinyin": "sān",
+    "part_of_speech": "numeral",
+    "meaning": "three",
+    "chapter": 1,
+    "source": "hsk1"
+  },
+  {
+    "word": "二",
+    "pinyin": "èr",
+    "part_of_speech": "numeral",
+    "meaning": "two",
+    "chapter": 1,
+    "source": "hsk1"
+  },
+  {
     "word": "你",
     "pinyin": "nǐ",
     "part_of_speech": "pronoun",
     "meaning": "(singular) you",
-    "chapter": 1,
-    "source": "hsk1"
-  },
-  {
-    "word": "好",
-    "pinyin": "hǎo",
-    "part_of_speech": "adjective",
-    "meaning": "good, fine",
-    "chapter": 1,
-    "source": "hsk1"
-  },
-  {
-    "word": "您",
-    "pinyin": "nín",
-    "part_of_speech": "pronoun",
-    "meaning": "(polite) you",
     "chapter": 1,
     "source": "hsk1"
   },
@@ -32,10 +40,58 @@
     "source": "hsk1"
   },
   {
+    "word": "八",
+    "pinyin": "bā",
+    "part_of_speech": "numeral",
+    "meaning": "eight",
+    "chapter": 1,
+    "source": "hsk1"
+  },
+  {
+    "word": "六",
+    "pinyin": "liù",
+    "part_of_speech": "numeral",
+    "meaning": "six",
+    "chapter": 1,
+    "source": "hsk1"
+  },
+  {
+    "word": "十",
+    "pinyin": "shí",
+    "part_of_speech": "numeral",
+    "meaning": "ten",
+    "chapter": 1,
+    "source": "hsk1"
+  },
+  {
+    "word": "天",
+    "pinyin": "tiān",
+    "part_of_speech": "noun",
+    "meaning": "sky, day",
+    "chapter": 1,
+    "source": "hsk1"
+  },
+  {
+    "word": "好",
+    "pinyin": "hǎo",
+    "part_of_speech": "adjective",
+    "meaning": "good, fine",
+    "chapter": 1,
+    "source": "hsk1"
+  },
+  {
     "word": "对不起",
     "pinyin": "duìbuqǐ",
     "part_of_speech": "verb",
     "meaning": "to be sorry",
+    "chapter": 1,
+    "source": "hsk1"
+  },
+  {
+    "word": "您",
+    "pinyin": "nín",
+    "part_of_speech": "pronoun",
+    "meaning": "(polite) you",
     "chapter": 1,
     "source": "hsk1"
   },
@@ -48,11 +104,19 @@
     "source": "hsk1"
   },
   {
-    "word": "谢谢",
-    "pinyin": "xièxie",
-    "part_of_speech": "verb",
-    "meaning": "to thank",
-    "chapter": 2,
+    "word": "马",
+    "pinyin": "mǎ",
+    "part_of_speech": "noun",
+    "meaning": "horse",
+    "chapter": 1,
+    "source": "hsk1"
+  },
+  {
+    "word": "鱼",
+    "pinyin": "yú",
+    "part_of_speech": "noun",
+    "meaning": "fish",
+    "chapter": 1,
     "source": "hsk1"
   },
   {
@@ -68,6 +132,22 @@
     "pinyin": "bù kèqi",
     "part_of_speech": "other",
     "meaning": "you're welcome",
+    "chapter": 2,
+    "source": "hsk1"
+  },
+  {
+    "word": "云",
+    "pinyin": "yún",
+    "part_of_speech": "noun",
+    "meaning": "cloud",
+    "chapter": 2,
+    "source": "hsk1"
+  },
+  {
+    "word": "什么",
+    "pinyin": "shénme",
+    "part_of_speech": "pronoun",
+    "meaning": "what",
     "chapter": 2,
     "source": "hsk1"
   },
@@ -88,18 +168,18 @@
     "source": "hsk1"
   },
   {
-    "word": "什么",
-    "pinyin": "shénme",
-    "part_of_speech": "pronoun",
-    "meaning": "what",
-    "chapter": 2,
-    "source": "hsk1"
-  },
-  {
     "word": "名字",
     "pinyin": "míngzi",
     "part_of_speech": "noun",
     "meaning": "name",
+    "chapter": 2,
+    "source": "hsk1"
+  },
+  {
+    "word": "山",
+    "pinyin": "shān",
+    "part_of_speech": "noun",
+    "meaning": "mountain",
     "chapter": 2,
     "source": "hsk1"
   },
@@ -112,6 +192,14 @@
     "source": "hsk1"
   },
   {
+    "word": "手",
+    "pinyin": "shǒu",
+    "part_of_speech": "noun",
+    "meaning": "hand",
+    "chapter": 2,
+    "source": "hsk1"
+  },
+  {
     "word": "李月",
     "pinyin": "Lǐ Yuè",
     "part_of_speech": "other",
@@ -120,18 +208,50 @@
     "source": "hsk1"
   },
   {
-    "word": "是",
-    "pinyin": "shì",
+    "word": "羊",
+    "pinyin": "yáng",
+    "part_of_speech": "noun",
+    "meaning": "sheep, goat",
+    "chapter": 2,
+    "source": "hsk1"
+  },
+  {
+    "word": "谢谢",
+    "pinyin": "xièxie",
     "part_of_speech": "verb",
-    "meaning": "to be",
+    "meaning": "to thank",
+    "chapter": 2,
+    "source": "hsk1"
+  },
+  {
+    "word": "零",
+    "pinyin": "líng",
+    "part_of_speech": "numeral",
+    "meaning": "zero",
+    "chapter": 2,
+    "source": "hsk1"
+  },
+  {
+    "word": "中",
+    "pinyin": "zhōng",
+    "part_of_speech": "noun",
+    "meaning": "middle, center",
     "chapter": 3,
     "source": "hsk1"
   },
   {
-    "word": "老师",
-    "pinyin": "lǎoshī",
+    "word": "中国",
+    "pinyin": "Zhōngguó",
+    "part_of_speech": "other",
+    "meaning": "China",
+    "chapter": 3,
+    "source": "hsk1"
+  },
+  {
+    "word": "人",
+    "pinyin": "rén",
     "part_of_speech": "noun",
-    "meaning": "teacher",
+    "meaning": "human, person",
     "chapter": 3,
     "source": "hsk1"
   },
@@ -152,18 +272,26 @@
     "source": "hsk1"
   },
   {
-    "word": "人",
-    "pinyin": "rén",
+    "word": "工",
+    "pinyin": "gōng",
     "part_of_speech": "noun",
-    "meaning": "human, person",
+    "meaning": "work, labor",
     "chapter": 3,
     "source": "hsk1"
   },
   {
-    "word": "中国",
-    "pinyin": "Zhōngguó",
-    "part_of_speech": "other",
-    "meaning": "China",
+    "word": "心",
+    "pinyin": "xīn",
+    "part_of_speech": "noun",
+    "meaning": "heart",
+    "chapter": 3,
+    "source": "hsk1"
+  },
+  {
+    "word": "是",
+    "pinyin": "shì",
+    "part_of_speech": "verb",
+    "meaning": "to be",
     "chapter": 3,
     "source": "hsk1"
   },
@@ -176,34 +304,58 @@
     "source": "hsk1"
   },
   {
-    "word": "她",
+    "word": "老师",
+    "pinyin": "lǎoshī",
+    "part_of_speech": "noun",
+    "meaning": "teacher",
+    "chapter": 3,
+    "source": "hsk1"
+  },
+  {
+    "word": "七",
+    "pinyin": "qī",
+    "part_of_speech": "numeral",
+    "meaning": "seven",
+    "chapter": 4,
+    "source": "hsk1"
+  },
+  {
+    "word": "九",
+    "pinyin": "jiǔ",
+    "part_of_speech": "numeral",
+    "meaning": "nine",
+    "chapter": 4,
+    "source": "hsk1"
+  },
+  {
+    "word": "他",
     "pinyin": "tā",
     "part_of_speech": "pronoun",
-    "meaning": "she, her",
+    "meaning": "he, him",
     "chapter": 4,
     "source": "hsk1"
   },
   {
-    "word": "谁",
-    "pinyin": "shéi",
-    "part_of_speech": "pronoun",
-    "meaning": "who, whom",
-    "chapter": 4,
-    "source": "hsk1"
-  },
-  {
-    "word": "的",
-    "pinyin": "de",
-    "part_of_speech": "particle",
-    "meaning": "possessive particle",
-    "chapter": 4,
-    "source": "hsk1"
-  },
-  {
-    "word": "汉语",
-    "pinyin": "Hànyǔ",
+    "word": "儿",
+    "pinyin": "ér",
     "part_of_speech": "noun",
-    "meaning": "Chinese (language)",
+    "meaning": "son, child (suffix)",
+    "chapter": 4,
+    "source": "hsk1"
+  },
+  {
+    "word": "同学",
+    "pinyin": "tóngxué",
+    "part_of_speech": "noun",
+    "meaning": "classmate",
+    "chapter": 4,
+    "source": "hsk1"
+  },
+  {
+    "word": "呢",
+    "pinyin": "ne",
+    "part_of_speech": "particle",
+    "meaning": "question particle",
     "chapter": 4,
     "source": "hsk1"
   },
@@ -224,26 +376,10 @@
     "source": "hsk1"
   },
   {
-    "word": "呢",
-    "pinyin": "ne",
-    "part_of_speech": "particle",
-    "meaning": "question particle",
-    "chapter": 4,
-    "source": "hsk1"
-  },
-  {
-    "word": "他",
+    "word": "她",
     "pinyin": "tā",
     "part_of_speech": "pronoun",
-    "meaning": "he, him",
-    "chapter": 4,
-    "source": "hsk1"
-  },
-  {
-    "word": "同学",
-    "pinyin": "tóngxué",
-    "part_of_speech": "noun",
-    "meaning": "classmate",
+    "meaning": "she, her",
     "chapter": 4,
     "source": "hsk1"
   },
@@ -256,26 +392,50 @@
     "source": "hsk1"
   },
   {
-    "word": "家",
-    "pinyin": "jiā",
+    "word": "汉语",
+    "pinyin": "Hànyǔ",
     "part_of_speech": "noun",
-    "meaning": "family",
+    "meaning": "Chinese (language)",
+    "chapter": 4,
+    "source": "hsk1"
+  },
+  {
+    "word": "的",
+    "pinyin": "de",
+    "part_of_speech": "particle",
+    "meaning": "possessive particle",
+    "chapter": 4,
+    "source": "hsk1"
+  },
+  {
+    "word": "谁",
+    "pinyin": "shéi",
+    "part_of_speech": "pronoun",
+    "meaning": "who, whom",
+    "chapter": 4,
+    "source": "hsk1"
+  },
+  {
+    "word": "了",
+    "pinyin": "le",
+    "part_of_speech": "particle",
+    "meaning": "particle indicating change",
     "chapter": 5,
     "source": "hsk1"
   },
   {
-    "word": "有",
-    "pinyin": "yǒu",
-    "part_of_speech": "verb",
-    "meaning": "to have, there be",
+    "word": "五",
+    "pinyin": "wǔ",
+    "part_of_speech": "numeral",
+    "meaning": "five",
     "chapter": 5,
     "source": "hsk1"
   },
   {
-    "word": "口",
-    "pinyin": "kǒu",
-    "part_of_speech": "measure_word",
-    "meaning": "measure word (family)",
+    "word": "今年",
+    "pinyin": "jīnnián",
+    "part_of_speech": "noun",
+    "meaning": "this year",
     "chapter": 5,
     "source": "hsk1"
   },
@@ -288,26 +448,18 @@
     "source": "hsk1"
   },
   {
-    "word": "岁",
-    "pinyin": "suì",
+    "word": "口",
+    "pinyin": "kǒu",
     "part_of_speech": "measure_word",
-    "meaning": "year (of age)",
+    "meaning": "measure word (family)",
     "chapter": 5,
     "source": "hsk1"
   },
   {
-    "word": "了",
-    "pinyin": "le",
-    "part_of_speech": "particle",
-    "meaning": "particle indicating change",
-    "chapter": 5,
-    "source": "hsk1"
-  },
-  {
-    "word": "今年",
-    "pinyin": "jīnnián",
-    "part_of_speech": "noun",
-    "meaning": "this year",
+    "word": "四",
+    "pinyin": "sì",
+    "part_of_speech": "numeral",
+    "meaning": "four",
     "chapter": 5,
     "source": "hsk1"
   },
@@ -328,42 +480,58 @@
     "source": "hsk1"
   },
   {
+    "word": "女",
+    "pinyin": "nǚ",
+    "part_of_speech": "noun",
+    "meaning": "woman, female",
+    "chapter": 5,
+    "source": "hsk1"
+  },
+  {
+    "word": "家",
+    "pinyin": "jiā",
+    "part_of_speech": "noun",
+    "meaning": "family",
+    "chapter": 5,
+    "source": "hsk1"
+  },
+  {
+    "word": "岁",
+    "pinyin": "suì",
+    "part_of_speech": "measure_word",
+    "meaning": "year (of age)",
+    "chapter": 5,
+    "source": "hsk1"
+  },
+  {
+    "word": "有",
+    "pinyin": "yǒu",
+    "part_of_speech": "verb",
+    "meaning": "to have, there be",
+    "chapter": 5,
+    "source": "hsk1"
+  },
+  {
+    "word": "百",
+    "pinyin": "bǎi",
+    "part_of_speech": "numeral",
+    "meaning": "hundred",
+    "chapter": 5,
+    "source": "hsk1"
+  },
+  {
+    "word": "东",
+    "pinyin": "dōng",
+    "part_of_speech": "noun",
+    "meaning": "east",
+    "chapter": 6,
+    "source": "hsk1"
+  },
+  {
     "word": "会",
     "pinyin": "huì",
     "part_of_speech": "other",
     "meaning": "can, able to",
-    "chapter": 6,
-    "source": "hsk1"
-  },
-  {
-    "word": "说",
-    "pinyin": "shuō",
-    "part_of_speech": "verb",
-    "meaning": "to speak, to say",
-    "chapter": 6,
-    "source": "hsk1"
-  },
-  {
-    "word": "妈妈",
-    "pinyin": "māma",
-    "part_of_speech": "noun",
-    "meaning": "mother",
-    "chapter": 6,
-    "source": "hsk1"
-  },
-  {
-    "word": "菜",
-    "pinyin": "cài",
-    "part_of_speech": "noun",
-    "meaning": "dish, cuisine",
-    "chapter": 6,
-    "source": "hsk1"
-  },
-  {
-    "word": "很",
-    "pinyin": "hěn",
-    "part_of_speech": "adverb",
-    "meaning": "very, quite",
     "chapter": 6,
     "source": "hsk1"
   },
@@ -384,10 +552,10 @@
     "source": "hsk1"
   },
   {
-    "word": "汉字",
-    "pinyin": "Hànzì",
+    "word": "妈妈",
+    "pinyin": "māma",
     "part_of_speech": "noun",
-    "meaning": "Chinese character",
+    "meaning": "mother",
     "chapter": 6,
     "source": "hsk1"
   },
@@ -400,10 +568,50 @@
     "source": "hsk1"
   },
   {
+    "word": "很",
+    "pinyin": "hěn",
+    "part_of_speech": "adverb",
+    "meaning": "very, quite",
+    "chapter": 6,
+    "source": "hsk1"
+  },
+  {
     "word": "怎么",
     "pinyin": "zěnme",
     "part_of_speech": "pronoun",
     "meaning": "how (to do)",
+    "chapter": 6,
+    "source": "hsk1"
+  },
+  {
+    "word": "汉字",
+    "pinyin": "Hànzì",
+    "part_of_speech": "noun",
+    "meaning": "Chinese character",
+    "chapter": 6,
+    "source": "hsk1"
+  },
+  {
+    "word": "菜",
+    "pinyin": "cài",
+    "part_of_speech": "noun",
+    "meaning": "dish, cuisine",
+    "chapter": 6,
+    "source": "hsk1"
+  },
+  {
+    "word": "西",
+    "pinyin": "xī",
+    "part_of_speech": "noun",
+    "meaning": "west",
+    "chapter": 6,
+    "source": "hsk1"
+  },
+  {
+    "word": "说",
+    "pinyin": "shuō",
+    "part_of_speech": "verb",
+    "meaning": "to speak, to say",
     "chapter": 6,
     "source": "hsk1"
   },
@@ -416,14 +624,6 @@
     "source": "hsk1"
   },
   {
-    "word": "二十五号",
-    "pinyin": "èrshíwǔ hào",
-    "part_of_speech": "other",
-    "meaning": "the 25th (of a month)",
-    "chapter": 7,
-    "source": "hsk1"
-  },
-  {
     "word": "中国菜",
     "pinyin": "Zhōngguó cài",
     "part_of_speech": "noun",
@@ -432,42 +632,18 @@
     "source": "hsk1"
   },
   {
-    "word": "看书",
-    "pinyin": "kàn shū",
-    "part_of_speech": "verb",
-    "meaning": "to read (a book)",
+    "word": "书",
+    "pinyin": "shū",
+    "part_of_speech": "noun",
+    "meaning": "book",
     "chapter": 7,
     "source": "hsk1"
   },
   {
-    "word": "看日历",
-    "pinyin": "kàn rìlì",
-    "part_of_speech": "verb",
-    "meaning": "to look at a calendar",
-    "chapter": 7,
-    "source": "hsk1"
-  },
-  {
-    "word": "在银行",
-    "pinyin": "zài yínháng",
+    "word": "二十五号",
+    "pinyin": "èrshíwǔ hào",
     "part_of_speech": "other",
-    "meaning": "at the bank",
-    "chapter": 7,
-    "source": "hsk1"
-  },
-  {
-    "word": "请",
-    "pinyin": "qǐng",
-    "part_of_speech": "verb",
-    "meaning": "(polite) please",
-    "chapter": 7,
-    "source": "hsk1"
-  },
-  {
-    "word": "问",
-    "pinyin": "wèn",
-    "part_of_speech": "verb",
-    "meaning": "to ask, to inquire",
+    "meaning": "the 25th (of a month)",
     "chapter": 7,
     "source": "hsk1"
   },
@@ -480,6 +656,14 @@
     "source": "hsk1"
   },
   {
+    "word": "去",
+    "pinyin": "qù",
+    "part_of_speech": "verb",
+    "meaning": "to go",
+    "chapter": 7,
+    "source": "hsk1"
+  },
+  {
     "word": "号",
     "pinyin": "hào",
     "part_of_speech": "noun",
@@ -488,10 +672,26 @@
     "source": "hsk1"
   },
   {
-    "word": "月",
-    "pinyin": "yuè",
+    "word": "在银行",
+    "pinyin": "zài yínháng",
+    "part_of_speech": "other",
+    "meaning": "at the bank",
+    "chapter": 7,
+    "source": "hsk1"
+  },
+  {
+    "word": "学校",
+    "pinyin": "xuéxiào",
     "part_of_speech": "noun",
-    "meaning": "month",
+    "meaning": "school",
+    "chapter": 7,
+    "source": "hsk1"
+  },
+  {
+    "word": "明天",
+    "pinyin": "míngtiān",
+    "part_of_speech": "noun",
+    "meaning": "tomorrow",
     "chapter": 7,
     "source": "hsk1"
   },
@@ -512,26 +712,10 @@
     "source": "hsk1"
   },
   {
-    "word": "明天",
-    "pinyin": "míngtiān",
+    "word": "月",
+    "pinyin": "yuè",
     "part_of_speech": "noun",
-    "meaning": "tomorrow",
-    "chapter": 7,
-    "source": "hsk1"
-  },
-  {
-    "word": "去",
-    "pinyin": "qù",
-    "part_of_speech": "verb",
-    "meaning": "to go",
-    "chapter": 7,
-    "source": "hsk1"
-  },
-  {
-    "word": "学校",
-    "pinyin": "xuéxiào",
-    "part_of_speech": "noun",
-    "meaning": "school",
+    "meaning": "month",
     "chapter": 7,
     "source": "hsk1"
   },
@@ -544,51 +728,35 @@
     "source": "hsk1"
   },
   {
-    "word": "书",
-    "pinyin": "shū",
-    "part_of_speech": "noun",
-    "meaning": "book",
+    "word": "看书",
+    "pinyin": "kàn shū",
+    "part_of_speech": "verb",
+    "meaning": "to read (a book)",
     "chapter": 7,
     "source": "hsk1"
   },
   {
-    "word": "想",
-    "pinyin": "xiǎng",
-    "part_of_speech": "other",
-    "meaning": "to want, would like",
-    "chapter": 8,
-    "source": "hsk1"
-  },
-  {
-    "word": "喝",
-    "pinyin": "hē",
+    "word": "看日历",
+    "pinyin": "kàn rìlì",
     "part_of_speech": "verb",
-    "meaning": "to drink",
-    "chapter": 8,
+    "meaning": "to look at a calendar",
+    "chapter": 7,
     "source": "hsk1"
   },
   {
-    "word": "茶",
-    "pinyin": "chá",
-    "part_of_speech": "noun",
-    "meaning": "tea",
-    "chapter": 8,
-    "source": "hsk1"
-  },
-  {
-    "word": "吃",
-    "pinyin": "chī",
+    "word": "请",
+    "pinyin": "qǐng",
     "part_of_speech": "verb",
-    "meaning": "to eat",
-    "chapter": 8,
+    "meaning": "(polite) please",
+    "chapter": 7,
     "source": "hsk1"
   },
   {
-    "word": "米饭",
-    "pinyin": "mǐfàn",
-    "part_of_speech": "noun",
-    "meaning": "cooked rice",
-    "chapter": 8,
+    "word": "问",
+    "pinyin": "wèn",
+    "part_of_speech": "verb",
+    "meaning": "to ask, to inquire",
+    "chapter": 7,
     "source": "hsk1"
   },
   {
@@ -596,22 +764,6 @@
     "pinyin": "xiàwǔ",
     "part_of_speech": "noun",
     "meaning": "afternoon",
-    "chapter": 8,
-    "source": "hsk1"
-  },
-  {
-    "word": "商店",
-    "pinyin": "shāngdiàn",
-    "part_of_speech": "noun",
-    "meaning": "shop, store",
-    "chapter": 8,
-    "source": "hsk1"
-  },
-  {
-    "word": "买",
-    "pinyin": "mǎi",
-    "part_of_speech": "verb",
-    "meaning": "to buy, to purchase",
     "chapter": 8,
     "source": "hsk1"
   },
@@ -624,34 +776,34 @@
     "source": "hsk1"
   },
   {
-    "word": "杯子",
-    "pinyin": "bēizi",
+    "word": "买",
+    "pinyin": "mǎi",
+    "part_of_speech": "verb",
+    "meaning": "to buy, to purchase",
+    "chapter": 8,
+    "source": "hsk1"
+  },
+  {
+    "word": "吃",
+    "pinyin": "chī",
+    "part_of_speech": "verb",
+    "meaning": "to eat",
+    "chapter": 8,
+    "source": "hsk1"
+  },
+  {
+    "word": "商店",
+    "pinyin": "shāngdiàn",
     "part_of_speech": "noun",
-    "meaning": "cup, glass",
+    "meaning": "shop, store",
     "chapter": 8,
     "source": "hsk1"
   },
   {
-    "word": "这",
-    "pinyin": "zhè",
-    "part_of_speech": "pronoun",
-    "meaning": "this",
-    "chapter": 8,
-    "source": "hsk1"
-  },
-  {
-    "word": "多少",
-    "pinyin": "duōshao",
-    "part_of_speech": "pronoun",
-    "meaning": "how many, how much",
-    "chapter": 8,
-    "source": "hsk1"
-  },
-  {
-    "word": "钱",
-    "pinyin": "qián",
-    "part_of_speech": "noun",
-    "meaning": "money",
+    "word": "喝",
+    "pinyin": "hē",
+    "part_of_speech": "verb",
+    "meaning": "to drink",
     "chapter": 8,
     "source": "hsk1"
   },
@@ -664,6 +816,54 @@
     "source": "hsk1"
   },
   {
+    "word": "多少",
+    "pinyin": "duōshao",
+    "part_of_speech": "pronoun",
+    "meaning": "how many, how much",
+    "chapter": 8,
+    "source": "hsk1"
+  },
+  {
+    "word": "想",
+    "pinyin": "xiǎng",
+    "part_of_speech": "other",
+    "meaning": "to want, would like",
+    "chapter": 8,
+    "source": "hsk1"
+  },
+  {
+    "word": "杯子",
+    "pinyin": "bēizi",
+    "part_of_speech": "noun",
+    "meaning": "cup, glass",
+    "chapter": 8,
+    "source": "hsk1"
+  },
+  {
+    "word": "米饭",
+    "pinyin": "mǐfàn",
+    "part_of_speech": "noun",
+    "meaning": "cooked rice",
+    "chapter": 8,
+    "source": "hsk1"
+  },
+  {
+    "word": "茶",
+    "pinyin": "chá",
+    "part_of_speech": "noun",
+    "meaning": "tea",
+    "chapter": 8,
+    "source": "hsk1"
+  },
+  {
+    "word": "这",
+    "pinyin": "zhè",
+    "part_of_speech": "pronoun",
+    "meaning": "this",
+    "chapter": 8,
+    "source": "hsk1"
+  },
+  {
     "word": "那",
     "pinyin": "nà",
     "part_of_speech": "pronoun",
@@ -672,67 +872,11 @@
     "source": "hsk1"
   },
   {
-    "word": "小",
-    "pinyin": "xiǎo",
-    "part_of_speech": "adjective",
-    "meaning": "small, little",
-    "chapter": 9,
-    "source": "hsk1"
-  },
-  {
-    "word": "猫",
-    "pinyin": "māo",
+    "word": "钱",
+    "pinyin": "qián",
     "part_of_speech": "noun",
-    "meaning": "cat",
-    "chapter": 9,
-    "source": "hsk1"
-  },
-  {
-    "word": "在",
-    "pinyin": "zài",
-    "part_of_speech": "verb",
-    "meaning": "to be in/on/at",
-    "chapter": 9,
-    "source": "hsk1"
-  },
-  {
-    "word": "那儿",
-    "pinyin": "nàr",
-    "part_of_speech": "pronoun",
-    "meaning": "there",
-    "chapter": 9,
-    "source": "hsk1"
-  },
-  {
-    "word": "狗",
-    "pinyin": "gǒu",
-    "part_of_speech": "noun",
-    "meaning": "dog",
-    "chapter": 9,
-    "source": "hsk1"
-  },
-  {
-    "word": "椅子",
-    "pinyin": "yǐzi",
-    "part_of_speech": "noun",
-    "meaning": "chair",
-    "chapter": 9,
-    "source": "hsk1"
-  },
-  {
-    "word": "哪儿",
-    "pinyin": "nǎr",
-    "part_of_speech": "pronoun",
-    "meaning": "where",
-    "chapter": 9,
-    "source": "hsk1"
-  },
-  {
-    "word": "工作",
-    "pinyin": "gōngzuò",
-    "part_of_speech": "verb",
-    "meaning": "/n. to work; job",
-    "chapter": 9,
+    "meaning": "money",
+    "chapter": 8,
     "source": "hsk1"
   },
   {
@@ -740,14 +884,6 @@
     "pinyin": "érzi",
     "part_of_speech": "noun",
     "meaning": "son",
-    "chapter": 9,
-    "source": "hsk1"
-  },
-  {
-    "word": "医院",
-    "pinyin": "yīyuàn",
-    "part_of_speech": "noun",
-    "meaning": "hospital",
     "chapter": 9,
     "source": "hsk1"
   },
@@ -760,6 +896,54 @@
     "source": "hsk1"
   },
   {
+    "word": "医院",
+    "pinyin": "yīyuàn",
+    "part_of_speech": "noun",
+    "meaning": "hospital",
+    "chapter": 9,
+    "source": "hsk1"
+  },
+  {
+    "word": "哪儿",
+    "pinyin": "nǎr",
+    "part_of_speech": "pronoun",
+    "meaning": "where",
+    "chapter": 9,
+    "source": "hsk1"
+  },
+  {
+    "word": "在",
+    "pinyin": "zài",
+    "part_of_speech": "verb",
+    "meaning": "to be in/on/at",
+    "chapter": 9,
+    "source": "hsk1"
+  },
+  {
+    "word": "小",
+    "pinyin": "xiǎo",
+    "part_of_speech": "adjective",
+    "meaning": "small, little",
+    "chapter": 9,
+    "source": "hsk1"
+  },
+  {
+    "word": "工作",
+    "pinyin": "gōngzuò",
+    "part_of_speech": "verb",
+    "meaning": "/n. to work; job",
+    "chapter": 9,
+    "source": "hsk1"
+  },
+  {
+    "word": "椅子",
+    "pinyin": "yǐzi",
+    "part_of_speech": "noun",
+    "meaning": "chair",
+    "chapter": 9,
+    "source": "hsk1"
+  },
+  {
     "word": "爸爸",
     "pinyin": "bàba",
     "part_of_speech": "noun",
@@ -768,11 +952,27 @@
     "source": "hsk1"
   },
   {
-    "word": "桌子",
-    "pinyin": "zhuōzi",
+    "word": "狗",
+    "pinyin": "gǒu",
     "part_of_speech": "noun",
-    "meaning": "desk, table",
-    "chapter": 10,
+    "meaning": "dog",
+    "chapter": 9,
+    "source": "hsk1"
+  },
+  {
+    "word": "猫",
+    "pinyin": "māo",
+    "part_of_speech": "noun",
+    "meaning": "cat",
+    "chapter": 9,
+    "source": "hsk1"
+  },
+  {
+    "word": "那儿",
+    "pinyin": "nàr",
+    "part_of_speech": "pronoun",
+    "meaning": "there",
+    "chapter": 9,
     "source": "hsk1"
   },
   {
@@ -780,38 +980,6 @@
     "pinyin": "shàng",
     "part_of_speech": "noun",
     "meaning": "up, above",
-    "chapter": 10,
-    "source": "hsk1"
-  },
-  {
-    "word": "电脑",
-    "pinyin": "diànnǎo",
-    "part_of_speech": "noun",
-    "meaning": "computer",
-    "chapter": 10,
-    "source": "hsk1"
-  },
-  {
-    "word": "和",
-    "pinyin": "hé",
-    "part_of_speech": "conjunction",
-    "meaning": "and",
-    "chapter": 10,
-    "source": "hsk1"
-  },
-  {
-    "word": "本",
-    "pinyin": "běn",
-    "part_of_speech": "measure_word",
-    "meaning": "measure word (books)",
-    "chapter": 10,
-    "source": "hsk1"
-  },
-  {
-    "word": "里",
-    "pinyin": "lǐ",
-    "part_of_speech": "noun",
-    "meaning": "inner, inside, interior",
     "chapter": 10,
     "source": "hsk1"
   },
@@ -832,10 +1000,58 @@
     "source": "hsk1"
   },
   {
+    "word": "和",
+    "pinyin": "hé",
+    "part_of_speech": "conjunction",
+    "meaning": "and",
+    "chapter": 10,
+    "source": "hsk1"
+  },
+  {
+    "word": "坐",
+    "pinyin": "zuò",
+    "part_of_speech": "verb",
+    "meaning": "to sit, to be seated",
+    "chapter": 10,
+    "source": "hsk1"
+  },
+  {
+    "word": "本",
+    "pinyin": "běn",
+    "part_of_speech": "measure_word",
+    "meaning": "measure word (books)",
+    "chapter": 10,
+    "source": "hsk1"
+  },
+  {
+    "word": "桌子",
+    "pinyin": "zhuōzi",
+    "part_of_speech": "noun",
+    "meaning": "desk, table",
+    "chapter": 10,
+    "source": "hsk1"
+  },
+  {
     "word": "王方",
     "pinyin": "Wáng Fāng",
     "part_of_speech": "other",
     "meaning": "(name) Wang Fang",
+    "chapter": 10,
+    "source": "hsk1"
+  },
+  {
+    "word": "电脑",
+    "pinyin": "diànnǎo",
+    "part_of_speech": "noun",
+    "meaning": "computer",
+    "chapter": 10,
+    "source": "hsk1"
+  },
+  {
+    "word": "能",
+    "pinyin": "néng",
+    "part_of_speech": "other",
+    "meaning": "can, may",
     "chapter": 10,
     "source": "hsk1"
   },
@@ -856,50 +1072,34 @@
     "source": "hsk1"
   },
   {
-    "word": "能",
-    "pinyin": "néng",
-    "part_of_speech": "other",
-    "meaning": "can, may",
-    "chapter": 10,
-    "source": "hsk1"
-  },
-  {
-    "word": "坐",
-    "pinyin": "zuò",
-    "part_of_speech": "verb",
-    "meaning": "to sit, to be seated",
-    "chapter": 10,
-    "source": "hsk1"
-  },
-  {
-    "word": "时候",
-    "pinyin": "shíhou",
+    "word": "里",
+    "pinyin": "lǐ",
     "part_of_speech": "noun",
-    "meaning": "time, moment",
+    "meaning": "inner, inside, interior",
+    "chapter": 10,
+    "source": "hsk1"
+  },
+  {
+    "word": "中午",
+    "pinyin": "zhōngwǔ",
+    "part_of_speech": "noun",
+    "meaning": "noon, midday",
     "chapter": 11,
     "source": "hsk1"
   },
   {
-    "word": "回",
-    "pinyin": "huí",
-    "part_of_speech": "verb",
-    "meaning": "to return, go back",
+    "word": "也",
+    "pinyin": "yě",
+    "part_of_speech": "adverb",
+    "meaning": "also, too",
     "chapter": 11,
     "source": "hsk1"
   },
   {
-    "word": "我们",
-    "pinyin": "wǒmen",
+    "word": "他们",
+    "pinyin": "tāmen",
     "part_of_speech": "pronoun",
-    "meaning": "we, us",
-    "chapter": 11,
-    "source": "hsk1"
-  },
-  {
-    "word": "电影",
-    "pinyin": "diànyǐng",
-    "part_of_speech": "noun",
-    "meaning": "film, movie",
+    "meaning": "they, them",
     "chapter": 11,
     "source": "hsk1"
   },
@@ -920,67 +1120,35 @@
     "source": "hsk1"
   },
   {
-    "word": "中午",
-    "pinyin": "zhōngwǔ",
-    "part_of_speech": "noun",
-    "meaning": "noon, midday",
+    "word": "回",
+    "pinyin": "huí",
+    "part_of_speech": "verb",
+    "meaning": "to return, go back",
     "chapter": 11,
     "source": "hsk1"
   },
   {
-    "word": "他们",
-    "pinyin": "tāmen",
+    "word": "我们",
+    "pinyin": "wǒmen",
     "part_of_speech": "pronoun",
-    "meaning": "they, them",
+    "meaning": "we, us",
     "chapter": 11,
     "source": "hsk1"
   },
   {
-    "word": "也",
-    "pinyin": "yě",
-    "part_of_speech": "adverb",
-    "meaning": "also, too",
-    "chapter": 11,
-    "source": "hsk1"
-  },
-  {
-    "word": "天气",
-    "pinyin": "tiānqì",
+    "word": "时候",
+    "pinyin": "shíhou",
     "part_of_speech": "noun",
-    "meaning": "weather",
-    "chapter": 12,
+    "meaning": "time, moment",
+    "chapter": 11,
     "source": "hsk1"
   },
   {
-    "word": "怎么样",
-    "pinyin": "zěnmeyàng",
-    "part_of_speech": "pronoun",
-    "meaning": "how (about)",
-    "chapter": 12,
-    "source": "hsk1"
-  },
-  {
-    "word": "太",
-    "pinyin": "tài",
-    "part_of_speech": "adverb",
-    "meaning": "too, extremely",
-    "chapter": 12,
-    "source": "hsk1"
-  },
-  {
-    "word": "热",
-    "pinyin": "rè",
-    "part_of_speech": "adjective",
-    "meaning": "hot",
-    "chapter": 12,
-    "source": "hsk1"
-  },
-  {
-    "word": "冷",
-    "pinyin": "lěng",
-    "part_of_speech": "adjective",
-    "meaning": "cold",
-    "chapter": 12,
+    "word": "电影",
+    "pinyin": "diànyǐng",
+    "part_of_speech": "noun",
+    "meaning": "film, movie",
+    "chapter": 11,
     "source": "hsk1"
   },
   {
@@ -988,30 +1156,6 @@
     "pinyin": "xià yǔ",
     "part_of_speech": "other",
     "meaning": "to rain",
-    "chapter": 12,
-    "source": "hsk1"
-  },
-  {
-    "word": "小姐",
-    "pinyin": "xiǎojiě",
-    "part_of_speech": "noun",
-    "meaning": "miss, young lady",
-    "chapter": 12,
-    "source": "hsk1"
-  },
-  {
-    "word": "来",
-    "pinyin": "lái",
-    "part_of_speech": "verb",
-    "meaning": "to come",
-    "chapter": 12,
-    "source": "hsk1"
-  },
-  {
-    "word": "爱",
-    "pinyin": "ài",
-    "part_of_speech": "verb",
-    "meaning": "to like, to love",
     "chapter": 12,
     "source": "hsk1"
   },
@@ -1024,10 +1168,50 @@
     "source": "hsk1"
   },
   {
-    "word": "水果",
-    "pinyin": "shuǐguǒ",
+    "word": "冷",
+    "pinyin": "lěng",
+    "part_of_speech": "adjective",
+    "meaning": "cold",
+    "chapter": 12,
+    "source": "hsk1"
+  },
+  {
+    "word": "天气",
+    "pinyin": "tiānqì",
     "part_of_speech": "noun",
-    "meaning": "fruit",
+    "meaning": "weather",
+    "chapter": 12,
+    "source": "hsk1"
+  },
+  {
+    "word": "太",
+    "pinyin": "tài",
+    "part_of_speech": "adverb",
+    "meaning": "too, extremely",
+    "chapter": 12,
+    "source": "hsk1"
+  },
+  {
+    "word": "小姐",
+    "pinyin": "xiǎojiě",
+    "part_of_speech": "noun",
+    "meaning": "miss, young lady",
+    "chapter": 12,
+    "source": "hsk1"
+  },
+  {
+    "word": "怎么样",
+    "pinyin": "zěnmeyàng",
+    "part_of_speech": "pronoun",
+    "meaning": "how (about)",
+    "chapter": 12,
+    "source": "hsk1"
+  },
+  {
+    "word": "来",
+    "pinyin": "lái",
+    "part_of_speech": "verb",
+    "meaning": "to come",
     "chapter": 12,
     "source": "hsk1"
   },
@@ -1036,6 +1220,30 @@
     "pinyin": "shuǐ",
     "part_of_speech": "noun",
     "meaning": "water",
+    "chapter": 12,
+    "source": "hsk1"
+  },
+  {
+    "word": "水果",
+    "pinyin": "shuǐguǒ",
+    "part_of_speech": "noun",
+    "meaning": "fruit",
+    "chapter": 12,
+    "source": "hsk1"
+  },
+  {
+    "word": "热",
+    "pinyin": "rè",
+    "part_of_speech": "adjective",
+    "meaning": "hot",
+    "chapter": 12,
+    "source": "hsk1"
+  },
+  {
+    "word": "爱",
+    "pinyin": "ài",
+    "part_of_speech": "verb",
+    "meaning": "to like, to love",
     "chapter": 12,
     "source": "hsk1"
   },
@@ -1064,22 +1272,6 @@
     "source": "hsk1"
   },
   {
-    "word": "睡觉",
-    "pinyin": "shuìjiào",
-    "part_of_speech": "verb",
-    "meaning": "to sleep",
-    "chapter": 13,
-    "source": "hsk1"
-  },
-  {
-    "word": "电视",
-    "pinyin": "diànshì",
-    "part_of_speech": "noun",
-    "meaning": "television",
-    "chapter": 13,
-    "source": "hsk1"
-  },
-  {
     "word": "喜欢",
     "pinyin": "xǐhuan",
     "part_of_speech": "verb",
@@ -1096,11 +1288,19 @@
     "source": "hsk1"
   },
   {
-    "word": "东西",
-    "pinyin": "dōngxi",
+    "word": "电视",
+    "pinyin": "diànshì",
     "part_of_speech": "noun",
-    "meaning": "thing, stuff",
-    "chapter": 14,
+    "meaning": "television",
+    "chapter": 13,
+    "source": "hsk1"
+  },
+  {
+    "word": "睡觉",
+    "pinyin": "shuìjiào",
+    "part_of_speech": "verb",
+    "meaning": "to sleep",
+    "chapter": 13,
     "source": "hsk1"
   },
   {
@@ -1112,18 +1312,10 @@
     "source": "hsk1"
   },
   {
-    "word": "苹果",
-    "pinyin": "píngguǒ",
+    "word": "东西",
+    "pinyin": "dōngxi",
     "part_of_speech": "noun",
-    "meaning": "apple",
-    "chapter": 14,
-    "source": "hsk1"
-  },
-  {
-    "word": "看见",
-    "pinyin": "kànjiàn",
-    "part_of_speech": "verb",
-    "meaning": "to see",
+    "meaning": "thing, stuff",
     "chapter": 14,
     "source": "hsk1"
   },
@@ -1132,30 +1324,6 @@
     "pinyin": "xiānsheng",
     "part_of_speech": "noun",
     "meaning": "Mr., Sir",
-    "chapter": 14,
-    "source": "hsk1"
-  },
-  {
-    "word": "开",
-    "pinyin": "kāi",
-    "part_of_speech": "verb",
-    "meaning": "to drive",
-    "chapter": 14,
-    "source": "hsk1"
-  },
-  {
-    "word": "车",
-    "pinyin": "chē",
-    "part_of_speech": "noun",
-    "meaning": "car, vehicle",
-    "chapter": 14,
-    "source": "hsk1"
-  },
-  {
-    "word": "回来",
-    "pinyin": "huílái",
-    "part_of_speech": "verb",
-    "meaning": "to come back",
     "chapter": 14,
     "source": "hsk1"
   },
@@ -1176,10 +1344,34 @@
     "source": "hsk1"
   },
   {
-    "word": "衣服",
-    "pinyin": "yīfu",
-    "part_of_speech": "noun",
-    "meaning": "clothes",
+    "word": "啊",
+    "pinyin": "a",
+    "part_of_speech": "particle",
+    "meaning": "exclamatory particle",
+    "chapter": 14,
+    "source": "hsk1"
+  },
+  {
+    "word": "回来",
+    "pinyin": "huílái",
+    "part_of_speech": "verb",
+    "meaning": "to come back",
+    "chapter": 14,
+    "source": "hsk1"
+  },
+  {
+    "word": "少",
+    "pinyin": "shǎo",
+    "part_of_speech": "adjective",
+    "meaning": "little, few",
+    "chapter": 14,
+    "source": "hsk1"
+  },
+  {
+    "word": "开",
+    "pinyin": "kāi",
+    "part_of_speech": "verb",
+    "meaning": "to drive",
     "chapter": 14,
     "source": "hsk1"
   },
@@ -1192,18 +1384,34 @@
     "source": "hsk1"
   },
   {
-    "word": "啊",
-    "pinyin": "a",
-    "part_of_speech": "particle",
-    "meaning": "exclamatory particle",
+    "word": "看见",
+    "pinyin": "kànjiàn",
+    "part_of_speech": "verb",
+    "meaning": "to see",
     "chapter": 14,
     "source": "hsk1"
   },
   {
-    "word": "少",
-    "pinyin": "shǎo",
-    "part_of_speech": "adjective",
-    "meaning": "little, few",
+    "word": "苹果",
+    "pinyin": "píngguǒ",
+    "part_of_speech": "noun",
+    "meaning": "apple",
+    "chapter": 14,
+    "source": "hsk1"
+  },
+  {
+    "word": "衣服",
+    "pinyin": "yīfu",
+    "part_of_speech": "noun",
+    "meaning": "clothes",
+    "chapter": 14,
+    "source": "hsk1"
+  },
+  {
+    "word": "车",
+    "pinyin": "chē",
+    "part_of_speech": "noun",
+    "meaning": "car, vehicle",
     "chapter": 14,
     "source": "hsk1"
   },
@@ -1224,34 +1432,10 @@
     "source": "hsk1"
   },
   {
-    "word": "认识",
-    "pinyin": "rènshi",
-    "part_of_speech": "verb",
-    "meaning": "to meet, to know",
-    "chapter": 15,
-    "source": "hsk1"
-  },
-  {
-    "word": "年",
-    "pinyin": "nián",
-    "part_of_speech": "noun",
-    "meaning": "year",
-    "chapter": 15,
-    "source": "hsk1"
-  },
-  {
-    "word": "大学",
-    "pinyin": "dàxué",
-    "part_of_speech": "noun",
-    "meaning": "college, university",
-    "chapter": 15,
-    "source": "hsk1"
-  },
-  {
-    "word": "饭店",
-    "pinyin": "fàndiàn",
-    "part_of_speech": "noun",
-    "meaning": "hotel, restaurant",
+    "word": "一起",
+    "pinyin": "yìqǐ",
+    "part_of_speech": "adverb",
+    "meaning": "together",
     "chapter": 15,
     "source": "hsk1"
   },
@@ -1264,22 +1448,6 @@
     "source": "hsk1"
   },
   {
-    "word": "一起",
-    "pinyin": "yìqǐ",
-    "part_of_speech": "adverb",
-    "meaning": "together",
-    "chapter": 15,
-    "source": "hsk1"
-  },
-  {
-    "word": "高兴",
-    "pinyin": "gāoxìng",
-    "part_of_speech": "adjective",
-    "meaning": "glad, happy",
-    "chapter": 15,
-    "source": "hsk1"
-  },
-  {
     "word": "听",
     "pinyin": "tīng",
     "part_of_speech": "verb",
@@ -1288,10 +1456,50 @@
     "source": "hsk1"
   },
   {
+    "word": "大学",
+    "pinyin": "dàxué",
+    "part_of_speech": "noun",
+    "meaning": "college, university",
+    "chapter": 15,
+    "source": "hsk1"
+  },
+  {
+    "word": "年",
+    "pinyin": "nián",
+    "part_of_speech": "noun",
+    "meaning": "year",
+    "chapter": 15,
+    "source": "hsk1"
+  },
+  {
+    "word": "认识",
+    "pinyin": "rènshi",
+    "part_of_speech": "verb",
+    "meaning": "to meet, to know",
+    "chapter": 15,
+    "source": "hsk1"
+  },
+  {
     "word": "飞机",
     "pinyin": "fēijī",
     "part_of_speech": "noun",
     "meaning": "airplane",
+    "chapter": 15,
+    "source": "hsk1"
+  },
+  {
+    "word": "饭店",
+    "pinyin": "fàndiàn",
+    "part_of_speech": "noun",
+    "meaning": "hotel, restaurant",
+    "chapter": 15,
+    "source": "hsk1"
+  },
+  {
+    "word": "高兴",
+    "pinyin": "gāoxìng",
+    "part_of_speech": "adjective",
+    "meaning": "glad, happy",
     "chapter": 15,
     "source": "hsk1"
   }

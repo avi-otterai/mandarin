@@ -157,7 +157,9 @@ export function useVocabularyStore(): VocabularyStore {
     // Sync meanings from source JSON (ensures meanings are up-to-date after JSON edits)
     const vocab = hsk1Data as VocabWord[];
     const vocabMap = new Map(vocab.map(v => [v.word, v]));
+    const existingWords = new Set(loadedConcepts.map(c => c.word));
     
+    // Update meanings for existing concepts
     const updatedConcepts = loadedConcepts.map(c => {
       const sourceWord = vocabMap.get(c.word);
       if (sourceWord && sourceWord.meaning !== c.meaning) {
@@ -166,7 +168,29 @@ export function useVocabularyStore(): VocabularyStore {
       return c;
     });
     
-    setConcepts(updatedConcepts);
+    // Auto-merge: Find chapters user has imported and add any new vocabulary from those chapters
+    const importedChapters = new Set(loadedConcepts.map(c => c.chapter));
+    const newVocab: Concept[] = [];
+    
+    vocab.forEach(word => {
+      // Only add if: word is in an imported chapter AND word doesn't already exist
+      if (importedChapters.has(word.chapter) && !existingWords.has(word.word)) {
+        console.log(`[VocabStore] Auto-adding new vocabulary: ${word.word} (ch ${word.chapter})`);
+        newVocab.push({
+          ...word,
+          id: generateId(),
+          modality: createInitialModality(word.chapter),
+          knowledge: 50,
+          paused: true,  // New words start paused
+        });
+      }
+    });
+    
+    if (newVocab.length > 0) {
+      console.log(`[VocabStore] Added ${newVocab.length} new vocabulary items from updated JSON`);
+    }
+    
+    setConcepts([...updatedConcepts, ...newVocab]);
     setProgressSnapshots(loadProgressCache());
     setInitialized(true);
   }, []);

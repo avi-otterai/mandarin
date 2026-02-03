@@ -1,6 +1,13 @@
 // Login page for Supabase authentication
 import { useState } from 'react';
-import { LogIn, AlertCircle, Loader2, User } from 'lucide-react';
+import { LogIn, AlertCircle, Loader2, User, Zap } from 'lucide-react';
+
+// Dev user credentials for quick login
+const DEV_USER_EMAIL = import.meta.env.VITE_DEV_USER_EMAIL || '';
+const DEV_USER_PASSWORD = import.meta.env.VITE_DEV_USER_PASSWORD || '';
+const IS_DEV = import.meta.env.MODE === 'development';
+const IS_LOCALHOST = typeof window !== 'undefined' && 
+  (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
 
 interface LoginPageProps {
   onLogin: (email: string, password: string) => Promise<{ success: boolean; error: string | null }>;
@@ -130,6 +137,35 @@ export function LoginPage({ onLogin, onGuestLogin, loading, error, onClearError 
               Guest mode stores progress locally on your device
             </p>
           </div>
+
+          {/* Dev Mode Quick Login (localhost only) */}
+          {IS_DEV && IS_LOCALHOST && DEV_USER_EMAIL && DEV_USER_PASSWORD && (
+            <div className="mt-6 p-3 rounded-lg bg-warning/10 border border-warning/30">
+              <div className="flex items-center gap-2 mb-2">
+                <Zap className="w-4 h-4 text-warning" />
+                <span className="text-xs font-bold text-warning">DEV MODE</span>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => onLogin(DEV_USER_EMAIL, DEV_USER_PASSWORD)}
+                  className="btn btn-xs btn-warning flex-1"
+                  disabled={loading}
+                >
+                  Dev User Login
+                </button>
+                <button
+                  onClick={onGuestLogin}
+                  className="btn btn-xs btn-outline btn-warning flex-1"
+                  disabled={loading}
+                >
+                  Guest Mode
+                </button>
+              </div>
+              <p className="text-xs text-warning/70 mt-2">
+                Quick switch for testing (localhost only)
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>

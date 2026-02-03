@@ -10,7 +10,7 @@ import { LoginPage } from './pages/LoginPage';
 import { useVocabularyStore } from './stores/vocabularyStore';
 import { useSettingsStore } from './stores/settingsStore';
 import { useAuth } from './hooks/useAuth';
-import { Loader2, Zap, User, LogIn } from 'lucide-react';
+import { Loader2, Zap } from 'lucide-react';
 
 // Dev mode detection
 const IS_DEV = import.meta.env.MODE === 'development';
@@ -281,94 +281,50 @@ function AppContent({
       
       {/* Dev Mode Toggle (localhost only) */}
       {IS_DEV && IS_LOCALHOST && DEV_USER_EMAIL && DEV_USER_PASSWORD && (
-        <DevModePanel
+        <DevModeToggle
           isGuest={isGuest}
-          userEmail={auth.user?.email}
           onSwitchToGuest={auth.signInAsGuest}
           onSwitchToDevUser={() => auth.signIn(DEV_USER_EMAIL, DEV_USER_PASSWORD)}
-          onLogout={auth.signOut}
         />
       )}
     </div>
   );
 }
 
-// Floating dev panel for quick mode switching (localhost only)
-function DevModePanel({
+// Simple dev mode toggle at top center (localhost only)
+function DevModeToggle({
   isGuest,
-  userEmail,
   onSwitchToGuest,
   onSwitchToDevUser,
-  onLogout,
 }: {
   isGuest: boolean;
-  userEmail?: string;
   onSwitchToGuest: () => void;
   onSwitchToDevUser: () => void;
-  onLogout: () => void;
 }) {
-  const [isOpen, setIsOpen] = useState(false);
+  const handleToggle = async () => {
+    if (isGuest) {
+      await onSwitchToDevUser();
+    } else {
+      onSwitchToGuest();
+    }
+    // Force refresh to ensure clean state
+    window.location.reload();
+  };
   
   return (
-    <div className="fixed bottom-20 left-2 z-50">
-      {/* Toggle button */}
+    <div className="fixed top-2 left-1/2 -translate-x-1/2 z-50">
       <button
-        onClick={() => setIsOpen(!isOpen)}
-        className={`btn btn-xs btn-circle ${isGuest ? 'btn-secondary' : 'btn-warning'}`}
-        title="Dev Mode Toggle"
+        onClick={handleToggle}
+        className={`flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium transition-all ${
+          isGuest 
+            ? 'bg-secondary/20 text-secondary hover:bg-secondary/30' 
+            : 'bg-warning/20 text-warning hover:bg-warning/30'
+        }`}
+        title={isGuest ? 'Switch to Dev User' : 'Switch to Guest'}
       >
         <Zap className="w-3 h-3" />
+        <span>{isGuest ? 'Guest' : 'Dev'}</span>
       </button>
-      
-      {/* Expanded panel */}
-      {isOpen && (
-        <div className="absolute bottom-8 left-0 p-3 rounded-lg bg-base-200 border border-warning/30 shadow-lg min-w-[180px]">
-          <div className="flex items-center gap-2 mb-2">
-            <Zap className="w-4 h-4 text-warning" />
-            <span className="text-xs font-bold text-warning">DEV MODE</span>
-          </div>
-          
-          {/* Current state */}
-          <div className="text-xs mb-2 p-2 rounded bg-base-100">
-            {isGuest ? (
-              <div className="flex items-center gap-1">
-                <User className="w-3 h-3 text-secondary" />
-                <span className="text-secondary font-medium">Guest Mode</span>
-              </div>
-            ) : (
-              <div className="flex items-center gap-1">
-                <LogIn className="w-3 h-3 text-success" />
-                <span className="text-success font-medium truncate">{userEmail || 'Dev User'}</span>
-              </div>
-            )}
-          </div>
-          
-          {/* Switch buttons */}
-          <div className="flex flex-col gap-1">
-            {isGuest ? (
-              <button
-                onClick={() => { onSwitchToDevUser(); setIsOpen(false); }}
-                className="btn btn-xs btn-warning w-full"
-              >
-                Switch to Dev User
-              </button>
-            ) : (
-              <button
-                onClick={() => { onSwitchToGuest(); setIsOpen(false); }}
-                className="btn btn-xs btn-secondary w-full"
-              >
-                Switch to Guest
-              </button>
-            )}
-            <button
-              onClick={() => { onLogout(); setIsOpen(false); }}
-              className="btn btn-xs btn-ghost w-full text-base-content/50"
-            >
-              Logout
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

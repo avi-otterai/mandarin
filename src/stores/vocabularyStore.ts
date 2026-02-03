@@ -450,13 +450,40 @@ export function useVocabularyStore(): VocabularyStore {
             };
           }
           return c;
+        }) as Concept[];
+        
+        // Auto-merge: Add any NEW vocabulary from JSON that doesn't exist in cloud
+        // This ensures users get new vocabulary when the JSON is updated
+        const vocab = hsk1Data as VocabWord[];
+        const existingWords = new Set(migratedConcepts.map(c => c.word));
+        const importedChapters = new Set(migratedConcepts.map(c => c.chapter));
+        const newVocab: Concept[] = [];
+        
+        vocab.forEach(word => {
+          // Only add if: word is in an imported chapter AND word doesn't already exist
+          if (importedChapters.has(word.chapter) && !existingWords.has(word.word)) {
+            console.log(`[VocabStore] Auto-adding new vocabulary from JSON: ${word.word} (ch ${word.chapter})`);
+            newVocab.push({
+              ...word,
+              id: generateId(),
+              modality: createInitialModality(word.chapter),
+              knowledge: 50,
+              paused: true,  // New words start paused
+            });
+          }
         });
         
-        // Cloud data is the source of truth - replace local data
-        setConcepts(migratedConcepts as Concept[]);
+        const mergedConcepts = [...migratedConcepts, ...newVocab];
+        
+        if (newVocab.length > 0) {
+          console.log(`[VocabStore] Added ${newVocab.length} new vocabulary items from updated JSON`);
+        }
+        
+        // Set the merged data
+        setConcepts(mergedConcepts);
         
         // Save to localStorage so it persists
-        saveProgress(migratedConcepts as Concept[]);
+        saveProgress(mergedConcepts);
         
         const now = new Date().toISOString();
         setLastSyncTime(now);
@@ -465,7 +492,7 @@ export function useVocabularyStore(): VocabularyStore {
         // Clear pending sync since we just loaded fresh data
         clearPendingSync();
         
-        console.log(`[VocabStore] Loaded ${migratedConcepts.length} concepts from cloud`);
+        console.log(`[VocabStore] Loaded ${migratedConcepts.length} from cloud + ${newVocab.length} new = ${mergedConcepts.length} total`);
       } else {
         console.log('[VocabStore] No cloud data found, keeping local data');
       }

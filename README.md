@@ -287,13 +287,13 @@ Open http://localhost:5173/
 
 ### Dev Mode Toggle
 
-When running locally with `VITE_DEV_USER_EMAIL` and `VITE_DEV_USER_PASSWORD` configured, a **yellow lightning bolt button** (⚡) appears in the top-right corner.
+When running locally with `VITE_DEV_USER_EMAIL` and `VITE_DEV_USER_PASSWORD` configured, a **mode indicator** appears at the top center of the screen.
 
-Click it to quickly switch between:
-- **Dev User** - Full account with cloud sync
-- **Guest Mode** - Local-only storage for testing
+Single-click to instantly switch between:
+- **Guest** (purple) - Local-only storage for testing
+- **Dev** (yellow) - Full account with cloud sync
 
-This makes it easy to test both modes without logging in/out.
+The page reloads automatically to ensure a clean state switch.
 
 ---
 

@@ -680,12 +680,14 @@ export function ProfilePage({ settingsStore, vocabStore, onSave, onLogout, userE
                   <div className="text-left">
                     <p className="text-sm font-medium">🔒 Want cloud sync?</p>
                     <p className="text-xs opacity-80 mt-1">
-                      Access is invite-only. Email{' '}
+                      Access is invite-only.{' '}
                       <a 
-                        href="mailto:your-email@example.com?subject=Saras Access Request" 
+                        href="https://github.com/avi-otterai/mandarin/issues"
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className="link link-hover font-medium"
                       >
-                        your-email@example.com
+                        Open an issue on GitHub
                       </a>
                       {' '}to request an account.
                     </p>

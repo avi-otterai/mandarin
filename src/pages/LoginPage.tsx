@@ -114,12 +114,14 @@ export function LoginPage({ onLogin, onGuestLogin, loading, error, onClearError 
               <div className="text-left">
                 <p className="font-medium text-sm">🔒 Access is invite-only</p>
                 <p className="text-xs opacity-80 mt-1">
-                  Want to join? Email{' '}
+                  Want to join?{' '}
                   <a 
-                    href="mailto:your-email@example.com?subject=Saras Access Request" 
+                    href="https://github.com/avi-otterai/mandarin/issues"
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="link link-hover font-medium"
                   >
-                    your-email@example.com
+                    Open an issue on GitHub
                   </a>
                 </p>
               </div>

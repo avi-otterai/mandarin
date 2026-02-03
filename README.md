@@ -190,7 +190,7 @@ For signed-in users, progress is automatically synced to Supabase:
 
 ### ⚠️ Data Preservation Notes (For Developers)
 
-**DO NOT delete or reset the `user_progress` table for user `your-email@example.com`** - this account has active learning data that should be preserved. If schema changes are needed, migrate the data rather than resetting.
+**DO NOT arbitrarily delete or reset the `user_progress` table** - users have active learning data that should be preserved. If schema changes are needed, migrate the data rather than resetting.
 
 ---
 
@@ -210,7 +210,7 @@ For signed-in users, progress is automatically synced to Supabase:
 - No cloud backup (data lost if browser storage cleared)
 
 ### Signed In Mode
-- **Invite-only**: Email your-email@example.com to request access
+- **Invite-only**: Contact the repo owner to request access
 - Full cloud sync to Supabase
 - Data persists across devices
 - Row Level Security (RLS) isolates user data
@@ -263,17 +263,18 @@ cd avi-mandarin
 npm install
 ```
 
-### 2. Configure Supabase
+### 2. Configure Environment
 
 ```bash
 cp .env.example .env
 ```
 
-Edit `.env`:
+Edit `.env` with your Supabase credentials (get from Supabase Dashboard > Settings > API):
 ```
 VITE_SUPABASE_URL=https://your-project-id.supabase.co
 VITE_SUPABASE_ANON_KEY=your-anon-key-here
-VITE_DEV_USER_PASSWORD=your-password-here  # Optional: auto-login in dev
+VITE_DEV_USER_EMAIL=your-email@example.com   # Optional: auto-login in dev
+VITE_DEV_USER_PASSWORD=your-password-here    # Optional: auto-login in dev
 ```
 
 ### 3. Run Locally

@@ -310,7 +310,7 @@ function DevModePanel({
   const [isOpen, setIsOpen] = useState(false);
   
   return (
-    <div className="fixed top-2 right-2 z-50">
+    <div className="fixed bottom-20 left-2 z-50">
       {/* Toggle button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
@@ -322,7 +322,7 @@ function DevModePanel({
       
       {/* Expanded panel */}
       {isOpen && (
-        <div className="absolute top-8 right-0 p-3 rounded-lg bg-base-200 border border-warning/30 shadow-lg min-w-[180px]">
+        <div className="absolute bottom-8 left-0 p-3 rounded-lg bg-base-200 border border-warning/30 shadow-lg min-w-[180px]">
           <div className="flex items-center gap-2 mb-2">
             <Zap className="w-4 h-4 text-warning" />
             <span className="text-xs font-bold text-warning">DEV MODE</span>

@@ -330,7 +330,7 @@ src/
 │   ├── quiz.ts              # Quiz generation
 │   └── pinyin.ts            # Pinyin utilities
 └── data/
-    └── hsk1_vocabulary.json # HSK1 word list (188 words, 15 chapters)
+    └── hsk1_vocabulary.json # HSK1 word list (199 words, 15 chapters)
 ```
 
 ---
@@ -412,7 +412,7 @@ CREATE TABLE user_settings (
 | Old (denormalized) | New (normalized) |
 |--------------------|------------------|
 | `concepts` duplicated per user | `vocabulary` stored once |
-| 188 rows × N users | 188 vocab + 188 × N user_progress |
+| 199 rows × N users | 199 vocab + 199 × N user_progress |
 | Fixing typos required updating every user | Fix once in vocabulary |
 | Mixed static + user data | Clear separation of concerns |
 

@@ -984,6 +984,14 @@
     "source": "hsk1"
   },
   {
+    "word": "下",
+    "pinyin": "xià",
+    "part_of_speech": "noun",
+    "meaning": "down, below, under",
+    "chapter": 10,
+    "source": "hsk1"
+  },
+  {
     "word": "前面",
     "pinyin": "qiánmiàn",
     "part_of_speech": "noun",
@@ -1080,6 +1088,14 @@
     "source": "hsk1"
   },
   {
+    "word": "两",
+    "pinyin": "liǎng",
+    "part_of_speech": "numeral",
+    "meaning": "two (used before measure words)",
+    "chapter": 11,
+    "source": "hsk1"
+  },
+  {
     "word": "中午",
     "pinyin": "zhōngwǔ",
     "part_of_speech": "noun",
@@ -1112,10 +1128,26 @@
     "source": "hsk1"
   },
   {
+    "word": "分",
+    "pinyin": "fēn",
+    "part_of_speech": "measure word",
+    "meaning": "minute (of time)",
+    "chapter": 11,
+    "source": "hsk1"
+  },
+  {
     "word": "前",
     "pinyin": "qián",
     "part_of_speech": "noun",
     "meaning": "before, earlier than",
+    "chapter": 11,
+    "source": "hsk1"
+  },
+  {
+    "word": "午",
+    "pinyin": "wǔ",
+    "part_of_speech": "noun",
+    "meaning": "noon, midday",
     "chapter": 11,
     "source": "hsk1"
   },
@@ -1140,6 +1172,14 @@
     "pinyin": "shíhou",
     "part_of_speech": "noun",
     "meaning": "time, moment",
+    "chapter": 11,
+    "source": "hsk1"
+  },
+  {
+    "word": "点",
+    "pinyin": "diǎn",
+    "part_of_speech": "measure word",
+    "meaning": "o'clock, dot, point",
     "chapter": 11,
     "source": "hsk1"
   },
@@ -1216,6 +1256,14 @@
     "source": "hsk1"
   },
   {
+    "word": "气",
+    "pinyin": "qì",
+    "part_of_speech": "noun",
+    "meaning": "air, gas, atmosphere",
+    "chapter": 12,
+    "source": "hsk1"
+  },
+  {
     "word": "水",
     "pinyin": "shuǐ",
     "part_of_speech": "noun",
@@ -1272,6 +1320,14 @@
     "source": "hsk1"
   },
   {
+    "word": "习",
+    "pinyin": "xí",
+    "part_of_speech": "verb",
+    "meaning": "to practice, to review",
+    "chapter": 13,
+    "source": "hsk1"
+  },
+  {
     "word": "喜欢",
     "pinyin": "xǐhuan",
     "part_of_speech": "verb",
@@ -1288,10 +1344,26 @@
     "source": "hsk1"
   },
   {
+    "word": "日",
+    "pinyin": "rì",
+    "part_of_speech": "noun",
+    "meaning": "sun, day, date",
+    "chapter": 13,
+    "source": "hsk1"
+  },
+  {
     "word": "电视",
     "pinyin": "diànshì",
     "part_of_speech": "noun",
     "meaning": "television",
+    "chapter": 13,
+    "source": "hsk1"
+  },
+  {
+    "word": "目",
+    "pinyin": "mù",
+    "part_of_speech": "noun",
+    "meaning": "eye",
     "chapter": 13,
     "source": "hsk1"
   },
@@ -1440,6 +1512,14 @@
     "source": "hsk1"
   },
   {
+    "word": "出",
+    "pinyin": "chū",
+    "part_of_speech": "verb",
+    "meaning": "to go out, to exit",
+    "chapter": 15,
+    "source": "hsk1"
+  },
+  {
     "word": "出租车",
     "pinyin": "chūzūchē",
     "part_of_speech": "noun",
@@ -1476,6 +1556,14 @@
     "pinyin": "rènshi",
     "part_of_speech": "verb",
     "meaning": "to meet, to know",
+    "chapter": 15,
+    "source": "hsk1"
+  },
+  {
+    "word": "飞",
+    "pinyin": "fēi",
+    "part_of_speech": "verb",
+    "meaning": "to fly",
     "chapter": 15,
     "source": "hsk1"
   },

@@ -53,21 +53,27 @@ interface ProfilePageProps {
   isGuest?: boolean;
 }
 
-// Progress bar component
+// Progress bar component - uses CSS variables for reliable theming
 function ProgressBar({ value, max = 100, color = 'primary', size = 'md' }: { 
   value: number; 
   max?: number; 
-  color?: string;
+  color?: 'primary' | 'secondary' | 'accent' | 'success' | 'warning' | 'error' | 'info';
   size?: 'sm' | 'md';
 }) {
   const percentage = Math.min(100, Math.max(0, (value / max) * 100));
   const heightClass = size === 'sm' ? 'h-2' : 'h-3';
   
+  // Map color names to daisyUI CSS variable names
+  const colorVar = `var(--color-${color})`;
+  
   return (
-    <div className={`w-full bg-base-300 rounded-full ${heightClass}`}>
+    <div className={`w-full bg-base-300 rounded-full ${heightClass} overflow-hidden`}>
       <div 
-        className={`bg-${color} ${heightClass} rounded-full transition-all duration-500`}
-        style={{ width: `${percentage}%` }}
+        className={`${heightClass} rounded-full transition-all duration-500`}
+        style={{ 
+          width: `${percentage}%`,
+          backgroundColor: colorVar,
+        }}
       />
     </div>
   );

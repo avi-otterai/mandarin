@@ -131,29 +131,25 @@ The repo uses `github.com-avi` alias which maps to personal SSH key (`~/.ssh/id_
 ## Data Storage
 - **Local**: localStorage (key: `langseed_progress`) - instant reads/writes
 - **Cloud**: Supabase PostgreSQL with RLS (user-level row security)
-  - Project: `mandarin` (YOUR_PROJECT_ID)
-  - Tables: `concepts`, `srs_records`
-  - Sync: Manual "Save" button triggers cloud sync
+  - Tables: `vocabulary`, `user_progress`, `quiz_attempts`
+  - Sync: Auto-sync after quiz answers
 
 ## Supabase Config
-- **URL**: stored in `.env` as `VITE_SUPABASE_URL`
-- **Anon Key**: stored in `.env` as `VITE_SUPABASE_ANON_KEY`
-- **Auth**: Email/password (single user, no public signup)
+All Supabase credentials are stored in `.env` (see `.env.example`):
+- `VITE_SUPABASE_URL` - Your Supabase project URL
+- `VITE_SUPABASE_ANON_KEY` - Public anon key (safe for client-side)
+- `VITE_DEV_USER_EMAIL` - Dev auto-login email (optional)
+- `VITE_DEV_USER_PASSWORD` - Dev auto-login password (optional)
 
 ---
 
 ## Default User Preferences
 
-### Primary User
-- **Email**: your-email@example.com
-- **Password**: saved in `.env` as `VITE_DEV_USER_PASSWORD`
+### Development User
+- **Email**: Set via `VITE_DEV_USER_EMAIL` in `.env`
+- **Password**: Set via `VITE_DEV_USER_PASSWORD` in `.env`
+- Auto-login only works in development mode when both are configured
 
 ### Vocabulary Preferences
 - **Selected Chapters**: 1, 2, 3, 4, 5, 6 (HSK1 chapters)
 - Additional user preferences to be added as features develop
-
-### Development Note: Supabase Table Resets
-During active development, Supabase tables may be rewritten/reset. **When this happens**:
-1. Always reset the default user's vocabulary preferences (selected chapters 1-6)
-2. Ensure any seed data or default settings are re-applied for `your-email@example.com`
-3. Document the reset in commit messages

@@ -3,8 +3,9 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import type { User, Session } from '@supabase/supabase-js';
 
-// Default dev user credentials (only used in development mode)
-const DEV_USER_EMAIL = 'your-email@example.com';
+// Dev user credentials (only used in development mode)
+// Set these in .env to enable auto-login during development
+const DEV_USER_EMAIL = import.meta.env.VITE_DEV_USER_EMAIL || '';
 const DEV_USER_PASSWORD = import.meta.env.VITE_DEV_USER_PASSWORD || '';
 
 // Guest mode storage key
@@ -42,9 +43,9 @@ export function useAuth() {
     if (autoLoginAttempted.current) return;
     autoLoginAttempted.current = true;
     
-    // Only auto-login in development mode with password configured
-    if (import.meta.env.MODE !== 'development' || !DEV_USER_PASSWORD) {
-      console.log('[Auth] Auto-login skipped: not in dev mode or no password configured');
+    // Only auto-login in development mode with both email and password configured
+    if (import.meta.env.MODE !== 'development' || !DEV_USER_EMAIL || !DEV_USER_PASSWORD) {
+      console.log('[Auth] Auto-login skipped: not in dev mode or credentials not configured');
       return;
     }
     

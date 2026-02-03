@@ -200,14 +200,6 @@
     "source": "hsk1"
   },
   {
-    "word": "李月",
-    "pinyin": "Lǐ Yuè",
-    "part_of_speech": "other",
-    "meaning": "(name) Li Yue",
-    "chapter": 2,
-    "source": "hsk1"
-  },
-  {
     "word": "羊",
     "pinyin": "yáng",
     "part_of_speech": "noun",
@@ -467,7 +459,7 @@
     "word": "多",
     "pinyin": "duō",
     "part_of_speech": "adverb",
-    "meaning": "how (degree)",
+    "meaning": "many, much; how (degree)",
     "chapter": 5,
     "source": "hsk1"
   },
@@ -475,7 +467,7 @@
     "word": "大",
     "pinyin": "dà",
     "part_of_speech": "adjective",
-    "meaning": "(of age) old",
+    "meaning": "big, large; (of age) old",
     "chapter": 5,
     "source": "hsk1"
   },
@@ -640,14 +632,6 @@
     "source": "hsk1"
   },
   {
-    "word": "二十五号",
-    "pinyin": "èrshíwǔ hào",
-    "part_of_speech": "other",
-    "meaning": "the 25th (of a month)",
-    "chapter": 7,
-    "source": "hsk1"
-  },
-  {
     "word": "今天",
     "pinyin": "jīntiān",
     "part_of_speech": "noun",
@@ -672,10 +656,18 @@
     "source": "hsk1"
   },
   {
-    "word": "在银行",
-    "pinyin": "zài yínháng",
-    "part_of_speech": "other",
-    "meaning": "at the bank",
+    "word": "银行",
+    "pinyin": "yínháng",
+    "part_of_speech": "noun",
+    "meaning": "bank",
+    "chapter": 7,
+    "source": "hsk1"
+  },
+  {
+    "word": "日历",
+    "pinyin": "rìlì",
+    "part_of_speech": "noun",
+    "meaning": "calendar",
     "chapter": 7,
     "source": "hsk1"
   },
@@ -724,22 +716,6 @@
     "pinyin": "kàn",
     "part_of_speech": "verb",
     "meaning": "to look, watch, read",
-    "chapter": 7,
-    "source": "hsk1"
-  },
-  {
-    "word": "看书",
-    "pinyin": "kàn shū",
-    "part_of_speech": "verb",
-    "meaning": "to read (a book)",
-    "chapter": 7,
-    "source": "hsk1"
-  },
-  {
-    "word": "看日历",
-    "pinyin": "kàn rìlì",
-    "part_of_speech": "verb",
-    "meaning": "to look at a calendar",
     "chapter": 7,
     "source": "hsk1"
   },
@@ -931,7 +907,7 @@
     "word": "工作",
     "pinyin": "gōngzuò",
     "part_of_speech": "verb",
-    "meaning": "/n. to work; job",
+    "meaning": "to work; job",
     "chapter": 9,
     "source": "hsk1"
   },
@@ -1040,14 +1016,6 @@
     "source": "hsk1"
   },
   {
-    "word": "王方",
-    "pinyin": "Wáng Fāng",
-    "part_of_speech": "other",
-    "meaning": "(name) Wang Fang",
-    "chapter": 10,
-    "source": "hsk1"
-  },
-  {
     "word": "电脑",
     "pinyin": "diànnǎo",
     "part_of_speech": "noun",
@@ -1060,14 +1028,6 @@
     "pinyin": "néng",
     "part_of_speech": "other",
     "meaning": "can, may",
-    "chapter": 10,
-    "source": "hsk1"
-  },
-  {
-    "word": "谢朋",
-    "pinyin": "Xiè Péng",
-    "part_of_speech": "other",
-    "meaning": "(name) Xie Peng",
     "chapter": 10,
     "source": "hsk1"
   },
@@ -1443,7 +1403,7 @@
     "word": "开",
     "pinyin": "kāi",
     "part_of_speech": "verb",
-    "meaning": "to drive",
+    "meaning": "to open; to drive; to start",
     "chapter": 14,
     "source": "hsk1"
   },

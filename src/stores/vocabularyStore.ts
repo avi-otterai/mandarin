@@ -157,10 +157,21 @@ export function useVocabularyStore(): VocabularyStore {
     // Sync meanings from source JSON (ensures meanings are up-to-date after JSON edits)
     const vocab = hsk1Data as VocabWord[];
     const vocabMap = new Map(vocab.map(v => [v.word, v]));
+    const validWords = new Set(vocab.map(v => v.word));
     const existingWords = new Set(loadedConcepts.map(c => c.word));
     
+    // Filter out concepts that no longer exist in source JSON (deleted vocabulary)
+    // and update meanings for remaining concepts
+    const filteredConcepts = loadedConcepts.filter(c => {
+      if (!validWords.has(c.word)) {
+        console.log(`[VocabStore] Removing deleted vocabulary: ${c.word}`);
+        return false;
+      }
+      return true;
+    });
+    
     // Update meanings for existing concepts
-    const updatedConcepts = loadedConcepts.map(c => {
+    const updatedConcepts = filteredConcepts.map(c => {
       const sourceWord = vocabMap.get(c.word);
       if (sourceWord && sourceWord.meaning !== c.meaning) {
         return { ...c, meaning: sourceWord.meaning };
@@ -168,8 +179,13 @@ export function useVocabularyStore(): VocabularyStore {
       return c;
     });
     
+    const removedCount = loadedConcepts.length - filteredConcepts.length;
+    if (removedCount > 0) {
+      console.log(`[VocabStore] Removed ${removedCount} deleted vocabulary items`);
+    }
+    
     // Auto-merge: Find chapters user has imported and add any new vocabulary from those chapters
-    const importedChapters = new Set(loadedConcepts.map(c => c.chapter));
+    const importedChapters = new Set(filteredConcepts.map(c => c.chapter));
     const newVocab: Concept[] = [];
     
     vocab.forEach(word => {
@@ -453,10 +469,26 @@ export function useVocabularyStore(): VocabularyStore {
         }) as Concept[];
         
         // Auto-merge: Add any NEW vocabulary from JSON that doesn't exist in cloud
-        // This ensures users get new vocabulary when the JSON is updated
+        // and remove any vocabulary that no longer exists in JSON
         const vocab = hsk1Data as VocabWord[];
-        const existingWords = new Set(migratedConcepts.map(c => c.word));
-        const importedChapters = new Set(migratedConcepts.map(c => c.chapter));
+        const validWords = new Set(vocab.map(v => v.word));
+        
+        // Filter out concepts that no longer exist in source JSON (deleted vocabulary)
+        const filteredConcepts = migratedConcepts.filter(c => {
+          if (!validWords.has(c.word)) {
+            console.log(`[VocabStore] Removing deleted vocabulary from cloud data: ${c.word}`);
+            return false;
+          }
+          return true;
+        });
+        
+        const removedCount = migratedConcepts.length - filteredConcepts.length;
+        if (removedCount > 0) {
+          console.log(`[VocabStore] Removed ${removedCount} deleted vocabulary items from cloud data`);
+        }
+        
+        const existingWords = new Set(filteredConcepts.map(c => c.word));
+        const importedChapters = new Set(filteredConcepts.map(c => c.chapter));
         const newVocab: Concept[] = [];
         
         vocab.forEach(word => {
@@ -473,7 +505,7 @@ export function useVocabularyStore(): VocabularyStore {
           }
         });
         
-        const mergedConcepts = [...migratedConcepts, ...newVocab];
+        const mergedConcepts = [...filteredConcepts, ...newVocab];
         
         if (newVocab.length > 0) {
           console.log(`[VocabStore] Added ${newVocab.length} new vocabulary items from updated JSON`);
@@ -492,7 +524,7 @@ export function useVocabularyStore(): VocabularyStore {
         // Clear pending sync since we just loaded fresh data
         clearPendingSync();
         
-        console.log(`[VocabStore] Loaded ${migratedConcepts.length} from cloud + ${newVocab.length} new = ${mergedConcepts.length} total`);
+        console.log(`[VocabStore] Loaded ${filteredConcepts.length} from cloud + ${newVocab.length} new = ${mergedConcepts.length} total`);
       } else {
         console.log('[VocabStore] No cloud data found, keeping local data');
       }

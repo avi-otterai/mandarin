@@ -330,7 +330,7 @@ src/
 │   ├── quiz.ts              # Quiz generation
 │   └── pinyin.ts            # Pinyin utilities
 └── data/
-    └── hsk1_vocabulary.json # HSK1 word list (199 words, 15 chapters)
+    └── hsk1_vocabulary.json # HSK1 word list (194 words, 15 chapters)
 ```
 
 ---
@@ -412,7 +412,7 @@ CREATE TABLE user_settings (
 | Old (denormalized) | New (normalized) |
 |--------------------|------------------|
 | `concepts` duplicated per user | `vocabulary` stored once |
-| 199 rows × N users | 199 vocab + 199 × N user_progress |
+| 194 rows × N users | 194 vocab + 194 × N user_progress |
 | Fixing typos required updating every user | Fix once in vocabulary |
 | Mixed static + user data | Clear separation of concerns |
 
@@ -431,7 +431,7 @@ CREATE TABLE user_settings (
 - [x] **Progress dashboard with charts**
 - [x] **Chapter-based initial knowledge priors**
 - [x] **Guest mode** (try without account, local storage only)
-- [x] **Vocabulary auto-merge** (new words from JSON automatically added to existing users)
+- [x] **Vocabulary auto-sync** (new words added, deleted words removed, meanings updated from JSON)
 - [x] **Dev mode toggle** (quick switch between guest/dev user on localhost)
 - [ ] Quick add/remove vocab from Quiz (suggest words, easy toggle without leaving quiz)
 - [ ] Smart word selection (75% easy / 25% hard blend based on knowledge)

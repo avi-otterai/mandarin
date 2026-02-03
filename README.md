@@ -442,6 +442,156 @@ CREATE TABLE user_settings (
 
 ---
 
+## 📚 Adding New Vocabulary Sources (e.g., HSK4)
+
+The `content/` folder contains scripts to extract vocabulary from Chinese textbook PDFs. This was used to create the HSK1 vocabulary and can be adapted for other levels (HSK4, HSK5, etc.).
+
+### Extraction Pipeline Overview
+
+```
+PDF → OCR → Analyze Structure → Correct with Claude → Extract to JSON → Import to App
+```
+
+### Scripts in `content/hsk1/`
+
+| Script | Purpose | Requirements |
+|--------|---------|--------------|
+| `ocr_extract.py` | Extract text from scanned PDF using macOS Vision OCR | macOS, PyMuPDF |
+| `analyze_structure.py` | Use Claude to analyze chapter structure | Anthropic API key |
+| `correct_chapters.py` | Use Claude to fix OCR errors (parallel processing) | Anthropic API key |
+| `extract_vocabulary.py` | Parse corrected chapters into JSON | None |
+
+### Step-by-Step: Adding HSK4 (or any textbook)
+
+#### 1. Set Up the Folder
+
+```bash
+# Create folder for new vocabulary source
+mkdir content/hsk4
+cd content/hsk4
+
+# Copy the extraction scripts
+cp ../hsk1/ocr_extract.py .
+cp ../hsk1/analyze_structure.py .
+cp ../hsk1/correct_chapters.py .
+cp ../hsk1/extract_vocabulary.py .
+```
+
+#### 2. Add Your PDF
+
+Place your textbook PDF in the folder (e.g., `HSK4_textbook.pdf`).
+
+#### 3. Modify Scripts for Your PDF
+
+Edit `ocr_extract.py` to point to your PDF:
+```python
+# Change this line to match your PDF filename
+pdf_path = script_dir / "HSK4_textbook.pdf"
+output_path = script_dir / "hsk4_ocr.txt"
+```
+
+Similarly update the other scripts to use `hsk4` instead of `hsk1` in filenames.
+
+#### 4. Set Up Environment
+
+```bash
+# From repo root, ensure you have the Anthropic API key
+# Add to .env file:
+# ANTHROPIC_API_KEY=your-key-here
+
+# Install Python dependencies
+pip install PyMuPDF anthropic
+```
+
+#### 5. Run the Extraction Pipeline
+
+```bash
+cd content/hsk4
+
+# Step 1: OCR the PDF (macOS only - uses Vision framework)
+python ocr_extract.py
+# Output: hsk4_ocr.txt
+
+# Step 2: Analyze structure (uses Claude)
+python analyze_structure.py
+# Output: chapter_structure_analysis.txt
+
+# Step 3: Correct chapters (uses Claude in parallel)
+python correct_chapters.py
+# Output: corrected_chapters/*.txt + hsk4_corrected.txt
+
+# Step 4: Extract vocabulary to JSON
+python extract_vocabulary.py
+# Output: hsk4_vocabulary.json
+```
+
+#### 6. Adapt for Different Textbook Formats
+
+The scripts are designed for HSK Standard Course textbooks. For other formats, you may need to modify:
+
+**In `correct_chapters.py`:**
+- Update the prompt to describe your textbook's structure
+- Modify section headers (热身, 课文, 生词, etc.) to match your book
+- Adjust vocabulary formatting rules
+
+**In `extract_vocabulary.py`:**
+- Modify `parse_vocab_line()` regex patterns to match your format
+- Update `POS_MAPPING` if your book uses different part-of-speech abbreviations
+- Change chapter count in `extract_all_chapters()` loop
+
+**Common vocabulary line formats:**
+```
+# Pipe-separated (preferred):
+1. 汉字 | pinyin | pos | meaning
+
+# Space-separated:
+1. 汉字 pinyin pos. meaning
+```
+
+#### 7. Import to App
+
+Once you have the JSON vocabulary file:
+
+```bash
+# Copy to app data folder
+cp hsk4_vocabulary.json ../../src/data/
+
+# Update vocabularyStore.ts to import the new vocabulary
+# (see existing hsk1 import pattern)
+```
+
+### Non-macOS Users
+
+The `ocr_extract.py` script uses macOS Vision framework for OCR. For other platforms:
+
+1. **Use Google Cloud Vision API** - Modify to use `google-cloud-vision` package
+2. **Use Tesseract** - Use `pytesseract` with Chinese language pack
+3. **Use existing text** - If your PDF has embedded text (not scanned), PyMuPDF can extract it directly
+
+### Tips for Good Extraction
+
+- **Clean PDFs work best** - Scanned books with clear text yield better OCR
+- **Review corrected chapters** - Claude is good but not perfect; spot-check the output
+- **Pinyin is tricky** - OCR often mangles tone marks; the Claude correction step helps
+- **Deduplicate** - The extract script skips duplicate words; first occurrence wins
+
+### Files Generated
+
+```
+content/hsk4/
+├── HSK4_textbook.pdf          # Your source PDF
+├── hsk4_ocr.txt               # Raw OCR output
+├── chapter_structure_analysis.txt  # Claude's analysis of structure
+├── corrected_chapters/        # Individual corrected chapters
+│   ├── chapter_01.txt
+│   ├── chapter_02.txt
+│   └── ...
+├── hsk4_corrected.txt         # All chapters combined
+└── hsk4_vocabulary.json       # Final JSON for app import
+```
+
+---
+
 ## 📄 License
 
 Private use only.

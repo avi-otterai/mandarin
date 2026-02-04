@@ -2,7 +2,7 @@
 
 ## Project Context
 React/TypeScript webapp for learning Mandarin Chinese using spaced repetition (SRS).
-See README.md for full feature list and setup.
+See README.md for full feature list, setup, tech stack, data model, and schema documentation.
 
 ## Repository
 - **GitHub**: https://github.com/avi-otterai/mandarin.git
@@ -10,19 +10,64 @@ See README.md for full feature list and setup.
 
 ---
 
+## ⛔ CRITICAL: DATABASE MIGRATION SAFETY
+
+**On Feb 2 2026, a careless schema migration DELETED HUNDREDS OF USER QUIZ ATTEMPTS.**
+
+The migration renamed `concept_id` to `vocabulary_id` and added a foreign key to a new `vocabulary` table with `ON DELETE CASCADE`. Since the new vocabulary table had different UUIDs, all historical quiz data was orphaned and lost.
+
+### NEVER DO THIS:
+- ❌ Add foreign keys to columns with existing data pointing to old UUIDs
+- ❌ Use `ON DELETE CASCADE` without understanding the data relationships
+- ❌ Drop/recreate tables that have user data without migration scripts
+- ❌ Assume schema changes are safe without checking existing data
+
+### ALWAYS DO THIS:
+- ✅ **BACK UP production data** before ANY schema migration
+- ✅ Create mapping tables when changing ID references
+- ✅ Test migrations on a copy of production data first
+- ✅ Use `ALTER TABLE ... ADD COLUMN IF NOT EXISTS` for additive changes only
+- ✅ Ask user to confirm before running any migration that touches existing tables with data
+
+**If you need to change quiz_attempts, user_progress, or any table with user data:**
+1. Show the user the EXACT SQL you plan to run
+2. Explain what data could be affected
+3. Wait for explicit approval
+4. Consider using Supabase branching for testing
+
+---
+
+## ⚠️ CRITICAL: Known vs Unknown Words
+
+**This is the most important concept in the app - understand this before making any changes!**
+
+### Binary Categories (ONLY 2)
+| Status | Checkbox | Understanding | In Revise? |
+|--------|----------|---------------|------------|
+| **Known** | ✓ Checked | spectrum | **YES** |
+| **Unknown** | ☐ Unchecked | spectrum | **NO** |
+
+### Why Vocab-led Design
+- **Avoids overwhelm**: User only sees words they've explicitly selected
+- **Controlled learning**: Start with a few checked words, expand gradually
+- **Intentional vocabulary**: Revise tab is never cluttered with unselected words
+
+---
+
 ## Task Workflow (ALWAYS FOLLOW)
 
 When working on any new task/feature:
-Note that after completion of a feature/fix, you must automatically fix readme (but after testing and running server).
-Then you must attempt to commit, merge, push, again without the user having to say it. If they don't want to push they'll reject.
+After completion of a feature/fix, you must automatically update README (but after testing).
+Then you must attempt to commit, merge, push, again without the user having to say it.
 
 ### 1. Understand First
-- [ ] Read `README.md` for project overview
-- [ ] Read `.cursorrules` for conventions and context
+- [ ] Read `README.md` for project overview, data model, and schema
+- [ ] Read `.cursorrules` for conventions and warnings
 - [ ] Understand current code structure before making changes
 
 ### 2. Plan Before Implementing
 - [ ] Outline the approach/changes needed
+- [ ] **If touching database schema: STOP and get explicit approval**
 - [ ] Confirm plan with user if it's a large change
 
 ### 3. Implement
@@ -49,20 +94,6 @@ git checkout main
 git merge feature/your-feature-name
 git push origin main
 ```
-
-## Tech Stack
-- React 19 + TypeScript
-- Vite (build tool)
-- Tailwind CSS v4 + daisyUI v5
-- localStorage (current storage)
-- Supabase (for cloud sync)
-
-## Running Locally
-```bash
-npm install
-npm run dev
-```
-Open http://localhost:5173/
 
 ---
 
@@ -99,57 +130,3 @@ Note that there may be simultaneous edits by other cursor agents, so git status 
 
 ### SSH Configuration
 The repo uses `github.com-avi` alias which maps to personal SSH key (`~/.ssh/id_ed25519`), not the work Teleport certificate.
-
----
-
-## Key Files
-- `src/pages/VocabularyPage.tsx` - Vocabulary table with filters
-- `src/pages/RevisePage.tsx` - Flashcard review (ONLY shows known words!)
-- `src/stores/vocabularyStore.ts` - State + localStorage persistence
-- `src/utils/srs.ts` - SRS algorithm
-- `src/data/hsk1_vocabulary.json` - HSK1 word list
-
----
-
-## ⚠️ CRITICAL: Known vs Unknown Words
-
-**This is the most important concept in the app - understand this before making any changes!**
-
-### Binary Categories (ONLY 2)
-| Status | Checkbox | understanding | In Revise? |
-|--------|----------|---------------|------------|
-| **Known** | ✓ Checked | spectrum | **YES** |
-| **Unknown** | ☐ Unchecked | spectrum | **NO** |
-
-
-### Why Vocab-led design
-- **Avoids overwhelm**: User only sees words they've explicitly selected
-- **Controlled learning**: Start with a few checked words, expand gradually
-- **Intentional vocabulary**: Revise tab is never cluttered with unselected words
-
-
-## Data Storage
-- **Local**: localStorage (key: `langseed_progress`) - instant reads/writes
-- **Cloud**: Supabase PostgreSQL with RLS (user-level row security)
-  - Tables: `vocabulary`, `user_progress`, `quiz_attempts`
-  - Sync: Auto-sync after quiz answers
-
-## Supabase Config
-All Supabase credentials are stored in `.env` (see `.env.example`):
-- `VITE_SUPABASE_URL` - Your Supabase project URL
-- `VITE_SUPABASE_ANON_KEY` - Public anon key (safe for client-side)
-- `VITE_DEV_USER_EMAIL` - Dev auto-login email (optional)
-- `VITE_DEV_USER_PASSWORD` - Dev auto-login password (optional)
-
----
-
-## Default User Preferences
-
-### Development User
-- **Email**: Set via `VITE_DEV_USER_EMAIL` in `.env`
-- **Password**: Set via `VITE_DEV_USER_PASSWORD` in `.env`
-- Auto-login only works in development mode when both are configured
-
-### Vocabulary Preferences
-- **Selected Chapters**: 1, 2, 3, 4, 5, 6 (HSK1 chapters)
-- Additional user preferences to be added as features develop

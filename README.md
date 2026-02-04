@@ -188,9 +188,24 @@ For signed-in users, progress is automatically synced to Supabase:
 
 **⚠️ Important**: Cloud data is the source of truth. If you have local progress that hasn't synced, it will be overwritten when loading from cloud.
 
-### ⚠️ Data Preservation Notes (For Developers)
+### ⛔ Data Preservation (CRITICAL FOR DEVELOPERS)
 
-**DO NOT arbitrarily delete or reset the `user_progress` table** - users have active learning data that should be preserved. If schema changes are needed, migrate the data rather than resetting.
+> **On Feb 2 2026, a careless schema migration DELETED HUNDREDS OF USER QUIZ ATTEMPTS.**
+> The migration renamed `concept_id` → `vocabulary_id` and added a FK to a new table with different UUIDs.
+> All historical quiz data was orphaned and lost. **This must never happen again.**
+
+**Rules for ANY schema migration:**
+
+1. **NEVER** add foreign keys with `ON DELETE CASCADE` to columns with existing data pointing to old UUIDs
+2. **ALWAYS** back up production data before ANY migration
+3. **ALWAYS** create mapping tables when changing ID references
+4. **ALWAYS** test migrations on a copy of production data first
+5. **ALWAYS** get explicit user approval before running migrations that touch existing data
+
+**Tables with user data (HANDLE WITH EXTREME CARE):**
+- `user_progress` - User's learning state
+- `quiz_attempts` - All quiz history and ML training data
+- `user_settings` - User preferences
 
 ---
 

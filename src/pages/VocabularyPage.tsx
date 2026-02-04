@@ -17,46 +17,64 @@ interface VocabularyPageProps {
 type SortField = 'pinyin' | 'word' | 'meaning' | 'part_of_speech' | 'chapter' | 'knowledge';
 type SortDir = 'asc' | 'desc';
 
-const SORT_STORAGE_KEY = 'langseed_vocab_sort';
+const VOCAB_PREFS_KEY = 'langseed_vocab_prefs';
 
-interface SortPreference {
-  field: SortField;
-  dir: SortDir;
+interface VocabPreferences {
+  sortField: SortField;
+  sortDir: SortDir;
+  filterChapter: string;
+  showStudyingOnly: boolean;
+  includePhrases: boolean;
 }
 
-function loadSortPreference(): SortPreference {
+const DEFAULT_VOCAB_PREFS: VocabPreferences = {
+  sortField: 'chapter',
+  sortDir: 'asc',
+  filterChapter: 'all',
+  showStudyingOnly: false,
+  includePhrases: true,
+};
+
+function loadVocabPreferences(): VocabPreferences {
   try {
-    const stored = localStorage.getItem(SORT_STORAGE_KEY);
+    const stored = localStorage.getItem(VOCAB_PREFS_KEY);
     if (stored) {
       const parsed = JSON.parse(stored);
-      // Validate the stored values
+      // Validate and merge with defaults
       const validFields: SortField[] = ['pinyin', 'word', 'meaning', 'part_of_speech', 'chapter', 'knowledge'];
       const validDirs: SortDir[] = ['asc', 'desc'];
-      if (validFields.includes(parsed.field) && validDirs.includes(parsed.dir)) {
-        return parsed;
-      }
+      
+      return {
+        sortField: validFields.includes(parsed.sortField) ? parsed.sortField : DEFAULT_VOCAB_PREFS.sortField,
+        sortDir: validDirs.includes(parsed.sortDir) ? parsed.sortDir : DEFAULT_VOCAB_PREFS.sortDir,
+        filterChapter: typeof parsed.filterChapter === 'string' ? parsed.filterChapter : DEFAULT_VOCAB_PREFS.filterChapter,
+        showStudyingOnly: typeof parsed.showStudyingOnly === 'boolean' ? parsed.showStudyingOnly : DEFAULT_VOCAB_PREFS.showStudyingOnly,
+        includePhrases: typeof parsed.includePhrases === 'boolean' ? parsed.includePhrases : DEFAULT_VOCAB_PREFS.includePhrases,
+      };
     }
   } catch {
     // Ignore parse errors, use defaults
   }
-  return { field: 'chapter', dir: 'asc' };
+  return DEFAULT_VOCAB_PREFS;
 }
 
-function saveSortPreference(pref: SortPreference): void {
+function saveVocabPreferences(prefs: Partial<VocabPreferences>): void {
   try {
-    localStorage.setItem(SORT_STORAGE_KEY, JSON.stringify(pref));
+    const current = loadVocabPreferences();
+    const updated = { ...current, ...prefs };
+    localStorage.setItem(VOCAB_PREFS_KEY, JSON.stringify(updated));
   } catch {
     // Ignore storage errors (quota exceeded, etc.)
   }
 }
 
 export function VocabularyPage({ store, settingsStore, onSync, onShowHelp, onRefresh, isGuest }: VocabularyPageProps) {
-  const initialSort = loadSortPreference();
-  const [sortField, setSortField] = useState<SortField>(initialSort.field);
-  const [sortDir, setSortDir] = useState<SortDir>(initialSort.dir);
-  const [filterChapter, setFilterChapter] = useState<string>('all');
-  const [showStudyingOnly, setShowStudyingOnly] = useState<boolean>(false);
-  const [includePhrases, setIncludePhrases] = useState<boolean>(true);
+  const initialPrefs = loadVocabPreferences();
+  const [sortField, setSortField] = useState<SortField>(initialPrefs.sortField);
+  const [sortDir, setSortDir] = useState<SortDir>(initialPrefs.sortDir);
+  const [filterChapter, setFilterChapter] = useState<string>(initialPrefs.filterChapter);
+  const [showStudyingOnly, setShowStudyingOnly] = useState<boolean>(initialPrefs.showStudyingOnly);
+  const [includePhrases, setIncludePhrases] = useState<boolean>(initialPrefs.includePhrases);
   const [selectedConcept, setSelectedConcept] = useState<Concept | null>(null);
   
   // Refresh state
@@ -169,7 +187,25 @@ export function VocabularyPage({ store, settingsStore, onSync, onShowHelp, onRef
       setSortDir(newDir);
     }
     // Persist to localStorage
-    saveSortPreference({ field, dir: newDir });
+    saveVocabPreferences({ sortField: field, sortDir: newDir });
+  };
+  
+  // Persist filter preferences
+  const handleFilterChapter = (value: string) => {
+    setFilterChapter(value);
+    saveVocabPreferences({ filterChapter: value });
+  };
+  
+  const handleToggleStudyingOnly = () => {
+    const newValue = !showStudyingOnly;
+    setShowStudyingOnly(newValue);
+    saveVocabPreferences({ showStudyingOnly: newValue });
+  };
+  
+  const handleToggleIncludePhrases = () => {
+    const newValue = !includePhrases;
+    setIncludePhrases(newValue);
+    saveVocabPreferences({ includePhrases: newValue });
   };
   
   const SortIcon = ({ field }: { field: SortField }) => {
@@ -309,7 +345,7 @@ export function VocabularyPage({ store, settingsStore, onSync, onShowHelp, onRef
           <select
             className="select select-xs select-bordered bg-base-200 w-auto"
             value={filterChapter}
-            onChange={e => setFilterChapter(e.target.value)}
+            onChange={e => handleFilterChapter(e.target.value)}
           >
             <option value="all">Ch 1-{Math.max(...chapters, 1)}</option>
             {chapters.map(ch => (
@@ -320,7 +356,7 @@ export function VocabularyPage({ store, settingsStore, onSync, onShowHelp, onRef
           {/* Textbook only toggle - excludes LLM-generated phrases */}
           <button
             className={`btn btn-xs gap-1 ${!includePhrases ? 'btn-primary' : 'btn-ghost'}`}
-            onClick={() => setIncludePhrases(!includePhrases)}
+            onClick={handleToggleIncludePhrases}
             title={!includePhrases ? 'Showing textbook words only' : 'Click to hide generated phrases'}
           >
             <span className="hidden sm:inline">Only textbook</span>
@@ -330,7 +366,7 @@ export function VocabularyPage({ store, settingsStore, onSync, onShowHelp, onRef
           {/* Known words toggle - shows only words user has marked as known */}
           <button
             className={`btn btn-xs gap-1 ${showStudyingOnly ? 'btn-primary' : 'btn-ghost'}`}
-            onClick={() => setShowStudyingOnly(!showStudyingOnly)}
+            onClick={handleToggleStudyingOnly}
             title={showStudyingOnly ? 'Showing only known words' : 'Click to show only known words'}
           >
             <span className="hidden sm:inline">Only known</span>

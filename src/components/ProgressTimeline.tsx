@@ -1,0 +1,300 @@
+// Progress Timeline - Historical chart of daily quiz activity and accuracy
+
+import { useState, useEffect, useMemo } from 'react';
+import { Calendar, TrendingUp, Target, Loader2 } from 'lucide-react';
+import { getQuizStats } from '../lib/quizService';
+
+interface DayData {
+  date: string;       // YYYY-MM-DD
+  label: string;      // Display label (e.g., "Mon", "Jan 15")
+  attempts: number;
+  correct: number;
+  accuracy: number;   // 0-100
+}
+
+interface ProgressTimelineProps {
+  userId: string | null;
+  isGuest?: boolean;
+  daysToShow?: number;
+}
+
+export function ProgressTimeline({ userId, isGuest, daysToShow = 14 }: ProgressTimelineProps) {
+  const [data, setData] = useState<DayData[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Generate date range for the last N days
+  const dateRange = useMemo(() => {
+    const dates: string[] = [];
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    for (let i = daysToShow - 1; i >= 0; i--) {
+      const date = new Date(today);
+      date.setDate(date.getDate() - i);
+      dates.push(date.toISOString().split('T')[0]);
+    }
+    return dates;
+  }, [daysToShow]);
+
+  // Fetch quiz stats from Supabase
+  useEffect(() => {
+    async function fetchData() {
+      if (!userId || isGuest) {
+        setLoading(false);
+        return;
+      }
+
+      setLoading(true);
+      setError(null);
+
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - daysToShow);
+      startDate.setHours(0, 0, 0, 0);
+
+      const { byDate, error: fetchError } = await getQuizStats(userId, startDate);
+
+      if (fetchError) {
+        setError(fetchError);
+        setLoading(false);
+        return;
+      }
+
+      // Build data array for each day in range
+      const dayData: DayData[] = dateRange.map(dateStr => {
+        const stats = byDate[dateStr] || { attempts: 0, correct: 0 };
+        const date = new Date(dateStr + 'T00:00:00');
+        const isToday = dateStr === new Date().toISOString().split('T')[0];
+        
+        // Format label: "Mon" for recent days
+        const dayOfWeek = date.toLocaleDateString('en-US', { weekday: 'short' });
+        
+        return {
+          date: dateStr,
+          label: isToday ? 'Today' : dayOfWeek,
+          attempts: stats.attempts,
+          correct: stats.correct,
+          accuracy: stats.attempts > 0 
+            ? Math.round((stats.correct / stats.attempts) * 100) 
+            : 0,
+        };
+      });
+
+      setData(dayData);
+      setLoading(false);
+    }
+
+    fetchData();
+  }, [userId, isGuest, daysToShow, dateRange]);
+
+  // Calculate summary stats
+  const summary = useMemo(() => {
+    const totalAttempts = data.reduce((sum, d) => sum + d.attempts, 0);
+    const totalCorrect = data.reduce((sum, d) => sum + d.correct, 0);
+    const daysActive = data.filter(d => d.attempts > 0).length;
+    const avgAccuracy = totalAttempts > 0 
+      ? Math.round((totalCorrect / totalAttempts) * 100) 
+      : 0;
+    
+    // Calculate streak (consecutive days with activity ending today or yesterday)
+    let streak = 0;
+    for (let i = data.length - 1; i >= 0; i--) {
+      if (data[i].attempts > 0) {
+        streak++;
+      } else if (i < data.length - 1) {
+        // Allow one day gap (yesterday might be empty if today has activity)
+        break;
+      }
+    }
+    
+    return { totalAttempts, totalCorrect, daysActive, avgAccuracy, streak };
+  }, [data]);
+
+  // Find max attempts for scaling bars
+  const maxAttempts = useMemo(() => 
+    Math.max(10, ...data.map(d => d.attempts)), 
+    [data]
+  );
+
+  // Guest mode - show placeholder
+  if (isGuest) {
+    return (
+      <div className="bg-base-200 rounded-xl p-4">
+        <div className="flex items-center gap-2 mb-3">
+          <Calendar className="w-4 h-4 text-base-content/60" />
+          <h3 className="font-medium">Activity Timeline</h3>
+        </div>
+        <div className="text-center py-6 text-base-content/50">
+          <TrendingUp className="w-8 h-8 mx-auto mb-2 opacity-50" />
+          <p className="text-sm">Sign in to track your progress over time</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="bg-base-200 rounded-xl p-4">
+        <div className="flex items-center gap-2 mb-3">
+          <Calendar className="w-4 h-4 text-base-content/60" />
+          <h3 className="font-medium">Activity Timeline</h3>
+        </div>
+        <div className="flex items-center justify-center py-8">
+          <Loader2 className="w-5 h-5 animate-spin text-base-content/40" />
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="bg-base-200 rounded-xl p-4">
+        <div className="flex items-center gap-2 mb-3">
+          <Calendar className="w-4 h-4 text-base-content/60" />
+          <h3 className="font-medium">Activity Timeline</h3>
+        </div>
+        <div className="text-center py-4 text-error/70">
+          <p className="text-sm">Failed to load activity data</p>
+        </div>
+      </div>
+    );
+  }
+
+  // No data yet
+  if (summary.totalAttempts === 0) {
+    return (
+      <div className="bg-base-200 rounded-xl p-4">
+        <div className="flex items-center gap-2 mb-3">
+          <Calendar className="w-4 h-4 text-base-content/60" />
+          <h3 className="font-medium">Activity Timeline</h3>
+        </div>
+        <div className="text-center py-6 text-base-content/50">
+          <Target className="w-8 h-8 mx-auto mb-2 opacity-50" />
+          <p className="text-sm">Complete some quizzes to see your activity!</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-base-200 rounded-xl p-4 space-y-4">
+      {/* Header with summary stats */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Calendar className="w-4 h-4 text-base-content/60" />
+          <h3 className="font-medium">Activity Timeline</h3>
+        </div>
+        <div className="flex items-center gap-3 text-xs text-base-content/60">
+          <span title="Days with quiz activity">
+            <span className="font-semibold text-primary">{summary.daysActive}</span> days active
+          </span>
+          <span className="text-base-content/30">•</span>
+          <span title="Overall accuracy">
+            <span className="font-semibold text-success">{summary.avgAccuracy}%</span> accuracy
+          </span>
+        </div>
+      </div>
+
+      {/* Bar chart */}
+      <div className="relative">
+        {/* Bars container */}
+        <div className="flex items-end gap-1 h-24">
+          {data.map((day, i) => {
+            const barHeight = day.attempts > 0 
+              ? Math.max(8, (day.attempts / maxAttempts) * 100) 
+              : 4;
+            const isToday = i === data.length - 1;
+            
+            // Color based on accuracy
+            const getBarColor = () => {
+              if (day.attempts === 0) return 'bg-base-300';
+              if (day.accuracy >= 80) return 'bg-success';
+              if (day.accuracy >= 60) return 'bg-warning';
+              return 'bg-error';
+            };
+            
+            return (
+              <div
+                key={day.date}
+                className="flex-1 flex flex-col items-center justify-end group relative"
+              >
+                {/* Tooltip on hover */}
+                <div className="absolute bottom-full mb-2 opacity-0 group-hover:opacity-100 
+                               transition-opacity pointer-events-none z-10">
+                  <div className="bg-base-100 shadow-lg rounded-lg px-2 py-1 text-xs 
+                                border border-base-300 whitespace-nowrap">
+                    <div className="font-medium">{day.date}</div>
+                    {day.attempts > 0 ? (
+                      <>
+                        <div>{day.attempts} questions</div>
+                        <div className={day.accuracy >= 70 ? 'text-success' : 'text-warning'}>
+                          {day.accuracy}% correct
+                        </div>
+                      </>
+                    ) : (
+                      <div className="text-base-content/50">No activity</div>
+                    )}
+                  </div>
+                </div>
+                
+                {/* Bar */}
+                <div
+                  className={`w-full rounded-t transition-all duration-300 ${getBarColor()} 
+                             ${isToday ? 'ring-2 ring-primary ring-offset-1 ring-offset-base-200' : ''}`}
+                  style={{ height: `${barHeight}%`, minHeight: day.attempts > 0 ? '8px' : '4px' }}
+                />
+              </div>
+            );
+          })}
+        </div>
+
+        {/* X-axis labels */}
+        <div className="flex gap-1 mt-1">
+          {data.map((day, i) => {
+            // Only show labels for first, last, and every ~4th day
+            const showLabel = i === 0 || i === data.length - 1 || i % 4 === 0;
+            return (
+              <div key={day.date} className="flex-1 text-center">
+                <span className={`text-[10px] ${showLabel ? 'text-base-content/50' : 'text-transparent'}`}>
+                  {day.label}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Legend */}
+      <div className="flex items-center justify-center gap-4 text-xs text-base-content/50 pt-1">
+        <div className="flex items-center gap-1">
+          <div className="w-2 h-2 rounded-sm bg-success" />
+          <span>≥80%</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <div className="w-2 h-2 rounded-sm bg-warning" />
+          <span>60-79%</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <div className="w-2 h-2 rounded-sm bg-error" />
+          <span>&lt;60%</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <div className="w-2 h-2 rounded-sm bg-base-300" />
+          <span>No activity</span>
+        </div>
+      </div>
+
+      {/* Streak indicator */}
+      {summary.streak >= 2 && (
+        <div className="flex items-center justify-center gap-2 pt-2 border-t border-base-300">
+          <span className="text-xl">🔥</span>
+          <span className="text-sm font-medium">
+            {summary.streak} day streak!
+          </span>
+        </div>
+      )}
+    </div>
+  );
+}

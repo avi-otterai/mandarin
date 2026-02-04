@@ -456,7 +456,7 @@ CREATE TABLE user_settings (
 - [x] **Smart quiz settings** (distractor difficulty + question selection strategy toggles)
 - [x] **Skip logging option** ("Don't log" button to exclude guesses from stats)
 - [x] Quick add/remove vocab from Quiz (suggest words, easy toggle without leaving quiz)
-- [ ] Historical progress timeline (bar chart of "words likely correct" over time)
+- [x] Historical progress timeline (bar chart showing daily quiz activity and accuracy)
 - [ ] **ML-based adaptive difficulty** (auto-tune to ~70% correct rate)
 - [ ] ElevenLabs premium TTS integration
 - [ ] Tone-specific practice mode

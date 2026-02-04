@@ -260,6 +260,7 @@ function AppContent({
                 onSave={onSettingsSave}
                 onLogout={() => auth.signOut()}
                 userEmail={isGuest ? undefined : auth.user?.email}
+                userId={auth.user?.id ?? null}
                 onShowHelp={() => setShowHelpModal(true)}
                 onRefreshProgress={auth.user && !isGuest ? () => store.loadFromCloud(auth.user!.id) : undefined}
                 isGuest={isGuest}

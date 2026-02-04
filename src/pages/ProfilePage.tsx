@@ -41,6 +41,7 @@ import {
   type TTSVoice,
   type BrowserType,
 } from '../services/ttsService';
+import { ProgressTimeline } from '../components/ProgressTimeline';
 
 interface ProfilePageProps {
   settingsStore: SettingsStore;
@@ -48,6 +49,7 @@ interface ProfilePageProps {
   onSave: () => Promise<void>;
   onLogout: () => void;
   userEmail?: string;
+  userId: string | null;
   onShowHelp?: () => void;
   onRefreshProgress?: () => Promise<void>;
   isGuest?: boolean;
@@ -79,7 +81,7 @@ function ProgressBar({ value, max = 100, color = 'primary', size = 'md' }: {
   );
 }
 
-export function ProfilePage({ settingsStore, vocabStore, onSave, onLogout, userEmail, onShowHelp, onRefreshProgress, isGuest }: ProfilePageProps) {
+export function ProfilePage({ settingsStore, vocabStore, onSave, onLogout, userEmail, userId, onShowHelp, onRefreshProgress, isGuest }: ProfilePageProps) {
   const { settings, isSyncing, syncError, hasUnsyncedChanges, lastSyncTime } = settingsStore;
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -374,6 +376,9 @@ export function ProfilePage({ settingsStore, vocabStore, onSave, onLogout, userE
                   })}
                 </div>
               </div>
+              
+              {/* Activity Timeline */}
+              <ProgressTimeline userId={userId} isGuest={isGuest} />
             </>
           )}
         </section>

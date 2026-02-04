@@ -227,10 +227,10 @@ export async function getQuizStats(
   try {
     const { data, error } = await supabase
       .from('quiz_attempts')
-      .select('timestamp, correct')
+      .select('created_at, correct')
       .eq('user_id', userId)
-      .gte('timestamp', startDate.toISOString())
-      .lte('timestamp', endDate.toISOString());
+      .gte('created_at', startDate.toISOString())
+      .lte('created_at', endDate.toISOString());
 
     if (error) {
       return {
@@ -246,7 +246,7 @@ export async function getQuizStats(
     let totalCorrect = 0;
 
     for (const attempt of attempts) {
-      const date = attempt.timestamp.split('T')[0]; // YYYY-MM-DD
+      const date = attempt.created_at.split('T')[0]; // YYYY-MM-DD
       if (!byDate[date]) {
         byDate[date] = { attempts: 0, correct: 0 };
       }

@@ -455,7 +455,7 @@ CREATE TABLE user_settings (
 - [x] **Quick vocab toggle in Quiz/Study** (mark words as known/unknown without leaving the page)
 - [x] **Smart quiz settings** (distractor difficulty + question selection strategy toggles)
 - [x] **Skip logging option** ("Don't log" button to exclude guesses from stats)
-- [ ] Quick add/remove vocab from Quiz (suggest words, easy toggle without leaving quiz)
+- [x] Quick add/remove vocab from Quiz (suggest words, easy toggle without leaving quiz)
 - [ ] Historical progress timeline (bar chart of "words likely correct" over time)
 - [ ] **ML-based adaptive difficulty** (auto-tune to ~70% correct rate)
 - [ ] ElevenLabs premium TTS integration

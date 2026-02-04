@@ -4,6 +4,17 @@ export type ThemeType = 'light' | 'dark' | 'wooden' | 'ocean' | 'forest' | 'suns
 
 export type FocusLevel = 0 | 1 | 2 | 3; // 0 = ignore, 1 = low, 2 = medium, 3 = high
 
+// Option selection - controls how confusing distractors/options are
+export type OptionSelection = 'easy' | 'hard';
+
+// Question selection - controls which concepts get quizzed
+export type QuestionSelection = 'random' | 'weak' | 'leastTested' | 'dueReview';
+
+export interface QuizSettings {
+  questionSelection: QuestionSelection;  // Which concepts to quiz
+  optionSelection: OptionSelection;      // How tricky the wrong options are
+}
+
 export interface LearningFocus {
   character: FocusLevel;  // Hanzi recognition
   pinyin: FocusLevel;     // Pinyin recall
@@ -33,6 +44,9 @@ export interface UserSettings {
   cardsPerSession: number;         // 5-50, default 10
   learningFocus: LearningFocus;
   
+  // Quiz settings
+  quiz: QuizSettings;              // Difficulty + selection strategy
+  
   // Display preferences
   theme: ThemeType;
   pinyinDisplay: PinyinDisplay;
@@ -57,6 +71,10 @@ export const DEFAULT_SETTINGS: UserSettings = {
     pinyin: 3,
     meaning: 2,
     audio: 1,
+  },
+  quiz: {
+    questionSelection: 'random',  // Random for now, ML will tune later
+    optionSelection: 'hard',      // Default to hard (more learning value)
   },
   theme: 'dark',
   pinyinDisplay: 'tones',
@@ -116,3 +134,17 @@ export const SPEECH_RATE_PRESETS = [
   { value: 1.2, label: '1.2x', description: 'Fast' },
   { value: 1.5, label: '1.5x', description: 'Very Fast' },
 ];
+
+// Option selection labels (how tricky distractors are)
+export const OPTION_SELECTION_META: Record<OptionSelection, { label: string; emoji: string; description: string }> = {
+  easy: { label: 'Easy', emoji: '🌱', description: 'Obvious wrong answers' },
+  hard: { label: 'Hard', emoji: '🔥', description: 'Tricky distractors' },
+};
+
+// Question selection labels (which concepts to quiz)
+export const QUESTION_SELECTION_META: Record<QuestionSelection, { label: string; emoji: string; description: string }> = {
+  random: { label: 'Random', emoji: '🎲', description: 'Mix of everything' },
+  weak: { label: 'Weak Spots', emoji: '🎯', description: 'Focus on low knowledge' },
+  leastTested: { label: 'Coverage', emoji: '📊', description: 'Test untested words' },
+  dueReview: { label: 'Due Review', emoji: '⏰', description: 'Words not seen recently' },
+};

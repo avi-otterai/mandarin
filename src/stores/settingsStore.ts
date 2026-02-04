@@ -1,6 +1,6 @@
 // Settings store with localStorage persistence + Supabase cloud sync
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import type { UserSettings, ThemeType, FocusLevel, LearningFocus, AudioSettings } from '../types/settings';
+import type { UserSettings, ThemeType, FocusLevel, LearningFocus, AudioSettings, QuizSettings } from '../types/settings';
 import { DEFAULT_SETTINGS } from '../types/settings';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 
@@ -47,6 +47,7 @@ export interface SettingsStore {
   setCardsPerSession: (count: number) => void;
   setLearningFocus: (field: keyof LearningFocus, level: FocusLevel) => void;
   setAudioSettings: (partial: Partial<AudioSettings>) => void;
+  setQuizSettings: (partial: Partial<QuizSettings>) => void;
   resetToDefaults: () => void;
   
   // Cloud sync
@@ -145,6 +146,13 @@ export function useSettingsStore(): SettingsStore {
     setSettings(prev => ({
       ...prev,
       audio: { ...prev.audio, ...partial },
+    }));
+  }, []);
+
+  const setQuizSettings = useCallback((partial: Partial<QuizSettings>) => {
+    setSettings(prev => ({
+      ...prev,
+      quiz: { ...prev.quiz, ...partial },
     }));
   }, []);
 
@@ -252,6 +260,7 @@ export function useSettingsStore(): SettingsStore {
     setCardsPerSession,
     setLearningFocus,
     setAudioSettings,
+    setQuizSettings,
     resetToDefaults,
     syncToCloud,
     loadFromCloud,

@@ -168,7 +168,7 @@ Averages are computed only for modalities you've actually tested.
 | localStorage | `langseed_progress` | concepts with modality scores |
 | localStorage | `langseed_settings` | user preferences |
 | localStorage | `langseed_progress_cache` | cached progress snapshots for charts |
-| localStorage | `langseed_vocab_sort` | vocabulary table sort column & direction |
+| localStorage | `langseed_vocab_prefs` | vocabulary page preferences (sort, filters, toggles) |
 | localStorage | `langseed_pending_sync` | flag indicating unsynced local changes |
 | Supabase | `vocabulary` | Static HSK vocabulary (shared across all users) |
 | Supabase | `user_progress` | User's learning state per vocabulary item |
@@ -330,7 +330,7 @@ src/
 │   ├── quiz.ts              # Quiz generation
 │   └── pinyin.ts            # Pinyin utilities
 └── data/
-    └── hsk1_vocabulary.json # HSK1 vocab (252 items: 199 HSK words + 53 compound phrases)
+    └── hsk1_vocabulary.json # HSK1 vocab (247 items: 194 HSK words + 53 compound phrases)
 ```
 
 ---
@@ -435,12 +435,104 @@ CREATE TABLE user_settings (
 - [x] **Dev mode toggle** (quick switch between guest/dev user on localhost)
 - [x] **Compound phrases** (53 common phrases with negative chapter tags for level indication)
 - [x] **Quick vocab toggle in Quiz/Study** (mark words as known/unknown without leaving the page)
+- [x] **Smart quiz settings** (distractor difficulty + question selection strategy toggles)
 - [ ] Quick add/remove vocab from Quiz (suggest words, easy toggle without leaving quiz)
-- [ ] Smart word selection (75% easy / 25% hard blend based on knowledge)
 - [ ] Historical progress timeline (bar chart of "words likely correct" over time)
-- [ ] Prediction calibration tracking
+- [ ] **ML-based adaptive difficulty** (auto-tune to ~70% correct rate)
 - [ ] ElevenLabs premium TTS integration
 - [ ] Tone-specific practice mode
+
+---
+
+## 🧪 Smart Quiz System (Planned)
+
+### Overview
+
+The quiz system will be enhanced with smarter distractor selection and question picking to optimize learning. Currently implemented as manual toggles; future ML model will auto-tune.
+
+### Phase 1: Manual Controls (Current)
+
+#### Question Selection
+
+Controls which concepts get quizzed:
+
+| Strategy | Description | When to Use |
+|----------|-------------|-------------|
+| **Random** | Current default behavior | Variety, exploration |
+| **Weak spots** | Lowest knowledge in task modalities | Focus on weaknesses |
+| **Least tested** | Fewest total attempts | Ensure coverage |
+| **Due for review** | Longest since last attempt | Spaced repetition |
+
+#### Option Selection
+
+Controls how confusing the wrong answer options are:
+
+| Setting | Behavior | Use Case |
+|---------|----------|----------|
+| **Easy** | Different lengths, different POS, far chapters | Building confidence |
+| **Hard** | Similar lengths, same POS, nearby chapters, similar pinyin | Challenge mode |
+
+**Heuristics used:**
+- **Length similarity**: Character count of word
+- **Part of speech**: Same grammatical category = more confusing
+- **Chapter proximity**: Nearby chapters = similar difficulty level
+- **Pinyin similarity**: Same tone, similar initial/final (hard mode only)
+
+### Phase 2: ML-Based Calibration (Planned)
+
+Once enough quiz data is collected (~100+ attempts):
+
+1. **Rich context logging**: Each quiz attempt logs a JSON snapshot of:
+   - Concept knowledge (question modality, answer modality, overall)
+   - User's average modality scores
+   - Distractor knowledge scores
+   - Time since last attempt
+
+2. **Offline analysis**: Run logistic regression to predict `correct` from features
+
+3. **Calibration**: Tune `predictedCorrect` to better match actual performance
+
+4. **Adaptive difficulty**: Auto-adjust question selection to maintain ~70% success rate
+
+### Data Collection Schema
+
+Quiz attempts include a `context` JSONB column for flexible feature logging:
+
+```typescript
+interface QuizAttemptContext {
+  // Concept knowledge at time of question
+  conceptKnowledge: {
+    questionModality: number;  // 0-100
+    answerModality: number;    // 0-100
+    overall: number;           // weighted average
+  };
+  
+  // User's average modality scores across all concepts
+  userAverages: {
+    character: number;
+    pinyin: number;
+    meaning: number;
+    audio: number;
+  };
+  
+  // Distractor knowledge scores
+  distractors: Array<{
+    id: string;
+    knowledge: number;  // overall knowledge
+  }>;
+  
+  // Quiz settings at time of question
+  settings: {
+    questionSelection: 'random' | 'weak' | 'leastTested' | 'dueReview';
+    optionSelection: 'easy' | 'hard';
+  };
+  
+  // Timing
+  daysSinceLastAttempt: number | null;
+}
+```
+
+This flexible JSON approach allows adding/removing features without schema migrations.
 
 ---
 

@@ -7,7 +7,7 @@ import type {
   QuizQuestion, 
   QuizSession 
 } from '../types/vocabulary';
-import type { LearningFocus } from '../types/settings';
+import type { LearningFocus, OptionSelection, QuestionSelection } from '../types/settings';
 import { parseTaskType, QUIZ_TASK_TYPES } from '../types/vocabulary';
 
 // ═══════════════════════════════════════════════════════════
@@ -124,37 +124,117 @@ function hasCollision(
 }
 
 /**
+ * Calculate pinyin similarity score (0-1)
+ * Higher = more similar (same tone, similar initial/final)
+ */
+function pinyinSimilarity(pinyin1: string, pinyin2: string): number {
+  const p1 = pinyin1.toLowerCase();
+  const p2 = pinyin2.toLowerCase();
+  
+  // Extract tone numbers (1-4) from pinyin if present
+  const tone1 = p1.match(/[āáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜ]/);
+  const tone2 = p2.match(/[āáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜ]/);
+  
+  let score = 0;
+  
+  // Same tone mark category adds similarity
+  if (tone1 && tone2) {
+    const toneMap: Record<string, number> = {
+      'ā': 1, 'ē': 1, 'ī': 1, 'ō': 1, 'ū': 1, 'ǖ': 1,
+      'á': 2, 'é': 2, 'í': 2, 'ó': 2, 'ú': 2, 'ǘ': 2,
+      'ǎ': 3, 'ě': 3, 'ǐ': 3, 'ǒ': 3, 'ǔ': 3, 'ǚ': 3,
+      'à': 4, 'è': 4, 'ì': 4, 'ò': 4, 'ù': 4, 'ǜ': 4,
+    };
+    if (toneMap[tone1[0]] === toneMap[tone2[0]]) {
+      score += 0.3;
+    }
+  }
+  
+  // Same first character (initial consonant) adds similarity
+  if (p1[0] === p2[0]) {
+    score += 0.3;
+  }
+  
+  // Similar length adds similarity
+  if (Math.abs(p1.length - p2.length) <= 1) {
+    score += 0.2;
+  }
+  
+  // Same ending adds similarity
+  if (p1.slice(-2) === p2.slice(-2)) {
+    score += 0.2;
+  }
+  
+  return score;
+}
+
+/**
  * Select distractors for a quiz question
  * 
- * Strategy:
+ * Strategy varies by difficulty:
+ * - Easy: Prefer different length, different POS, far chapters
+ * - Hard: Prefer similar length, same POS, nearby chapters, similar pinyin
+ * 
+ * Always:
  * 1. Exclude candidates that would create collisions (same answer or question value)
- * 2. Prefer words from nearby chapters (±3) for relevance
- * 3. Prefer same part of speech for plausible distractors
- * 4. Random selection from weighted pool
+ * 2. Apply difficulty-based scoring
+ * 3. Random selection from weighted pool
  */
 export function selectDistractors(
   target: Concept,
   allConcepts: Concept[],
   questionModality: Modality,
   answerModality: Modality,
-  count: number = 3
+  count: number = 3,
+  optionSelection: OptionSelection = 'hard'
 ): Concept[] {
   // Exclude the target itself
   const candidates = allConcepts.filter(c => c.id !== target.id && !c.paused);
   
-  // Score candidates by similarity (higher = better distractor)
+  const isHard = optionSelection === 'hard';
+  
+  // Score candidates by difficulty-adjusted similarity
   const scored = candidates.map(candidate => {
     let score = 1; // Base score
     
-    // Prefer same part of speech (more confusable)
+    // === Part of Speech ===
+    // Hard: same POS = more confusing = higher score
+    // Easy: different POS = obvious wrong = higher score
     if (candidate.part_of_speech === target.part_of_speech) {
-      score += 3;
+      score += isHard ? 3 : -1;
+    } else {
+      score += isHard ? 0 : 2;
     }
     
-    // Prefer nearby chapters (more relevant difficulty)
+    // === Chapter Proximity ===
+    // Hard: nearby chapters = similar difficulty = higher score
+    // Easy: far chapters = obvious skill gap = higher score
     const chapterDiff = Math.abs(candidate.chapter - target.chapter);
-    if (chapterDiff <= 2) score += 2;
-    else if (chapterDiff <= 5) score += 1;
+    if (isHard) {
+      if (chapterDiff <= 2) score += 2;
+      else if (chapterDiff <= 5) score += 1;
+    } else {
+      if (chapterDiff >= 5) score += 2;
+      else if (chapterDiff >= 3) score += 1;
+    }
+    
+    // === Word Length Similarity ===
+    // Hard: similar character count = more confusing
+    // Easy: different lengths = obvious visual difference
+    const lengthDiff = Math.abs(candidate.word.length - target.word.length);
+    if (isHard) {
+      if (lengthDiff === 0) score += 2;
+      else if (lengthDiff === 1) score += 1;
+    } else {
+      if (lengthDiff >= 2) score += 2;
+      else if (lengthDiff >= 1) score += 1;
+    }
+    
+    // === Pinyin Similarity (Hard mode only) ===
+    if (isHard) {
+      const pSim = pinyinSimilarity(candidate.pinyin, target.pinyin);
+      score += pSim * 2; // Max +2 for very similar pinyin
+    }
     
     // Small random factor to avoid always picking same distractors
     score += Math.random() * 0.5;
@@ -193,7 +273,8 @@ export function selectDistractors(
 export function generateQuestion(
   concept: Concept,
   allConcepts: Concept[],
-  learningFocus: LearningFocus
+  learningFocus: LearningFocus,
+  optionSelection: OptionSelection = 'hard'
 ): QuizQuestion {
   const taskType = selectTaskType(learningFocus);
   const { question: questionModality, answer: answerModality } = parseTaskType(taskType);
@@ -204,7 +285,8 @@ export function generateQuestion(
     allConcepts,
     questionModality,
     answerModality,
-    3
+    3,
+    optionSelection
   );
   
   // Create options array: correct answer + distractors
@@ -230,7 +312,9 @@ export function generateQuestion(
 export function generateQuizSession(
   concepts: Concept[],
   questionCount: number,
-  learningFocus: LearningFocus
+  learningFocus: LearningFocus,
+  questionSelection: QuestionSelection = 'random',
+  optionSelection: OptionSelection = 'hard'
 ): QuizSession {
   // Filter to non-paused concepts
   const availableConcepts = concepts.filter(c => !c.paused);
@@ -245,12 +329,17 @@ export function generateQuizSession(
     };
   }
   
-  // For now: random selection (future: smart selection based on knowledge)
-  const selectedConcepts = selectRandomConcepts(availableConcepts, questionCount);
+  // Select concepts based on strategy
+  const selectedConcepts = selectConceptsByStrategy(
+    availableConcepts,
+    questionCount,
+    questionSelection,
+    learningFocus
+  );
   
   // Generate questions
   const questions = selectedConcepts.map(concept =>
-    generateQuestion(concept, availableConcepts, learningFocus)
+    generateQuestion(concept, availableConcepts, learningFocus, optionSelection)
   );
   
   return {
@@ -260,6 +349,30 @@ export function generateQuizSession(
     startedAt: new Date().toISOString(),
     completedAt: null,
   };
+}
+
+/**
+ * Select concepts based on question selection strategy
+ */
+function selectConceptsByStrategy(
+  concepts: Concept[],
+  count: number,
+  questionSelection: QuestionSelection,
+  learningFocus: LearningFocus
+): Concept[] {
+  if (concepts.length === 0) return [];
+  
+  switch (questionSelection) {
+    case 'weak':
+      return selectWeakConcepts(concepts, count, learningFocus);
+    case 'leastTested':
+      return selectLeastTestedConcepts(concepts, count);
+    case 'dueReview':
+      return selectDueForReviewConcepts(concepts, count);
+    case 'random':
+    default:
+      return selectRandomConcepts(concepts, count);
+  }
 }
 
 /**
@@ -282,6 +395,136 @@ function selectRandomConcepts(concepts: Concept[], count: number): Concept[] {
     }
     selected.push(pool[poolIndex]);
     poolIndex++;
+  }
+  
+  return selected;
+}
+
+/**
+ * Select concepts with lowest knowledge (weak spots)
+ * Weighted by learning focus to prioritize relevant modalities
+ */
+function selectWeakConcepts(
+  concepts: Concept[],
+  count: number,
+  learningFocus: LearningFocus
+): Concept[] {
+  // Score each concept by weakness (lower knowledge = higher score)
+  const scored = concepts.map(c => {
+    // Weighted average of modality knowledge, inverted
+    let weightedKnowledge = 0;
+    let totalWeight = 0;
+    
+    const modalities = ['character', 'pinyin', 'meaning', 'audio'] as const;
+    for (const mod of modalities) {
+      const weight = learningFocus[mod];
+      if (weight > 0) {
+        weightedKnowledge += c.modality[mod].knowledge * weight;
+        totalWeight += weight;
+      }
+    }
+    
+    const avgKnowledge = totalWeight > 0 ? weightedKnowledge / totalWeight : c.knowledge;
+    
+    // Invert: lower knowledge = higher score for selection
+    // Add small random factor for variety
+    const score = (100 - avgKnowledge) + Math.random() * 10;
+    
+    return { concept: c, score };
+  });
+  
+  // Sort by score (descending = weakest first)
+  scored.sort((a, b) => b.score - a.score);
+  
+  // Take top concepts, allow repeats if needed
+  const selected: Concept[] = [];
+  let idx = 0;
+  
+  for (let i = 0; i < count; i++) {
+    if (idx >= scored.length) idx = 0; // Wrap around
+    selected.push(scored[idx].concept);
+    idx++;
+  }
+  
+  return selected;
+}
+
+/**
+ * Select concepts with fewest total attempts (ensure coverage)
+ */
+function selectLeastTestedConcepts(concepts: Concept[], count: number): Concept[] {
+  // Score by total attempts across all modalities (fewer = higher priority)
+  const scored = concepts.map(c => {
+    const totalAttempts = 
+      c.modality.character.attempts +
+      c.modality.pinyin.attempts +
+      c.modality.meaning.attempts +
+      c.modality.audio.attempts;
+    
+    // Invert: fewer attempts = higher score
+    // Add random factor for variety among equally-tested concepts
+    const score = (1000 - totalAttempts) + Math.random() * 10;
+    
+    return { concept: c, score };
+  });
+  
+  scored.sort((a, b) => b.score - a.score);
+  
+  const selected: Concept[] = [];
+  let idx = 0;
+  
+  for (let i = 0; i < count; i++) {
+    if (idx >= scored.length) idx = 0;
+    selected.push(scored[idx].concept);
+    idx++;
+  }
+  
+  return selected;
+}
+
+/**
+ * Select concepts that haven't been tested recently (spaced repetition)
+ */
+function selectDueForReviewConcepts(concepts: Concept[], count: number): Concept[] {
+  const now = Date.now();
+  
+  // Score by time since last attempt (longer = higher priority)
+  const scored = concepts.map(c => {
+    // Find most recent attempt across all modalities
+    const lastAttempts = [
+      c.modality.character.lastAttempt,
+      c.modality.pinyin.lastAttempt,
+      c.modality.meaning.lastAttempt,
+      c.modality.audio.lastAttempt,
+    ].filter(Boolean) as string[];
+    
+    let score: number;
+    
+    if (lastAttempts.length === 0) {
+      // Never tested = highest priority
+      score = Infinity;
+    } else {
+      // Most recent attempt
+      const mostRecent = Math.max(...lastAttempts.map(d => new Date(d).getTime()));
+      const daysSince = (now - mostRecent) / (1000 * 60 * 60 * 24);
+      score = daysSince;
+    }
+    
+    // Add small random factor
+    score += Math.random() * 0.5;
+    
+    return { concept: c, score };
+  });
+  
+  scored.sort((a, b) => b.score - a.score);
+  
+  const selected: Concept[] = [];
+  let idx = 0;
+  
+  for (let i = 0; i < count; i++) {
+    if (idx >= scored.length) idx = 0;
+    selected.push(scored[idx].concept);
+    idx++;
   }
   
   return selected;

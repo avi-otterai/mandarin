@@ -1,39 +1,142 @@
 // Quiz service for Supabase quiz attempt writes
 
 import { supabase, isSupabaseConfigured } from './supabase';
-import type { QuizAttempt, Modality } from '../types/vocabulary';
+import type { QuizAttempt, Modality, Concept } from '../types/vocabulary';
+import type { OptionSelection, QuestionSelection } from '../types/settings';
+
+/**
+ * Context snapshot for ML feature logging
+ * Flexible JSON structure - can add/remove fields without migrations
+ */
+export interface QuizAttemptContext {
+  // Concept knowledge at time of question
+  conceptKnowledge: {
+    questionModality: number;
+    answerModality: number;
+    overall: number;
+  };
+  
+  // User's average modality scores across all concepts
+  userAverages: {
+    character: number;
+    pinyin: number;
+    meaning: number;
+    audio: number;
+  };
+  
+  // Distractor knowledge scores (for ML to learn which distractors are confusing)
+  distractors: Array<{
+    id: string;
+    knowledge: number;
+  }>;
+  
+  // Quiz settings at time of question
+  settings: {
+    questionSelection: QuestionSelection;
+    optionSelection: OptionSelection;
+  };
+  
+  // Timing info
+  daysSinceLastAttempt: number | null;
+}
+
+/**
+ * Build context object for a quiz attempt
+ */
+export function buildQuizContext(
+  concept: Concept,
+  questionModality: Modality,
+  answerModality: Modality,
+  distractors: Concept[],
+  userAverages: Record<Modality, number>,
+  questionSelection: QuestionSelection,
+  optionSelection: OptionSelection
+): QuizAttemptContext {
+  // Calculate days since last attempt on answer modality
+  const lastAttempt = concept.modality[answerModality].lastAttempt;
+  let daysSinceLastAttempt: number | null = null;
+  if (lastAttempt) {
+    const msPerDay = 1000 * 60 * 60 * 24;
+    daysSinceLastAttempt = Math.round((Date.now() - new Date(lastAttempt).getTime()) / msPerDay * 10) / 10;
+  }
+  
+  return {
+    conceptKnowledge: {
+      questionModality: concept.modality[questionModality].knowledge,
+      answerModality: concept.modality[answerModality].knowledge,
+      overall: concept.knowledge,
+    },
+    userAverages: {
+      character: userAverages.character,
+      pinyin: userAverages.pinyin,
+      meaning: userAverages.meaning,
+      audio: userAverages.audio,
+    },
+    distractors: distractors.map(d => ({
+      id: d.id,
+      knowledge: d.knowledge,
+    })),
+    settings: {
+      questionSelection,
+      optionSelection,
+    },
+    daysSinceLastAttempt,
+  };
+}
 
 /**
  * Save a quiz attempt to Supabase (async, non-blocking)
  * Returns immediately - doesn't wait for server response
+ * 
+ * NOTE: Database schema uses vocabulary_id, task_type, knowledge_before/after
+ * We store additional info (options, selected index, prediction) in context JSON
  */
 export function saveQuizAttempt(
   userId: string,
-  conceptId: string,
+  vocabularyId: string,
   questionModality: Modality,
   answerModality: Modality,
   optionConceptIds: [string, string, string, string],
   selectedIndex: 0 | 1 | 2 | 3,
   correct: boolean,
-  predictedCorrect: number
+  predictedCorrect: number,
+  context?: QuizAttemptContext
 ): void {
   if (!isSupabaseConfigured()) {
     console.warn('[QuizService] Supabase not configured, skipping save');
     return;
   }
 
+  // Build task type from modalities
+  const taskType = `${questionModality}_to_${answerModality}`;
+  
+  // Get knowledge values from context (or use defaults)
+  const knowledgeBefore = context?.conceptKnowledge.answerModality ?? 50;
+  const knowledgeAfter = correct 
+    ? Math.round(knowledgeBefore + (100 - knowledgeBefore) * 0.25)
+    : Math.round(knowledgeBefore - knowledgeBefore * 0.175);
+  
+  // Extend context with additional info not in schema columns
+  const extendedContext = {
+    ...context,
+    optionIds: optionConceptIds,
+    selectedIndex,
+    predictedCorrect,
+  };
+
   // Fire and forget - don't await
   supabase
     .from('quiz_attempts')
     .insert({
       user_id: userId,
-      concept_id: conceptId,
+      vocabulary_id: vocabularyId,
+      task_type: taskType,
       question_modality: questionModality,
       answer_modality: answerModality,
-      option_concept_ids: optionConceptIds,
-      selected_index: selectedIndex,
       correct,
-      predicted_correct: predictedCorrect,
+      knowledge_before: knowledgeBefore,
+      knowledge_after: knowledgeAfter,
+      context: extendedContext,
     })
     .then(({ error }) => {
       if (error) {

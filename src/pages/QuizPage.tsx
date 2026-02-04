@@ -1,14 +1,16 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Volume2, BookOpen, HelpCircle, Loader2, Check, X, Zap, Square, CheckSquare } from 'lucide-react';
+import { Volume2, BookOpen, HelpCircle, Loader2, Check, X, Zap, Square, CheckSquare, Flame, Sprout, Settings2 } from 'lucide-react';
 import type { VocabularyStore } from '../stores/vocabularyStore';
 import type { SettingsStore } from '../stores/settingsStore';
 import type { QuizSession, QuizQuestion, Modality, Concept } from '../types/vocabulary';
 import { generateQuizSession, getModalityContent, modalityNeedsAudio } from '../utils/quiz';
-import { predictCorrect } from '../utils/knowledge';
-import { saveQuizAttempt } from '../lib/quizService';
+import { predictCorrect, computeModalityAverages } from '../utils/knowledge';
+import { saveQuizAttempt, buildQuizContext } from '../lib/quizService';
 import { speak, stopSpeaking, isTTSSupported, getVoiceForCurrentBrowser } from '../services/ttsService';
 import { useAuth } from '../hooks/useAuth';
+import { OPTION_SELECTION_META, QUESTION_SELECTION_META } from '../types/settings';
+import type { QuestionSelection, OptionSelection } from '../types/settings';
 
 // Daily quiz completion tracking
 const QUIZ_COMPLETION_KEY = 'langseed_quiz_completed';
@@ -50,6 +52,17 @@ export function QuizPage({ store, settingsStore, onShowHelp }: QuizPageProps) {
   const auth = useAuth();
   const settings = settingsStore.settings;
   const cardsPerSession = settings.cardsPerSession;
+  // Handle migration from old settings (difficulty/selectionStrategy -> optionSelection/questionSelection)
+  const rawQuiz = settings.quiz as {
+    questionSelection?: string;
+    optionSelection?: string;
+    difficulty?: string;       // Legacy
+    selectionStrategy?: string; // Legacy
+  } | undefined;
+  const quizSettings = {
+    questionSelection: (rawQuiz?.questionSelection ?? rawQuiz?.selectionStrategy ?? 'random') as QuestionSelection,
+    optionSelection: (rawQuiz?.optionSelection ?? rawQuiz?.difficulty ?? 'hard') as OptionSelection,
+  };
   
   // Quiz state
   const [session, setSession] = useState<QuizSession | null>(null);
@@ -58,8 +71,14 @@ export function QuizPage({ store, settingsStore, onShowHelp }: QuizPageProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [previewedAudioOption, setPreviewedAudioOption] = useState<number | null>(null);
   const [playingOptionIndex, setPlayingOptionIndex] = useState<number | null>(null);
+  const [showSettingsDropdown, setShowSettingsDropdown] = useState(false);
   
   const ttsSupported = isTTSSupported();
+  
+  // Compute user averages for context logging
+  const userAverages = useMemo(() => {
+    return computeModalityAverages(store.concepts.filter(c => !c.paused));
+  }, [store.concepts]);
   
   // Get available words for quiz
   const availableWords = useMemo(() => {
@@ -86,12 +105,14 @@ export function QuizPage({ store, settingsStore, onShowHelp }: QuizPageProps) {
     const newSession = generateQuizSession(
       availableWords,
       cardsPerSession,
-      settings.learningFocus
+      settings.learningFocus,
+      quizSettings.questionSelection,
+      quizSettings.optionSelection
     );
     setSession(newSession);
     setSelectedOption(null);
     setShowResult(false);
-  }, [availableWords, cardsPerSession, settings.learningFocus]);
+  }, [availableWords, cardsPerSession, settings.learningFocus, quizSettings.questionSelection, quizSettings.optionSelection]);
   
   // Auto-start session on mount
   useEffect(() => {
@@ -195,6 +216,19 @@ export function QuizPage({ store, settingsStore, onShowHelp }: QuizPageProps) {
     // Save to Supabase (async, non-blocking)
     if (auth.user) {
       const predicted = predictCorrect(currentQuestion.concept, currentQuestion.answerModality);
+      
+      // Build context for ML logging
+      const distractors = currentQuestion.options.filter(o => o.id !== currentQuestion.concept.id);
+      const context = buildQuizContext(
+        currentQuestion.concept,
+        currentQuestion.questionModality,
+        currentQuestion.answerModality,
+        distractors,
+        userAverages,
+        quizSettings.questionSelection,
+        quizSettings.optionSelection
+      );
+      
       saveQuizAttempt(
         auth.user.id,
         currentQuestion.concept.id,
@@ -203,7 +237,8 @@ export function QuizPage({ store, settingsStore, onShowHelp }: QuizPageProps) {
         currentQuestion.options.map(o => o.id) as [string, string, string, string],
         index as 0 | 1 | 2 | 3,
         correct,
-        predicted
+        predicted,
+        context
       );
     }
     
@@ -211,7 +246,7 @@ export function QuizPage({ store, settingsStore, onShowHelp }: QuizPageProps) {
     if (correct) {
       // Small confetti for individual correct answers
     }
-  }, [showResult, currentQuestion, session, store, settings.learningFocus, auth.user]);
+  }, [showResult, currentQuestion, session, store, settings.learningFocus, auth.user, userAverages, quizSettings]);
   
   // Go to next question
   const goToNext = useCallback(() => {
@@ -368,11 +403,88 @@ export function QuizPage({ store, settingsStore, onShowHelp }: QuizPageProps) {
               {session.currentIndex + 1} / {session.questions.length}
             </p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <div className="flex items-center gap-1 text-sm">
               <Check className="w-4 h-4 text-success" />
               <span>{sessionStats.correct}</span>
             </div>
+            
+            {/* Quiz settings dropdown */}
+            <div className="dropdown dropdown-end">
+              <button
+                tabIndex={0}
+                className="btn btn-sm btn-ghost btn-circle text-base-content/50 hover:text-primary"
+                onClick={() => setShowSettingsDropdown(!showSettingsDropdown)}
+                title="Quiz Settings"
+              >
+                <Settings2 className="w-5 h-5" />
+              </button>
+              <div 
+                tabIndex={0} 
+                className="dropdown-content z-50 card card-compact w-64 p-2 shadow-xl bg-base-200 border border-base-300"
+              >
+                <div className="card-body gap-3">
+                  <h3 className="font-semibold text-sm">Quiz Settings</h3>
+                  
+                  {/* Question selection */}
+                  <div>
+                    <label className="text-xs text-base-content/60 mb-1 block">Question Selection</label>
+                    <select
+                      className="select select-sm select-bordered w-full"
+                      value={quizSettings.questionSelection}
+                      onChange={(e) => {
+                        settingsStore.setQuizSettings({ 
+                          questionSelection: e.target.value as QuestionSelection 
+                        });
+                      }}
+                    >
+                      {(['random', 'weak', 'leastTested', 'dueReview'] as const).map(strat => {
+                        const meta = QUESTION_SELECTION_META[strat];
+                        return (
+                          <option key={strat} value={strat}>
+                            {meta.emoji} {meta.label}
+                          </option>
+                        );
+                      })}
+                    </select>
+                    <p className="text-xs text-base-content/50 mt-1">
+                      {QUESTION_SELECTION_META[quizSettings.questionSelection].description}
+                    </p>
+                  </div>
+                  
+                  {/* Option selection (distractor difficulty) */}
+                  <div>
+                    <label className="text-xs text-base-content/60 mb-1 block">Option Selection</label>
+                    <div className="flex gap-1">
+                      {(['easy', 'hard'] as const).map(opt => {
+                        const meta = OPTION_SELECTION_META[opt];
+                        const isActive = quizSettings.optionSelection === opt;
+                        return (
+                          <button
+                            key={opt}
+                            className={`btn btn-sm flex-1 gap-1 ${isActive ? 'btn-primary' : 'btn-ghost'}`}
+                            onClick={() => {
+                              settingsStore.setQuizSettings({ optionSelection: opt });
+                            }}
+                          >
+                            {opt === 'easy' ? <Sprout className="w-4 h-4" /> : <Flame className="w-4 h-4" />}
+                            {meta.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <p className="text-xs text-base-content/50 mt-1">
+                      {OPTION_SELECTION_META[quizSettings.optionSelection].description}
+                    </p>
+                  </div>
+                  
+                  <p className="text-xs text-base-content/40 italic">
+                    Changes apply to next quiz
+                  </p>
+                </div>
+              </div>
+            </div>
+            
             {onShowHelp && (
               <button
                 className="btn btn-sm btn-ghost btn-circle text-base-content/50 hover:text-primary"

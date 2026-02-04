@@ -295,23 +295,6 @@ export function useVocabularyStore(): VocabularyStore {
     setConcepts(prev => prev.filter(c => c.chapter < fromChapter || c.chapter > toChapter));
   }, []);
 
-  const togglePaused = useCallback((conceptId: string) => {
-    setConcepts(prev => prev.map(c => {
-      if (c.id !== conceptId) return c;
-      return { ...c, paused: !c.paused };
-    }));
-  }, []);
-
-  const getConceptById = useCallback((id: string) => 
-    concepts.find(c => c.id === id),
-    [concepts]
-  );
-
-  const getConceptByWord = useCallback((word: string) => 
-    concepts.find(c => c.word === word),
-    [concepts]
-  );
-
   // Mark that there are changes waiting to sync
   const markPendingSync = useCallback(() => {
     setHasPendingSync(true);
@@ -331,6 +314,25 @@ export function useVocabularyStore(): VocabularyStore {
       console.error('Failed to clear pending sync:', e);
     }
   }, []);
+
+  const togglePaused = useCallback((conceptId: string) => {
+    setConcepts(prev => prev.map(c => {
+      if (c.id !== conceptId) return c;
+      return { ...c, paused: !c.paused };
+    }));
+    // Mark for cloud sync when toggling known/unknown status
+    markPendingSync();
+  }, [markPendingSync]);
+
+  const getConceptById = useCallback((id: string) => 
+    concepts.find(c => c.id === id),
+    [concepts]
+  );
+
+  const getConceptByWord = useCallback((word: string) => 
+    concepts.find(c => c.word === word),
+    [concepts]
+  );
 
   // Update modality knowledge after quiz answer
   // Updates BOTH question and answer modalities with different rates

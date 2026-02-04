@@ -434,6 +434,7 @@ CREATE TABLE user_settings (
 - [x] **Vocabulary auto-sync** (new words added, deleted words removed, meanings updated from JSON)
 - [x] **Dev mode toggle** (quick switch between guest/dev user on localhost)
 - [x] **Compound phrases** (53 common phrases with negative chapter tags for level indication)
+- [x] **Quick vocab toggle in Quiz/Study** (mark words as known/unknown without leaving the page)
 - [ ] Quick add/remove vocab from Quiz (suggest words, easy toggle without leaving quiz)
 - [ ] Smart word selection (75% easy / 25% hard blend based on knowledge)
 - [ ] Historical progress timeline (bar chart of "words likely correct" over time)

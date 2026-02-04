@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Volume2, BookOpen, HelpCircle, Loader2, Check, X, Zap } from 'lucide-react';
+import { Volume2, BookOpen, HelpCircle, Loader2, Check, X, Zap, Square, CheckSquare } from 'lucide-react';
 import type { VocabularyStore } from '../stores/vocabularyStore';
 import type { SettingsStore } from '../stores/settingsStore';
 import type { QuizSession, QuizQuestion, Modality, Concept } from '../types/vocabulary';
@@ -520,29 +520,61 @@ export function QuizPage({ store, settingsStore, onShowHelp }: QuizPageProps) {
             )}
             
             {/* Result feedback & Next button */}
-            {showResult && (
-              <div className="mt-4 space-y-3">
-                {/* Show correct answer details */}
-                <div className={`alert ${selectedOption === currentQuestion.correctIndex ? 'alert-success' : 'alert-info'}`}>
-                  <div className="flex flex-col gap-1">
-                    <span className="font-bold">
-                      {currentQuestion.concept.word} · {currentQuestion.concept.pinyin}
-                    </span>
-                    <span className="text-sm opacity-80">
-                      {currentQuestion.concept.meaning}
-                    </span>
+            {showResult && (() => {
+              // Get current paused state from store (reactive)
+              const currentConcept = store.concepts.find(c => c.id === currentQuestion.concept.id);
+              const isPaused = currentConcept?.paused ?? currentQuestion.concept.paused;
+              
+              return (
+                <div className="mt-4 space-y-3">
+                  {/* Show correct answer details */}
+                  <div className={`alert ${selectedOption === currentQuestion.correctIndex ? 'alert-success' : 'alert-info'}`}>
+                    <div className="flex flex-col gap-1">
+                      <span className="font-bold">
+                        {currentQuestion.concept.word} · {currentQuestion.concept.pinyin}
+                      </span>
+                      <span className="text-sm opacity-80">
+                        {currentQuestion.concept.meaning}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  {/* Known/Unknown toggle and Next button */}
+                  <div className="flex gap-2">
+                    {/* Known toggle - checkbox style like vocab page */}
+                    <button
+                      className={`btn flex-shrink-0 gap-1.5 ${
+                        isPaused 
+                          ? 'btn-outline btn-warning' 
+                          : 'btn-success'
+                      }`}
+                      onClick={() => store.togglePaused(currentQuestion.concept.id)}
+                      title={isPaused ? 'Click to mark as known (include in quiz)' : 'Click to mark as unknown (exclude from quiz)'}
+                    >
+                      {isPaused ? (
+                        <>
+                          <Square className="w-4 h-4" />
+                          <span className="hidden sm:inline">Unknown</span>
+                        </>
+                      ) : (
+                        <>
+                          <CheckSquare className="w-4 h-4" />
+                          <span className="hidden sm:inline">Known</span>
+                        </>
+                      )}
+                    </button>
+                    
+                    {/* Next button */}
+                    <button 
+                      className="btn btn-primary flex-1"
+                      onClick={goToNext}
+                    >
+                      {session.currentIndex + 1 >= session.questions.length ? 'See Results' : 'Next Question'}
+                    </button>
                   </div>
                 </div>
-                
-                {/* Next button */}
-                <button 
-                  className="btn btn-primary w-full"
-                  onClick={goToNext}
-                >
-                  {session.currentIndex + 1 >= session.questions.length ? 'See Results' : 'Next Question'}
-                </button>
-              </div>
-            )}
+              );
+            })()}
           </div>
         </div>
         

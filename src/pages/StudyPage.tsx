@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Volume2, ChevronLeft, ChevronRight, Shuffle, Loader2, BookOpen, HelpCircle } from 'lucide-react';
+import { Volume2, ChevronLeft, ChevronRight, Shuffle, Loader2, BookOpen, HelpCircle, Square, CheckSquare } from 'lucide-react';
 import type { VocabularyStore } from '../stores/vocabularyStore';
 import type { SettingsStore } from '../stores/settingsStore';
 import type { Concept } from '../types/vocabulary';
@@ -399,14 +399,47 @@ export function StudyPage({ store, settingsStore, onShowHelp }: StudyPageProps) 
                 </div>
               </div>
 
-              {/* Reveal all button */}
-              <button 
-                className={`btn btn-xs btn-ghost ${allRevealed ? 'opacity-30 cursor-not-allowed' : 'text-base-content/50'}`}
-                onClick={revealAll}
-                disabled={!!allRevealed}
-              >
-                Show all
-              </button>
+              {/* Actions row: Show all + Known toggle */}
+              <div className="flex items-center justify-between gap-2">
+                <button 
+                  className={`btn btn-xs btn-ghost ${allRevealed ? 'opacity-30 cursor-not-allowed' : 'text-base-content/50'}`}
+                  onClick={revealAll}
+                  disabled={!!allRevealed}
+                >
+                  Show all
+                </button>
+                
+                {/* Known/Unknown toggle - checkbox style */}
+                {(() => {
+                  // Get current paused state from store (reactive)
+                  const currentConcept = store.concepts.find(c => c.id === currentWord.id);
+                  const isPaused = currentConcept?.paused ?? false;
+                  
+                  return (
+                    <button
+                      className={`btn btn-sm gap-1.5 ${
+                        isPaused 
+                          ? 'btn-outline btn-warning' 
+                          : 'btn-success'
+                      }`}
+                      onClick={() => store.togglePaused(currentWord.id)}
+                      title={isPaused ? 'Click to mark as known (include in quiz)' : 'Click to mark as unknown (exclude from quiz)'}
+                    >
+                      {isPaused ? (
+                        <>
+                          <Square className="w-4 h-4" />
+                          <span>Unknown</span>
+                        </>
+                      ) : (
+                        <>
+                          <CheckSquare className="w-4 h-4" />
+                          <span>Known</span>
+                        </>
+                      )}
+                    </button>
+                  );
+                })()}
+              </div>
             </div>
           </div>
         )}

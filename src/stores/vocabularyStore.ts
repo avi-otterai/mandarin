@@ -185,17 +185,26 @@ export function useVocabularyStore(): VocabularyStore {
     }
     
     // Auto-merge: Find chapters user has imported and add any new vocabulary from those chapters
-    const importedChapters = new Set(filteredConcepts.map(c => c.chapter));
+    const importedChapters = new Set(filteredConcepts.map(c => c.chapter).filter(ch => ch > 0));
+    const maxImportedChapter = Math.max(...importedChapters, 0);
     const newVocab: Concept[] = [];
     
     vocab.forEach(word => {
-      // Only add if: word is in an imported chapter AND word doesn't already exist
-      if (importedChapters.has(word.chapter) && !existingWords.has(word.word)) {
+      // Skip if word already exists
+      if (existingWords.has(word.word)) return;
+      
+      // For positive chapters (HSK words): add if chapter is imported
+      // For negative chapters (compound phrases): add if |chapter| <= max imported chapter
+      const shouldAdd = word.chapter > 0 
+        ? importedChapters.has(word.chapter)
+        : Math.abs(word.chapter) <= maxImportedChapter;
+      
+      if (shouldAdd) {
         console.log(`[VocabStore] Auto-adding new vocabulary: ${word.word} (ch ${word.chapter})`);
         newVocab.push({
           ...word,
           id: generateId(),
-          modality: createInitialModality(word.chapter),
+          modality: createInitialModality(Math.abs(word.chapter)),
           knowledge: 50,
           paused: true,  // New words start paused
         });
@@ -488,17 +497,26 @@ export function useVocabularyStore(): VocabularyStore {
         }
         
         const existingWords = new Set(filteredConcepts.map(c => c.word));
-        const importedChapters = new Set(filteredConcepts.map(c => c.chapter));
+        const importedChapters = new Set(filteredConcepts.map(c => c.chapter).filter(ch => ch > 0));
+        const maxImportedChapter = Math.max(...importedChapters, 0);
         const newVocab: Concept[] = [];
         
         vocab.forEach(word => {
-          // Only add if: word is in an imported chapter AND word doesn't already exist
-          if (importedChapters.has(word.chapter) && !existingWords.has(word.word)) {
+          // Skip if word already exists
+          if (existingWords.has(word.word)) return;
+          
+          // For positive chapters (HSK words): add if chapter is imported
+          // For negative chapters (compound phrases): add if |chapter| <= max imported chapter
+          const shouldAdd = word.chapter > 0 
+            ? importedChapters.has(word.chapter)
+            : Math.abs(word.chapter) <= maxImportedChapter;
+          
+          if (shouldAdd) {
             console.log(`[VocabStore] Auto-adding new vocabulary from JSON: ${word.word} (ch ${word.chapter})`);
             newVocab.push({
               ...word,
               id: generateId(),
-              modality: createInitialModality(word.chapter),
+              modality: createInitialModality(Math.abs(word.chapter)),
               knowledge: 50,
               paused: true,  // New words start paused
             });

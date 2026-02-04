@@ -1550,5 +1550,429 @@
     "meaning": "glad, happy",
     "chapter": 15,
     "source": "hsk1"
+  },
+  {
+    "word": "你好吗",
+    "pinyin": "nǐ hǎo ma",
+    "part_of_speech": "phrase",
+    "meaning": "How are you?",
+    "chapter": -3,
+    "source": "compound"
+  },
+  {
+    "word": "中国人",
+    "pinyin": "Zhōngguó rén",
+    "part_of_speech": "noun",
+    "meaning": "Chinese person",
+    "chapter": -3,
+    "source": "compound"
+  },
+  {
+    "word": "美国人",
+    "pinyin": "Měiguó rén",
+    "part_of_speech": "noun",
+    "meaning": "American person",
+    "chapter": -3,
+    "source": "compound"
+  },
+  {
+    "word": "你是学生吗",
+    "pinyin": "nǐ shì xuéshēng ma",
+    "part_of_speech": "phrase",
+    "meaning": "Are you a student?",
+    "chapter": -3,
+    "source": "compound"
+  },
+  {
+    "word": "我是学生",
+    "pinyin": "wǒ shì xuéshēng",
+    "part_of_speech": "phrase",
+    "meaning": "I am a student",
+    "chapter": -3,
+    "source": "compound"
+  },
+  {
+    "word": "他是谁",
+    "pinyin": "tā shì shéi",
+    "part_of_speech": "phrase",
+    "meaning": "Who is he?",
+    "chapter": -4,
+    "source": "compound"
+  },
+  {
+    "word": "你的名字",
+    "pinyin": "nǐ de míngzi",
+    "part_of_speech": "phrase",
+    "meaning": "your name",
+    "chapter": -4,
+    "source": "compound"
+  },
+  {
+    "word": "我的朋友",
+    "pinyin": "wǒ de péngyǒu",
+    "part_of_speech": "phrase",
+    "meaning": "my friend",
+    "chapter": -4,
+    "source": "compound"
+  },
+  {
+    "word": "哪国人",
+    "pinyin": "nǎ guó rén",
+    "part_of_speech": "phrase",
+    "meaning": "which nationality?",
+    "chapter": -4,
+    "source": "compound"
+  },
+  {
+    "word": "你几岁",
+    "pinyin": "nǐ jǐ suì",
+    "part_of_speech": "phrase",
+    "meaning": "How old are you?",
+    "chapter": -5,
+    "source": "compound"
+  },
+  {
+    "word": "多大",
+    "pinyin": "duō dà",
+    "part_of_speech": "phrase",
+    "meaning": "how old? (age)",
+    "chapter": -5,
+    "source": "compound"
+  },
+  {
+    "word": "大家好",
+    "pinyin": "dàjiā hǎo",
+    "part_of_speech": "phrase",
+    "meaning": "Hello everyone!",
+    "chapter": -5,
+    "source": "compound"
+  },
+  {
+    "word": "有没有",
+    "pinyin": "yǒu méi yǒu",
+    "part_of_speech": "phrase",
+    "meaning": "do you have...?",
+    "chapter": -5,
+    "source": "compound"
+  },
+  {
+    "word": "很好",
+    "pinyin": "hěn hǎo",
+    "part_of_speech": "phrase",
+    "meaning": "very good",
+    "chapter": -6,
+    "source": "compound"
+  },
+  {
+    "word": "我很好",
+    "pinyin": "wǒ hěn hǎo",
+    "part_of_speech": "phrase",
+    "meaning": "I'm fine",
+    "chapter": -6,
+    "source": "compound"
+  },
+  {
+    "word": "会说汉语",
+    "pinyin": "huì shuō Hànyǔ",
+    "part_of_speech": "phrase",
+    "meaning": "can speak Chinese",
+    "chapter": -6,
+    "source": "compound"
+  },
+  {
+    "word": "怎么说",
+    "pinyin": "zěnme shuō",
+    "part_of_speech": "phrase",
+    "meaning": "how to say?",
+    "chapter": -6,
+    "source": "compound"
+  },
+  {
+    "word": "怎么写",
+    "pinyin": "zěnme xiě",
+    "part_of_speech": "phrase",
+    "meaning": "how to write?",
+    "chapter": -6,
+    "source": "compound"
+  },
+  {
+    "word": "请问",
+    "pinyin": "qǐngwèn",
+    "part_of_speech": "phrase",
+    "meaning": "excuse me (asking)",
+    "chapter": -7,
+    "source": "compound"
+  },
+  {
+    "word": "今天几号",
+    "pinyin": "jīntiān jǐ hào",
+    "part_of_speech": "phrase",
+    "meaning": "What's today's date?",
+    "chapter": -7,
+    "source": "compound"
+  },
+  {
+    "word": "去学校",
+    "pinyin": "qù xuéxiào",
+    "part_of_speech": "phrase",
+    "meaning": "go to school",
+    "chapter": -7,
+    "source": "compound"
+  },
+  {
+    "word": "星期几",
+    "pinyin": "xīngqī jǐ",
+    "part_of_speech": "phrase",
+    "meaning": "which day of week?",
+    "chapter": -7,
+    "source": "compound"
+  },
+  {
+    "word": "多少钱",
+    "pinyin": "duōshao qián",
+    "part_of_speech": "phrase",
+    "meaning": "How much (money)?",
+    "chapter": -8,
+    "source": "compound"
+  },
+  {
+    "word": "这个",
+    "pinyin": "zhège",
+    "part_of_speech": "pronoun",
+    "meaning": "this one",
+    "chapter": -8,
+    "source": "compound"
+  },
+  {
+    "word": "那个",
+    "pinyin": "nàge",
+    "part_of_speech": "pronoun",
+    "meaning": "that one",
+    "chapter": -8,
+    "source": "compound"
+  },
+  {
+    "word": "喝茶",
+    "pinyin": "hē chá",
+    "part_of_speech": "phrase",
+    "meaning": "drink tea",
+    "chapter": -8,
+    "source": "compound"
+  },
+  {
+    "word": "想买",
+    "pinyin": "xiǎng mǎi",
+    "part_of_speech": "phrase",
+    "meaning": "want to buy",
+    "chapter": -8,
+    "source": "compound"
+  },
+  {
+    "word": "在哪儿",
+    "pinyin": "zài nǎr",
+    "part_of_speech": "phrase",
+    "meaning": "where is...?",
+    "chapter": -9,
+    "source": "compound"
+  },
+  {
+    "word": "你在哪儿",
+    "pinyin": "nǐ zài nǎr",
+    "part_of_speech": "phrase",
+    "meaning": "Where are you?",
+    "chapter": -9,
+    "source": "compound"
+  },
+  {
+    "word": "在家",
+    "pinyin": "zài jiā",
+    "part_of_speech": "phrase",
+    "meaning": "at home",
+    "chapter": -9,
+    "source": "compound"
+  },
+  {
+    "word": "坐下",
+    "pinyin": "zuò xià",
+    "part_of_speech": "phrase",
+    "meaning": "sit down",
+    "chapter": -10,
+    "source": "compound"
+  },
+  {
+    "word": "上下",
+    "pinyin": "shàng xià",
+    "part_of_speech": "noun",
+    "meaning": "up and down",
+    "chapter": -10,
+    "source": "compound"
+  },
+  {
+    "word": "在上面",
+    "pinyin": "zài shàngmiàn",
+    "part_of_speech": "phrase",
+    "meaning": "on top of",
+    "chapter": -10,
+    "source": "compound"
+  },
+  {
+    "word": "在里面",
+    "pinyin": "zài lǐmiàn",
+    "part_of_speech": "phrase",
+    "meaning": "inside",
+    "chapter": -10,
+    "source": "compound"
+  },
+  {
+    "word": "几点",
+    "pinyin": "jǐ diǎn",
+    "part_of_speech": "phrase",
+    "meaning": "what time?",
+    "chapter": -11,
+    "source": "compound"
+  },
+  {
+    "word": "回家",
+    "pinyin": "huí jiā",
+    "part_of_speech": "phrase",
+    "meaning": "go home",
+    "chapter": -11,
+    "source": "compound"
+  },
+  {
+    "word": "几点回家",
+    "pinyin": "jǐ diǎn huí jiā",
+    "part_of_speech": "phrase",
+    "meaning": "What time go home?",
+    "chapter": -11,
+    "source": "compound"
+  },
+  {
+    "word": "天气怎么样",
+    "pinyin": "tiānqì zěnmeyàng",
+    "part_of_speech": "phrase",
+    "meaning": "How's the weather?",
+    "chapter": -12,
+    "source": "compound"
+  },
+  {
+    "word": "喝水",
+    "pinyin": "hē shuǐ",
+    "part_of_speech": "phrase",
+    "meaning": "drink water",
+    "chapter": -12,
+    "source": "compound"
+  },
+  {
+    "word": "太冷了",
+    "pinyin": "tài lěng le",
+    "part_of_speech": "phrase",
+    "meaning": "too cold!",
+    "chapter": -12,
+    "source": "compound"
+  },
+  {
+    "word": "太热了",
+    "pinyin": "tài rè le",
+    "part_of_speech": "phrase",
+    "meaning": "too hot!",
+    "chapter": -12,
+    "source": "compound"
+  },
+  {
+    "word": "我爱你",
+    "pinyin": "wǒ ài nǐ",
+    "part_of_speech": "phrase",
+    "meaning": "I love you",
+    "chapter": -12,
+    "source": "compound"
+  },
+  {
+    "word": "吃饭",
+    "pinyin": "chī fàn",
+    "part_of_speech": "phrase",
+    "meaning": "eat (a meal)",
+    "chapter": -12,
+    "source": "compound"
+  },
+  {
+    "word": "看电视",
+    "pinyin": "kàn diànshì",
+    "part_of_speech": "phrase",
+    "meaning": "watch TV",
+    "chapter": -13,
+    "source": "compound"
+  },
+  {
+    "word": "喜欢吃",
+    "pinyin": "xǐhuan chī",
+    "part_of_speech": "phrase",
+    "meaning": "like to eat",
+    "chapter": -13,
+    "source": "compound"
+  },
+  {
+    "word": "开车",
+    "pinyin": "kāi chē",
+    "part_of_speech": "phrase",
+    "meaning": "drive (a car)",
+    "chapter": -14,
+    "source": "compound"
+  },
+  {
+    "word": "买东西",
+    "pinyin": "mǎi dōngxi",
+    "part_of_speech": "phrase",
+    "meaning": "go shopping",
+    "chapter": -14,
+    "source": "compound"
+  },
+  {
+    "word": "很漂亮",
+    "pinyin": "hěn piàoliang",
+    "part_of_speech": "phrase",
+    "meaning": "very beautiful",
+    "chapter": -14,
+    "source": "compound"
+  },
+  {
+    "word": "坐飞机",
+    "pinyin": "zuò fēijī",
+    "part_of_speech": "phrase",
+    "meaning": "take a plane",
+    "chapter": -15,
+    "source": "compound"
+  },
+  {
+    "word": "坐出租车",
+    "pinyin": "zuò chūzūchē",
+    "part_of_speech": "phrase",
+    "meaning": "take a taxi",
+    "chapter": -15,
+    "source": "compound"
+  },
+  {
+    "word": "一起去",
+    "pinyin": "yìqǐ qù",
+    "part_of_speech": "phrase",
+    "meaning": "go together",
+    "chapter": -15,
+    "source": "compound"
+  },
+  {
+    "word": "认识你很高兴",
+    "pinyin": "rènshi nǐ hěn gāoxìng",
+    "part_of_speech": "phrase",
+    "meaning": "Nice to meet you",
+    "chapter": -15,
+    "source": "compound"
+  },
+  {
+    "word": "很高兴",
+    "pinyin": "hěn gāoxìng",
+    "part_of_speech": "phrase",
+    "meaning": "very happy",
+    "chapter": -15,
+    "source": "compound"
   }
 ]

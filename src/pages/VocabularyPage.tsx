@@ -87,9 +87,11 @@ export function VocabularyPage({ store, settingsStore, onSync, onShowHelp, onRef
     handleRefresh();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
   
-  // Get unique chapters
+  // Get unique chapters (only positive, for HSK words; compounds have negative chapters)
   const chapters = useMemo(() => {
-    return [...new Set(store.concepts.map(c => c.chapter))].sort((a, b) => a - b);
+    return [...new Set(store.concepts.map(c => c.chapter))]
+      .filter(ch => ch > 0)
+      .sort((a, b) => a - b);
   }, [store.concepts]);
   
   // Filter and sort concepts
@@ -97,8 +99,20 @@ export function VocabularyPage({ store, settingsStore, onSync, onShowHelp, onRef
     let result = store.concepts;
     
     // Chapter filter
+    // For positive chapters (HSK words): exact match
+    // For negative chapters (compound phrases): show if |chapter| <= selected chapter
+    // Example: Ch 3 selected → shows chapter 3 words + compounds tagged -1, -2, -3
     if (filterChapter !== 'all') {
-      result = result.filter(c => c.chapter === parseInt(filterChapter));
+      const selectedCh = parseInt(filterChapter);
+      result = result.filter(c => {
+        if (c.chapter > 0) {
+          // HSK word: exact chapter match
+          return c.chapter === selectedCh;
+        } else {
+          // Compound phrase: show if level (absolute value) <= selected chapter
+          return Math.abs(c.chapter) <= selectedCh;
+        }
+      });
     }
     
     // Studying/Paused filter
@@ -424,7 +438,13 @@ export function VocabularyPage({ store, settingsStore, onSync, onShowHelp, onRef
                       {concept.meaning}
                     </td>
                     <td className="text-xs opacity-70 hidden sm:table-cell">{formatPOS(concept.part_of_speech)}</td>
-                    <td className="text-center text-sm hidden sm:table-cell">{concept.chapter}</td>
+                    <td className="text-center text-sm hidden sm:table-cell">
+                      {concept.chapter > 0 ? concept.chapter : (
+                        <span className="text-secondary" title={`Compound phrase (level ${Math.abs(concept.chapter)})`}>
+                          ~{Math.abs(concept.chapter)}
+                        </span>
+                      )}
+                    </td>
                     <td className="text-center text-sm">
                       <span className={`font-mono ${
                         concept.knowledge >= 80 ? 'text-success' :

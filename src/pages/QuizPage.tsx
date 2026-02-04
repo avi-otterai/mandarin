@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Volume2, BookOpen, HelpCircle, Loader2, Check, X, Zap, Square, CheckSquare, Flame, Sprout, Settings2 } from 'lucide-react';
+import { Volume2, BookOpen, HelpCircle, Loader2, Check, X, Zap, Square, CheckSquare, Flame, Sprout, Settings2, Ban } from 'lucide-react';
 import type { VocabularyStore } from '../stores/vocabularyStore';
 import type { SettingsStore } from '../stores/settingsStore';
 import type { QuizSession, QuizQuestion, Modality, Concept } from '../types/vocabulary';
@@ -72,6 +72,12 @@ export function QuizPage({ store, settingsStore, onShowHelp }: QuizPageProps) {
   const [previewedAudioOption, setPreviewedAudioOption] = useState<number | null>(null);
   const [playingOptionIndex, setPlayingOptionIndex] = useState<number | null>(null);
   const [showSettingsDropdown, setShowSettingsDropdown] = useState(false);
+  
+  // Pending answer - deferred logging until user confirms or skips
+  const [pendingAnswer, setPendingAnswer] = useState<{
+    index: number;
+    correct: boolean;
+  } | null>(null);
   
   const ttsSupported = isTTSSupported();
   
@@ -182,13 +188,23 @@ export function QuizPage({ store, settingsStore, onShowHelp }: QuizPageProps) {
     setPlayingOptionIndex(null);
   }, [currentQuestion?.concept.id]);
   
-  // Handle option selection
+  // Handle option selection - just show result, defer logging until user confirms
   const handleSelectOption = useCallback((index: number) => {
     if (showResult || !currentQuestion || !session) return;
     
     const correct = index === currentQuestion.correctIndex;
     setSelectedOption(index);
     setShowResult(true);
+    
+    // Store pending answer - will be logged when user clicks Next (or skipped if they click "Don't log")
+    setPendingAnswer({ index, correct });
+  }, [showResult, currentQuestion, session]);
+  
+  // Commit the pending answer to store and Supabase
+  const commitPendingAnswer = useCallback(() => {
+    if (!pendingAnswer || !currentQuestion || !session) return;
+    
+    const { index, correct } = pendingAnswer;
     
     // Update session answers
     setSession(prev => {
@@ -242,15 +258,16 @@ export function QuizPage({ store, settingsStore, onShowHelp }: QuizPageProps) {
       );
     }
     
-    // Celebrate correct answers
-    if (correct) {
-      // Small confetti for individual correct answers
-    }
-  }, [showResult, currentQuestion, session, store, settings.learningFocus, auth.user, userAverages, quizSettings]);
+    // Clear pending answer
+    setPendingAnswer(null);
+  }, [pendingAnswer, currentQuestion, session, store, settings.learningFocus, auth.user, userAverages, quizSettings]);
   
-  // Go to next question
+  // Go to next question (commits the pending answer first)
   const goToNext = useCallback(() => {
     if (!session) return;
+    
+    // Commit the pending answer before moving on
+    commitPendingAnswer();
     
     setSession(prev => {
       if (!prev) return prev;
@@ -258,7 +275,49 @@ export function QuizPage({ store, settingsStore, onShowHelp }: QuizPageProps) {
       
       // Check if session complete
       if (newIndex >= prev.questions.length) {
-        // Record progress snapshot
+        // Record progress snapshot (add 1 to answers since commitPendingAnswer adds to it)
+        const answersAfterCommit = pendingAnswer 
+          ? [...prev.answers, { correct: pendingAnswer.correct }]
+          : prev.answers;
+        const correct = answersAfterCommit.filter(a => a.correct).length;
+        store.recordProgressSnapshot(answersAfterCommit.length, correct);
+        
+        // Mark quiz completed for today
+        markQuizCompletedToday();
+        
+        // Fire confetti for session completion
+        if (correct > answersAfterCommit.length * 0.6) {
+          fireConfetti();
+        }
+        
+        return {
+          ...prev,
+          currentIndex: newIndex,
+          completedAt: new Date().toISOString(),
+        };
+      }
+      
+      return { ...prev, currentIndex: newIndex };
+    });
+    
+    setSelectedOption(null);
+    setShowResult(false);
+  }, [session, store, commitPendingAnswer, pendingAnswer]);
+  
+  // Skip logging and go to next question
+  const skipAndNext = useCallback(() => {
+    if (!session) return;
+    
+    // Clear pending answer without committing (skip logging)
+    setPendingAnswer(null);
+    
+    setSession(prev => {
+      if (!prev) return prev;
+      const newIndex = prev.currentIndex + 1;
+      
+      // Check if session complete
+      if (newIndex >= prev.questions.length) {
+        // Record progress snapshot (without this skipped question)
         const correct = prev.answers.filter(a => a.correct).length;
         store.recordProgressSnapshot(prev.answers.length, correct);
         
@@ -651,7 +710,7 @@ export function QuizPage({ store, settingsStore, onShowHelp }: QuizPageProps) {
                     </div>
                   </div>
                   
-                  {/* Known/Unknown toggle and Next button */}
+                  {/* Known/Unknown toggle, Don't log, and Next button */}
                   <div className="flex gap-2">
                     {/* Known toggle - checkbox style like vocab page */}
                     <button
@@ -674,6 +733,15 @@ export function QuizPage({ store, settingsStore, onShowHelp }: QuizPageProps) {
                           <span className="hidden sm:inline">Known</span>
                         </>
                       )}
+                    </button>
+                    
+                    {/* Don't log button - skip recording this attempt */}
+                    <button
+                      className="btn btn-ghost btn-square text-base-content/50 hover:text-warning hover:bg-warning/10"
+                      onClick={skipAndNext}
+                      title="Don't log this attempt — we won't learn from this question (useful if you guessed)"
+                    >
+                      <Ban className="w-5 h-5" />
                     </button>
                     
                     {/* Next button */}

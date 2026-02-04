@@ -153,9 +153,12 @@ Averages are computed only for modalities you've actually tested.
 
 ### Data Flow
 
-1. **Quiz answer** → Save `QuizAttempt` to Supabase (async, non-blocking)
-2. **Update local** → Recalculate modality knowledge from answer (both question and answer modalities)
-3. **Auto-refresh** → Profile tab refreshes progress on open
+1. **Quiz answer** → Show result, defer logging
+2. **Next Question** → Save `QuizAttempt` to Supabase (async, non-blocking) + update local knowledge
+3. **Don't log** (optional) → Skip logging this attempt entirely (useful for lucky guesses)
+4. **Auto-refresh** → Profile tab refreshes progress on open
+
+**Skip logging**: After seeing your answer, click the 🚫 button to skip recording that attempt. Useful when you guessed correctly through elimination but don't actually know the word — keeps your stats accurate.
 
 ---
 
@@ -451,6 +454,7 @@ CREATE TABLE user_settings (
 - [x] **Compound phrases** (53 common phrases with negative chapter tags for level indication)
 - [x] **Quick vocab toggle in Quiz/Study** (mark words as known/unknown without leaving the page)
 - [x] **Smart quiz settings** (distractor difficulty + question selection strategy toggles)
+- [x] **Skip logging option** ("Don't log" button to exclude guesses from stats)
 - [ ] Quick add/remove vocab from Quiz (suggest words, easy toggle without leaving quiz)
 - [ ] Historical progress timeline (bar chart of "words likely correct" over time)
 - [ ] **ML-based adaptive difficulty** (auto-tune to ~70% correct rate)

@@ -55,7 +55,8 @@ export function VocabularyPage({ store, settingsStore, onSync, onShowHelp, onRef
   const [sortField, setSortField] = useState<SortField>(initialSort.field);
   const [sortDir, setSortDir] = useState<SortDir>(initialSort.dir);
   const [filterChapter, setFilterChapter] = useState<string>('all');
-  const [filterStudying, setFilterStudying] = useState<'all' | 'studying' | 'paused'>('all');
+  const [showStudyingOnly, setShowStudyingOnly] = useState<boolean>(false);
+  const [includePhrases, setIncludePhrases] = useState<boolean>(true);
   const [selectedConcept, setSelectedConcept] = useState<Concept | null>(null);
   
   // Refresh state
@@ -98,10 +99,12 @@ export function VocabularyPage({ store, settingsStore, onSync, onShowHelp, onRef
   const filteredConcepts = useMemo(() => {
     let result = store.concepts;
     
+    // Phrases toggle: filter out compound phrases (negative chapters) if disabled
+    if (!includePhrases) {
+      result = result.filter(c => c.chapter > 0);
+    }
+    
     // Chapter filter
-    // For positive chapters (HSK words): exact match
-    // For negative chapters (compound phrases): show if |chapter| <= selected chapter
-    // Example: Ch 3 selected → shows chapter 3 words + compounds tagged -1, -2, -3
     if (filterChapter !== 'all') {
       const selectedCh = parseInt(filterChapter);
       result = result.filter(c => {
@@ -115,11 +118,9 @@ export function VocabularyPage({ store, settingsStore, onSync, onShowHelp, onRef
       });
     }
     
-    // Studying/Paused filter
-    if (filterStudying === 'studying') {
+    // Known toggle: show only known words (not paused) if enabled
+    if (showStudyingOnly) {
       result = result.filter(c => !c.paused);
-    } else if (filterStudying === 'paused') {
-      result = result.filter(c => c.paused);
     }
     
     return result.sort((a, b) => {
@@ -138,7 +139,16 @@ export function VocabularyPage({ store, settingsStore, onSync, onShowHelp, onRef
           comparison = a.part_of_speech.localeCompare(b.part_of_speech);
           break;
         case 'chapter':
-          comparison = a.chapter - b.chapter;
+          // Sort by absolute value, then positives before negatives
+          // Result: 1, 2, 3, -3, 4, -4, ... 15, -15
+          const absA = Math.abs(a.chapter);
+          const absB = Math.abs(b.chapter);
+          if (absA !== absB) {
+            comparison = absA - absB;
+          } else {
+            // Same absolute value: positive before negative
+            comparison = (a.chapter > 0 ? 0 : 1) - (b.chapter > 0 ? 0 : 1);
+          }
           break;
         case 'knowledge':
           comparison = a.knowledge - b.knowledge;
@@ -146,7 +156,7 @@ export function VocabularyPage({ store, settingsStore, onSync, onShowHelp, onRef
       }
       return sortDir === 'asc' ? comparison : -comparison;
     });
-  }, [store.concepts, filterChapter, filterStudying, sortField, sortDir]);
+  }, [store.concepts, filterChapter, showStudyingOnly, includePhrases, sortField, sortDir]);
   
   const handleSort = (field: SortField) => {
     let newDir: SortDir;
@@ -172,12 +182,13 @@ export function VocabularyPage({ store, settingsStore, onSync, onShowHelp, onRef
   };
 
   // Stats
-  const studyingCount = store.concepts.filter(c => !c.paused).length;
-  const totalAdded = store.concepts.length;
-  const filteredStudying = filteredConcepts.filter(c => !c.paused).length;
+  const knownCount = store.concepts.filter(c => !c.paused).length;
+  const totalCount = store.concepts.length;
+  const filteredCount = filteredConcepts.length;
+  const filteredKnown = filteredConcepts.filter(c => !c.paused).length;
   
   // Mass toggle for filtered results
-  const handleMarkAllStudying = () => {
+  const handleMarkAllKnown = () => {
     filteredConcepts.forEach(c => {
       if (c.paused) {
         store.togglePaused(c.id);
@@ -185,7 +196,7 @@ export function VocabularyPage({ store, settingsStore, onSync, onShowHelp, onRef
     });
   };
   
-  const handleMarkAllPaused = () => {
+  const handleMarkAllUnknown = () => {
     filteredConcepts.forEach(c => {
       if (!c.paused) {
         store.togglePaused(c.id);
@@ -230,7 +241,7 @@ export function VocabularyPage({ store, settingsStore, onSync, onShowHelp, onRef
               )}
             </h1>
             <p className="text-sm text-base-content/60">
-              {totalAdded} words · {studyingCount} studying
+              {totalCount} words · {knownCount} known{filteredCount !== totalCount && ` · ${filteredCount} shown`}
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -306,37 +317,46 @@ export function VocabularyPage({ store, settingsStore, onSync, onShowHelp, onRef
             ))}
           </select>
           
-          {/* Studying/Paused filter */}
-          <select
-            className="select select-xs select-bordered bg-base-200 w-auto"
-            value={filterStudying}
-            onChange={e => setFilterStudying(e.target.value as 'all' | 'studying' | 'paused')}
+          {/* Textbook only toggle - excludes LLM-generated phrases */}
+          <button
+            className={`btn btn-xs gap-1 ${!includePhrases ? 'btn-primary' : 'btn-ghost'}`}
+            onClick={() => setIncludePhrases(!includePhrases)}
+            title={!includePhrases ? 'Showing textbook words only' : 'Click to hide generated phrases'}
           >
-            <option value="all">All</option>
-            <option value="studying">✓ Studying</option>
-            <option value="paused">○ Paused</option>
-          </select>
+            <span className="hidden sm:inline">Only textbook</span>
+            <span className="sm:hidden">Textbook</span>
+          </button>
+          
+          {/* Known words toggle - shows only words user has marked as known */}
+          <button
+            className={`btn btn-xs gap-1 ${showStudyingOnly ? 'btn-primary' : 'btn-ghost'}`}
+            onClick={() => setShowStudyingOnly(!showStudyingOnly)}
+            title={showStudyingOnly ? 'Showing only known words' : 'Click to show only known words'}
+          >
+            <span className="hidden sm:inline">Only known</span>
+            <span className="sm:hidden">Known</span>
+          </button>
           
           {/* Mass actions */}
           {filteredConcepts.length > 0 && (
             <>
               <button 
                 className="btn btn-xs btn-outline btn-success gap-0.5"
-                onClick={handleMarkAllStudying}
-                disabled={filteredStudying === filteredConcepts.length}
-                title="Mark all filtered as studying"
+                onClick={handleMarkAllKnown}
+                disabled={filteredKnown === filteredConcepts.length}
+                title="Mark all filtered as known"
               >
                 <CheckSquare className="w-3 h-3" />
-                Study ({filteredConcepts.length - filteredStudying})
+                Know ({filteredConcepts.length - filteredKnown})
               </button>
               <button 
                 className="btn btn-xs btn-outline btn-warning gap-0.5"
-                onClick={handleMarkAllPaused}
-                disabled={filteredStudying === 0}
-                title="Pause all filtered words"
+                onClick={handleMarkAllUnknown}
+                disabled={filteredKnown === 0}
+                title="Mark all filtered as unknown"
               >
                 <Square className="w-3 h-3" />
-                Pause ({filteredStudying})
+                Unknow ({filteredKnown})
               </button>
             </>
           )}
@@ -439,11 +459,9 @@ export function VocabularyPage({ store, settingsStore, onSync, onShowHelp, onRef
                     </td>
                     <td className="text-xs opacity-70 hidden sm:table-cell">{formatPOS(concept.part_of_speech)}</td>
                     <td className="text-center text-sm hidden sm:table-cell">
-                      {concept.chapter > 0 ? concept.chapter : (
-                        <span className="text-secondary" title={`Compound phrase (level ${Math.abs(concept.chapter)})`}>
-                          ~{Math.abs(concept.chapter)}
-                        </span>
-                      )}
+                      <span className={concept.chapter < 0 ? 'text-secondary' : ''} title={concept.chapter < 0 ? 'Compound phrase' : `HSK Chapter ${concept.chapter}`}>
+                        {Math.abs(concept.chapter)}
+                      </span>
                     </td>
                     <td className="text-center text-sm">
                       <span className={`font-mono ${
@@ -460,7 +478,7 @@ export function VocabularyPage({ store, settingsStore, onSync, onShowHelp, onRef
                         className="checkbox checkbox-success checkbox-sm"
                         checked={!concept.paused}
                         onChange={() => store.togglePaused(concept.id)}
-                        title={concept.paused ? 'Click to start studying' : 'Click to pause'}
+                        title={concept.paused ? 'Click to mark as known' : 'Click to mark as unknown'}
                       />
                     </td>
                   </tr>

@@ -457,7 +457,7 @@ CREATE TABLE user_settings (
 - [x] **Skip logging option** ("Don't log" button to exclude guesses from stats)
 - [x] Quick add/remove vocab from Quiz (suggest words, easy toggle without leaving quiz)
 - [x] Historical progress timeline (bar chart showing daily quiz activity and accuracy)
-- [ ] **ML-based adaptive difficulty** (auto-tune to ~70% correct rate)
+- [~] **ML-based adaptive difficulty** (analysis done, need more incorrect data for calibration)
 - [ ] ElevenLabs premium TTS integration
 - [ ] Tone-specific practice mode
 
@@ -497,21 +497,67 @@ Controls how confusing the wrong answer options are:
 - **Chapter proximity**: Nearby chapters = similar difficulty level
 - **Pinyin similarity**: Same tone, similar initial/final (hard mode only)
 
-### Phase 2: ML-Based Calibration (Planned)
+### Phase 2: ML-Based Calibration (In Progress)
 
-Once enough quiz data is collected (~100+ attempts):
+**Status**: Initial analysis complete with 151 quiz attempts. Scripts in `analysis/` folder.
 
-1. **Rich context logging**: Each quiz attempt logs a JSON snapshot of:
-   - Concept knowledge (question modality, answer modality, overall)
-   - User's average modality scores
-   - Distractor knowledge scores
-   - Time since last attempt
+#### Current Results (151 attempts, 91% correct)
 
-2. **Offline analysis**: Run logistic regression to predict `correct` from features
+| Model | Accuracy | F1 | ROC-AUC |
+|-------|----------|-----|---------|
+| Logistic Regression | 0.68 | 0.80 | 0.45 |
+| **Random Forest** | **0.90** | **0.95** | **0.70** |
 
-3. **Calibration**: Tune `predictedCorrect` to better match actual performance
+**Top predictive features** (Random Forest importance):
+1. `answer_modality` (12.5%) - what type of answer was shown
+2. `distractor_avg` (11.6%) - avg knowledge of wrong options  
+3. `knowledge_gap` (11.3%) - difference between target and distractors
 
-4. **Adaptive difficulty**: Auto-adjust question selection to maintain ~70% success rate
+**Challenge**: Severe class imbalance (91% correct) makes it hard to predict failures. ROC-AUC of 0.70 shows some signal exists.
+
+#### Running the Analysis
+
+```bash
+# Create conda env (one-time setup)
+conda create -n mandarin-ml python=3.11 -y
+conda activate mandarin-ml
+pip install supabase scikit-learn numpy
+
+# Refresh data from Supabase (requires SUPABASE_SERVICE_ROLE_KEY in .env)
+cd /path/to/avi-mandarin
+python -c "
+import json
+from supabase import create_client
+env = {}
+with open('.env') as f:
+    for line in f:
+        if '=' in line and not line.startswith('#'):
+            k, v = line.strip().split('=', 1)
+            env[k] = v
+supabase = create_client(env['VITE_SUPABASE_URL'], env['SUPABASE_SERVICE_ROLE_KEY'])
+data = supabase.table('quiz_attempts').select('correct,question_modality,answer_modality,context').not_.is_('context', 'null').execute()
+with open('analysis/quiz_attempts_data.json', 'w') as f:
+    json.dump(data.data, f, indent=2)
+print(f'Exported {len(data.data)} records')
+"
+
+# Run ML analysis
+python analysis/quiz_ml_model.py
+```
+
+#### Next Steps
+
+1. **Collect more data** - especially incorrect answers for better class balance
+2. **Try SMOTE** - oversample minority class to improve recall on failures
+3. **Integrate predictions** - use model's `predictedCorrect` to tune question difficulty
+
+#### Rich context logging (implemented)
+
+Each quiz attempt logs a JSON snapshot of:
+- Concept knowledge (question modality, answer modality, overall)
+- User's average modality scores
+- Distractor knowledge scores
+- Time since last attempt
 
 ### Data Collection Schema
 

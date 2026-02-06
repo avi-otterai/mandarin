@@ -35,12 +35,22 @@ function getTaskWeight(taskType: QuizTaskType, learningFocus: LearningFocus): nu
 
 /**
  * Select a random task type weighted by learning focus
+ * Expert mode: bias toward character-involved tasks (harder)
  */
-export function selectTaskType(learningFocus: LearningFocus): QuizTaskType {
-  const weights = QUIZ_TASK_TYPES.map(taskType => ({
-    taskType,
-    weight: getTaskWeight(taskType, learningFocus),
-  })).filter(item => item.weight > 0);
+export function selectTaskType(learningFocus: LearningFocus, expertMode: boolean = false): QuizTaskType {
+  const weights = QUIZ_TASK_TYPES.map(taskType => {
+    let weight = getTaskWeight(taskType, learningFocus);
+    
+    // Expert mode: boost character-involved tasks (they're harder)
+    if (expertMode && weight > 0) {
+      const { question, answer } = parseTaskType(taskType);
+      if (question === 'character' || answer === 'character') {
+        weight *= 2.5; // 2.5x boost for character tasks
+      }
+    }
+    
+    return { taskType, weight };
+  }).filter(item => item.weight > 0);
   
   if (weights.length === 0) {
     // Fallback: character_to_meaning if all weights are 0
@@ -172,8 +182,9 @@ function pinyinSimilarity(pinyin1: string, pinyin2: string): number {
  * Select distractors for a quiz question
  * 
  * Strategy varies by difficulty:
- * - Easy: Prefer different length, different POS, far chapters
- * - Hard: Prefer similar length, same POS, nearby chapters, similar pinyin
+ * - Easy: Prefer different length, different POS, far chapters (4 options)
+ * - Hard: Prefer similar length, same POS, nearby chapters, similar pinyin (4 options)
+ * - Expert: Same as hard + knowledge-matched distractors (6 options)
  * 
  * Always:
  * 1. Exclude candidates that would create collisions (same answer or question value)
@@ -191,26 +202,28 @@ export function selectDistractors(
   // Exclude the target itself
   const candidates = allConcepts.filter(c => c.id !== target.id && !c.paused);
   
-  const isHard = optionSelection === 'hard';
+  const isEasy = optionSelection === 'easy';
+  const isExpert = optionSelection === 'expert';
+  const isHardOrExpert = optionSelection === 'hard' || optionSelection === 'expert';
   
   // Score candidates by difficulty-adjusted similarity
   const scored = candidates.map(candidate => {
     let score = 1; // Base score
     
     // === Part of Speech ===
-    // Hard: same POS = more confusing = higher score
+    // Hard/Expert: same POS = more confusing = higher score
     // Easy: different POS = obvious wrong = higher score
     if (candidate.part_of_speech === target.part_of_speech) {
-      score += isHard ? 3 : -1;
+      score += isHardOrExpert ? 3 : -1;
     } else {
-      score += isHard ? 0 : 2;
+      score += isEasy ? 2 : 0;
     }
     
     // === Chapter Proximity ===
-    // Hard: nearby chapters = similar difficulty = higher score
+    // Hard/Expert: nearby chapters = similar difficulty = higher score
     // Easy: far chapters = obvious skill gap = higher score
     const chapterDiff = Math.abs(candidate.chapter - target.chapter);
-    if (isHard) {
+    if (isHardOrExpert) {
       if (chapterDiff <= 2) score += 2;
       else if (chapterDiff <= 5) score += 1;
     } else {
@@ -219,10 +232,10 @@ export function selectDistractors(
     }
     
     // === Word Length Similarity ===
-    // Hard: similar character count = more confusing
+    // Hard/Expert: similar character count = more confusing
     // Easy: different lengths = obvious visual difference
     const lengthDiff = Math.abs(candidate.word.length - target.word.length);
-    if (isHard) {
+    if (isHardOrExpert) {
       if (lengthDiff === 0) score += 2;
       else if (lengthDiff === 1) score += 1;
     } else {
@@ -230,10 +243,20 @@ export function selectDistractors(
       else if (lengthDiff >= 1) score += 1;
     }
     
-    // === Pinyin Similarity (Hard mode only) ===
-    if (isHard) {
+    // === Pinyin Similarity (Hard/Expert mode only) ===
+    if (isHardOrExpert) {
       const pSim = pinyinSimilarity(candidate.pinyin, target.pinyin);
       score += pSim * 2; // Max +2 for very similar pinyin
+    }
+    
+    // === Knowledge Matching (Expert mode only) ===
+    // Prefer distractors with similar knowledge to target - makes elimination harder
+    if (isExpert) {
+      const knowledgeDiff = Math.abs(candidate.knowledge - target.knowledge);
+      if (knowledgeDiff <= 10) score += 3;      // Very similar knowledge
+      else if (knowledgeDiff <= 20) score += 2; // Similar knowledge
+      else if (knowledgeDiff <= 30) score += 1; // Somewhat similar
+      // Large knowledge gaps get no bonus (easier to eliminate)
     }
     
     // Small random factor to avoid always picking same distractors
@@ -268,6 +291,15 @@ export function selectDistractors(
 // ═══════════════════════════════════════════════════════════
 
 /**
+ * Get number of distractors based on option selection
+ * Easy/Hard: 3 distractors (4 total options)
+ * Expert: 5 distractors (6 total options)
+ */
+function getDistractorCount(optionSelection: OptionSelection): number {
+  return optionSelection === 'expert' ? 5 : 3;
+}
+
+/**
  * Generate a single quiz question
  */
 export function generateQuestion(
@@ -276,16 +308,19 @@ export function generateQuestion(
   learningFocus: LearningFocus,
   optionSelection: OptionSelection = 'hard'
 ): QuizQuestion {
-  const taskType = selectTaskType(learningFocus);
+  const isExpert = optionSelection === 'expert';
+  const taskType = selectTaskType(learningFocus, isExpert);
   const { question: questionModality, answer: answerModality } = parseTaskType(taskType);
   
-  // Select 3 distractors with collision detection for both modalities
+  // Select distractors with collision detection for both modalities
+  // Expert mode: 5 distractors (6 total), otherwise 3 (4 total)
+  const distractorCount = getDistractorCount(optionSelection);
   const distractors = selectDistractors(
     concept,
     allConcepts,
     questionModality,
     answerModality,
-    3,
+    distractorCount,
     optionSelection
   );
   

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Volume2, BookOpen, HelpCircle, Loader2, Check, X, Zap, Square, CheckSquare, Flame, Sprout, Settings2, Ban } from 'lucide-react';
+import { Volume2, BookOpen, HelpCircle, Loader2, Check, X, Zap, Square, CheckSquare, Settings2, Ban } from 'lucide-react';
 import type { VocabularyStore } from '../stores/vocabularyStore';
 import type { SettingsStore } from '../stores/settingsStore';
 import type { QuizSession, QuizQuestion, Modality, Concept } from '../types/vocabulary';
@@ -513,9 +513,9 @@ export function QuizPage({ store, settingsStore, onShowHelp }: QuizPageProps) {
                   
                   {/* Option selection (distractor difficulty) */}
                   <div>
-                    <label className="text-xs text-base-content/60 mb-1 block">Option Selection</label>
+                    <label className="text-xs text-base-content/60 mb-1 block">Difficulty</label>
                     <div className="flex gap-1">
-                      {(['easy', 'hard'] as const).map(opt => {
+                      {(['easy', 'hard', 'expert'] as const).map(opt => {
                         const meta = OPTION_SELECTION_META[opt];
                         const isActive = quizSettings.optionSelection === opt;
                         return (
@@ -526,8 +526,8 @@ export function QuizPage({ store, settingsStore, onShowHelp }: QuizPageProps) {
                               settingsStore.setQuizSettings({ optionSelection: opt });
                             }}
                           >
-                            {opt === 'easy' ? <Sprout className="w-4 h-4" /> : <Flame className="w-4 h-4" />}
-                            {meta.label}
+                            {meta.emoji}
+                            <span className="hidden sm:inline">{meta.label}</span>
                           </button>
                         );
                       })}
@@ -604,8 +604,8 @@ export function QuizPage({ store, settingsStore, onShowHelp }: QuizPageProps) {
               )}
             </div>
             
-            {/* Options */}
-            <div className="grid grid-cols-2 gap-3 mt-2">
+            {/* Options - 2 cols for 4 options, 3 cols for 6 options */}
+            <div className={`grid gap-3 mt-2 ${currentQuestion.options.length > 4 ? 'grid-cols-3' : 'grid-cols-2'}`}>
               {currentQuestion.options.map((option, index) => {
                 const isSelected = selectedOption === index;
                 const isCorrect = index === currentQuestion.correctIndex;

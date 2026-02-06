@@ -5,7 +5,10 @@ export type ThemeType = 'light' | 'dark' | 'wooden' | 'ocean' | 'forest' | 'suns
 export type FocusLevel = 0 | 1 | 2 | 3; // 0 = ignore, 1 = low, 2 = medium, 3 = high
 
 // Option selection - controls how confusing distractors/options are
-export type OptionSelection = 'easy' | 'hard';
+// easy: 4 options, obvious wrong answers
+// hard: 4 options, tricky distractors (same POS, similar pinyin)
+// expert: 6 options, tricky distractors + knowledge-matched + character bias
+export type OptionSelection = 'easy' | 'hard' | 'expert';
 
 // Question selection - controls which concepts get quizzed
 export type QuestionSelection = 'random' | 'weak' | 'leastTested' | 'dueReview';
@@ -137,8 +140,9 @@ export const SPEECH_RATE_PRESETS = [
 
 // Option selection labels (how tricky distractors are)
 export const OPTION_SELECTION_META: Record<OptionSelection, { label: string; emoji: string; description: string }> = {
-  easy: { label: 'Easy', emoji: '🌱', description: 'Obvious wrong answers' },
-  hard: { label: 'Hard', emoji: '🔥', description: 'Tricky distractors' },
+  easy: { label: 'Easy', emoji: '🌱', description: '4 options, obvious answers' },
+  hard: { label: 'Hard', emoji: '🔥', description: '4 options, tricky distractors' },
+  expert: { label: 'Expert', emoji: '💀', description: '6 options, character focus' },
 };
 
 // Question selection labels (which concepts to quiz)

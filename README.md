@@ -457,6 +457,7 @@ CREATE TABLE user_settings (
 - [x] **Skip logging option** ("Don't log" button to exclude guesses from stats)
 - [x] Quick add/remove vocab from Quiz (suggest words, easy toggle without leaving quiz)
 - [x] Historical progress timeline (bar chart showing daily quiz activity and accuracy)
+- [x] **Expert difficulty mode** (6 options, character bias, knowledge-matched distractors)
 - [~] **ML-based adaptive difficulty** (analysis done, need more incorrect data for calibration)
 - [ ] ElevenLabs premium TTS integration
 - [ ] Tone-specific practice mode
@@ -482,20 +483,23 @@ Controls which concepts get quizzed:
 | **Least tested** | Fewest total attempts | Ensure coverage |
 | **Due for review** | Longest since last attempt | Spaced repetition |
 
-#### Option Selection
+#### Difficulty Selection
 
 Controls how confusing the wrong answer options are:
 
-| Setting | Behavior | Use Case |
-|---------|----------|----------|
-| **Easy** | Different lengths, different POS, far chapters | Building confidence |
-| **Hard** | Similar lengths, same POS, nearby chapters, similar pinyin | Challenge mode |
+| Setting | Options | Behavior | Use Case |
+|---------|---------|----------|----------|
+| **Easy** 🌱 | 4 | Different lengths, different POS, far chapters | Building confidence |
+| **Hard** 🔥 | 4 | Similar lengths, same POS, nearby chapters, similar pinyin | Default challenge |
+| **Expert** 💀 | 6 | Hard + knowledge-matched distractors + character task bias | Maximum difficulty |
 
 **Heuristics used:**
 - **Length similarity**: Character count of word
 - **Part of speech**: Same grammatical category = more confusing
 - **Chapter proximity**: Nearby chapters = similar difficulty level
-- **Pinyin similarity**: Same tone, similar initial/final (hard mode only)
+- **Pinyin similarity**: Same tone, similar initial/final (hard/expert mode)
+- **Knowledge matching**: Distractors with similar knowledge scores (expert mode only)
+- **Character bias**: 2.5x weight for character-involved tasks (expert mode only)
 
 ### Phase 2: ML-Based Calibration (In Progress)
 

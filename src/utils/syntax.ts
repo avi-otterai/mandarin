@@ -117,6 +117,98 @@ function getCategories(word: string): string[] {
 }
 
 // ============================================================================
+// SENTENCE-FRIENDLY ENGLISH - Clean translations for sentence building
+// ============================================================================
+// Dictionary meanings like "(plural) you" or "dish, cuisine" don't work in sentences.
+// This provides clean, single-word English that works grammatically.
+
+const SENTENCE_ENGLISH: Record<string, { subject: string; object: string }> = {
+  // Pronouns - need different forms for subject vs object position
+  '我': { subject: 'I', object: 'me' },
+  '你': { subject: 'you', object: 'you' },
+  '他': { subject: 'he', object: 'him' },
+  '她': { subject: 'she', object: 'her' },
+  '我们': { subject: 'we', object: 'us' },
+  '你们': { subject: 'you all', object: 'you all' },
+  '他们': { subject: 'they', object: 'them' },
+  
+  // People - same for subject and object
+  '爸爸': { subject: 'Dad', object: 'Dad' },
+  '妈妈': { subject: 'Mom', object: 'Mom' },
+  '老师': { subject: 'the teacher', object: 'the teacher' },
+  '学生': { subject: 'the student', object: 'the student' },
+  '医生': { subject: 'the doctor', object: 'the doctor' },
+  '朋友': { subject: 'my friend', object: 'my friend' },
+  '同学': { subject: 'my classmate', object: 'my classmate' },
+  '儿子': { subject: 'the son', object: 'the son' },
+  '先生': { subject: 'Mr.', object: 'Mr.' },
+  '小姐': { subject: 'Miss', object: 'Miss' },
+  
+  // Food - clean single words
+  '米饭': { subject: 'rice', object: 'rice' },
+  '苹果': { subject: 'apples', object: 'apples' },
+  '菜': { subject: 'vegetables', object: 'vegetables' },
+  '水果': { subject: 'fruit', object: 'fruit' },
+  '饭': { subject: 'food', object: 'food' },
+  '中国菜': { subject: 'Chinese food', object: 'Chinese food' },
+  '鱼': { subject: 'fish', object: 'fish' },
+  
+  // Drinks
+  '茶': { subject: 'tea', object: 'tea' },
+  '水': { subject: 'water', object: 'water' },
+  
+  // Places
+  '学校': { subject: 'school', object: 'school' },
+  '家': { subject: 'home', object: 'home' },
+  '医院': { subject: 'the hospital', object: 'the hospital' },
+  '商店': { subject: 'the store', object: 'the store' },
+  '银行': { subject: 'the bank', object: 'the bank' },
+  '饭店': { subject: 'the restaurant', object: 'the restaurant' },
+  '大学': { subject: 'university', object: 'university' },
+  '中国': { subject: 'China', object: 'China' },
+  '美国': { subject: 'America', object: 'America' },
+  
+  // Time
+  '今天': { subject: 'today', object: 'today' },
+  '明天': { subject: 'tomorrow', object: 'tomorrow' },
+  '昨天': { subject: 'yesterday', object: 'yesterday' },
+  '上午': { subject: 'this morning', object: 'this morning' },
+  '下午': { subject: 'this afternoon', object: 'this afternoon' },
+  '中午': { subject: 'at noon', object: 'at noon' },
+  
+  // Readable/Watchable
+  '书': { subject: 'books', object: 'books' },
+  '电视': { subject: 'TV', object: 'TV' },
+  '电影': { subject: 'movies', object: 'movies' },
+  '汉字': { subject: 'Chinese characters', object: 'Chinese characters' },
+  
+  // Describable
+  '天气': { subject: 'The weather', object: 'the weather' },
+  '狗': { subject: 'The dog', object: 'the dog' },
+  '猫': { subject: 'The cat', object: 'the cat' },
+  '山': { subject: 'The mountain', object: 'the mountain' },
+  
+  // Adjectives
+  '好': { subject: 'good', object: 'good' },
+  '大': { subject: 'big', object: 'big' },
+  '小': { subject: 'small', object: 'small' },
+  '冷': { subject: 'cold', object: 'cold' },
+  '热': { subject: 'hot', object: 'hot' },
+  '漂亮': { subject: 'beautiful', object: 'beautiful' },
+  '高兴': { subject: 'happy', object: 'happy' },
+};
+
+// Get clean English for sentence building
+function getSentenceEnglish(word: string, position: 'subject' | 'object' = 'subject'): string {
+  const entry = SENTENCE_ENGLISH[word];
+  if (entry) {
+    return entry[position];
+  }
+  // Fallback: return word's meaning from vocab, but clean it up
+  return word;
+}
+
+// ============================================================================
 // CURATED SENTENCE TEMPLATES - Meaningful sentences only!
 // ============================================================================
 
@@ -686,10 +778,47 @@ export function generateSentenceExercise(
   }
   
   // Build English sentence
+  // First, get the subject to determine verb conjugation
+  const subjectWord = filledSlots.get('subject')?.word;
+  const isFirstPerson = subjectWord === '我';
+  const isSecondPerson = subjectWord === '你';
+  const isPlural = subjectWord === '我们' || subjectWord === '你们' || subjectWord === '他们';
+  const needsBaseVerb = isFirstPerson || isSecondPerson || isPlural;
+  
   let english = template.englishPattern;
+  
+  // Replace slot placeholders with clean English
   filledSlots.forEach((concept, role) => {
-    english = english.replace(`{${role}}`, concept.meaning);
+    const position = (role === 'subject' || role === 'time') ? 'subject' : 'object';
+    const cleanEnglish = getSentenceEnglish(concept.word, position);
+    english = english.replace(`{${role}}`, cleanEnglish);
   });
+  
+  // Fix verb conjugation based on subject
+  if (needsBaseVerb) {
+    // Convert 3rd person verbs to base form for I/you/we/they
+    english = english.replace(' eats ', ' eat ');
+    english = english.replace(' drinks ', ' drink ');
+    english = english.replace(' goes to ', ' go to ');
+    english = english.replace(' likes ', ' like ');
+    english = english.replace(' reads ', ' read ');
+    english = english.replace(' wants ', ' want ');
+    english = english.replace(' is at ', ' am at '); // I am, we are
+    english = english.replace(' is very ', ' am very ');
+    
+    // Fix negation: "doesn't" → "don't"
+    english = english.replace(" doesn't ", " don't ");
+    
+    // Fix "Does I" → "Do I", "Does we" → "Do we", etc.
+    english = english.replace(/^Does (I|you|we|you all|they) /, 'Do $1 ');
+  }
+  
+  // Fix "we am" → "we are", "they am" → "they are"
+  if (isPlural || isSecondPerson) {
+    english = english.replace(' am at ', ' are at ');
+    english = english.replace(' am very ', ' are very ');
+  }
+  
   english = english.charAt(0).toUpperCase() + english.slice(1);
   
   // Pick direction and modality

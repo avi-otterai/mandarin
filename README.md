@@ -42,13 +42,14 @@ Each quiz question tests one input modality (question) and one output modality (
 
 ## 📱 App Structure
 
-### 4 Tabs
+### 5 Tabs
 
 | Tab | Purpose | Mode |
 |-----|---------|------|
 | **Vocabulary** | Import chapters, browse words, toggle study status | Browse |
 | **Study** | Self-paced flashcards, tap to reveal, unlimited | Passive |
 | **Quiz** | Active MCQ, audio preview, daily goal, tracks progress | Active |
+| **Syntax** | Sentence construction exercises, grammar patterns | Active |
 | **Profile** | Progress dashboard + settings | Config |
 
 **Default tab**: Quiz (where the daily learning happens)
@@ -320,7 +321,7 @@ The page reloads automatically to ensure a clean state switch.
 ```
 src/
 ├── components/
-│   ├── Navbar.tsx           # Bottom navigation (4 tabs)
+│   ├── Navbar.tsx           # Bottom navigation (5 tabs)
 │   ├── HelpModal.tsx        # Onboarding/help modal
 │   ├── VocabCard.tsx        # Word detail modal
 │   └── ProgressDashboard.tsx # Progress charts
@@ -328,6 +329,7 @@ src/
 │   ├── VocabularyPage.tsx   # Word list + filters
 │   ├── StudyPage.tsx        # Self-paced flashcards
 │   ├── QuizPage.tsx         # Active MCQ quiz
+│   ├── SyntaxPage.tsx       # Sentence construction
 │   ├── ProfilePage.tsx      # Progress + settings
 │   └── LoginPage.tsx        # Authentication
 ├── stores/
@@ -342,10 +344,12 @@ src/
 ├── types/
 │   ├── vocabulary.ts        # Concept, QuizAttempt types
 │   ├── settings.ts          # Settings types
+│   ├── syntax.ts            # Grammar templates + sentence types
 │   └── database.ts          # Supabase types
 ├── utils/
 │   ├── knowledge.ts         # Knowledge scoring
 │   ├── quiz.ts              # Quiz generation
+│   ├── syntax.ts            # Sentence generation
 │   └── pinyin.ts            # Pinyin utilities
 └── data/
     └── hsk1_vocabulary.json # HSK1 vocab (247 items: 194 HSK words + 53 compound phrases)
@@ -458,7 +462,9 @@ CREATE TABLE user_settings (
 - [x] Quick add/remove vocab from Quiz (suggest words, easy toggle without leaving quiz)
 - [x] Historical progress timeline (bar chart showing daily quiz activity and accuracy)
 - [x] **Expert difficulty mode** (6 options, character bias, knowledge-matched distractors)
+- [x] **Syntax tab** (sentence construction with grammar templates, tile-based word ordering)
 - [~] **ML-based adaptive difficulty** (analysis done, need more incorrect data for calibration)
+- [ ] LLM-enhanced sentence generation (use AI to create varied, natural sentences from user vocab)
 - [ ] ElevenLabs premium TTS integration
 - [ ] Tone-specific practice mode
 
@@ -605,6 +611,82 @@ This flexible JSON approach allows adding/removing features without schema migra
 
 ---
 
+## 🧩 Syntax Tab (Sentence Construction)
+
+### Overview
+
+The Syntax tab builds on vocabulary knowledge by teaching **Chinese word order and grammar patterns**. Users arrange word tiles to construct correct Chinese sentences from English prompts (or vice versa).
+
+### How It Works
+
+1. **Grammar Templates**: Pre-defined sentence patterns (SVO, questions, negation, time expressions)
+2. **Vocabulary-Driven**: Only uses words from your known vocabulary (checked words)
+3. **Automatic Unlocking**: Tab unlocks when you have enough vocab to fill at least one template
+4. **Bidirectional**: Practice both English→Chinese (writing) and Chinese→English (reading)
+
+### Exercise Flow
+
+```
+┌─────────────────────────────────────┐
+│  Translate to Chinese:              │
+│  "I eat apple"                      │
+│                                     │
+│  ┌─────────────────────────────────┐│
+│  │   我    吃    苹果              ││  ← Your answer
+│  └─────────────────────────────────┘│
+│                                     │
+│  ┌──────┐ ┌──────┐ ┌──────┐        │  ← Available tiles
+│  │ 苹果  │ │  吃  │ │  我  │        │
+│  └──────┘ └──────┘ └──────┘        │
+│                                     │
+│           [Check Answer]            │
+└─────────────────────────────────────┘
+```
+
+### Grammar Patterns (Templates)
+
+| Level | Pattern | Example |
+|-------|---------|---------|
+| 1 | Subject-Verb-Object | 我吃苹果 (I eat apple) |
+| 1 | Subject + Adjective | 天气好 (Weather is good) |
+| 2 | Yes/No Question (吗) | 你喝茶吗？(Do you drink tea?) |
+| 2 | Negation (不) | 我不吃肉 (I don't eat meat) |
+| 3 | Time + S + V + O | 今天我吃苹果 (I eat apple today) |
+
+### Modality Options
+
+Chinese can be displayed as:
+- **Character** (汉字) - default
+- **Pinyin** (拼音) - romanized pronunciation
+- **Audio** (🔊) - spoken only (for reading direction)
+
+The modality is selected based on your **Learning Focus** settings (same weights as Quiz).
+
+### Direction Setting
+
+In Profile settings, adjust the **Reading ↔ Writing** slider:
+- **Reading focus**: More Chinese→English exercises (comprehension)
+- **Writing focus**: More English→Chinese exercises (production)
+- Default is balanced toward reading (2:1)
+
+### Unlock Requirements
+
+The Syntax tab requires vocabulary in these grammatical roles:
+- **Pronouns**: 我, 你, 他, 她, etc.
+- **Verbs**: 吃, 喝, 学习, etc.
+- **Nouns**: 苹果, 茶, 书, etc.
+
+If locked, the tab shows which vocabulary types you need more of.
+
+### Future Enhancements
+
+- LLM-generated sentences for more natural variety
+- Sentence logging and progress tracking
+- Spaced repetition for sentences
+- More complex grammar patterns (comparisons, clauses)
+
+---
+
 ## 📖 Terminology
 
 | Term | Definition |
@@ -614,6 +696,7 @@ This flexible JSON approach allows adding/removing features without schema migra
 | **Quiz Task** | A question testing one modality → another (12 types) |
 | **Study** | Passive flashcard review (self-paced, no tracking) |
 | **Quiz** | Active MCQ testing (tracked, contributes to progress) |
+| **Syntax** | Sentence construction from word tiles (grammar practice) |
 
 ---
 

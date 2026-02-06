@@ -18,6 +18,14 @@ export interface QuizSettings {
   optionSelection: OptionSelection;      // How tricky the wrong options are
 }
 
+// Syntax exercise direction ratio (Reading = Chinese→English, Writing = English→Chinese)
+// Values represent the ratio index in SYNTAX_DIRECTION_OPTIONS
+export type SyntaxDirectionRatio = 0 | 1 | 2 | 3 | 4;
+
+export interface SyntaxSettings {
+  directionRatio: SyntaxDirectionRatio;  // Reading:Writing ratio slider position
+}
+
 export interface LearningFocus {
   character: FocusLevel;  // Hanzi recognition
   pinyin: FocusLevel;     // Pinyin recall
@@ -50,6 +58,9 @@ export interface UserSettings {
   // Quiz settings
   quiz: QuizSettings;              // Difficulty + selection strategy
   
+  // Syntax settings
+  syntax: SyntaxSettings;          // Sentence construction settings
+  
   // Display preferences
   theme: ThemeType;
   pinyinDisplay: PinyinDisplay;
@@ -78,6 +89,9 @@ export const DEFAULT_SETTINGS: UserSettings = {
   quiz: {
     questionSelection: 'random',  // Random for now, ML will tune later
     optionSelection: 'hard',      // Default to hard (more learning value)
+  },
+  syntax: {
+    directionRatio: 1,  // Default to 2:1 reading (English→Chinese more common)
   },
   theme: 'dark',
   pinyinDisplay: 'tones',
@@ -152,3 +166,19 @@ export const QUESTION_SELECTION_META: Record<QuestionSelection, { label: string;
   leastTested: { label: 'Coverage', emoji: '📊', description: 'Test untested words' },
   dueReview: { label: 'Due Review', emoji: '⏰', description: 'Words not seen recently' },
 };
+
+// Syntax direction ratio options
+// Reading = see Chinese, produce English (comprehension)
+// Writing = see English, produce Chinese (production)
+export const SYNTAX_DIRECTION_OPTIONS: Array<{
+  value: SyntaxDirectionRatio;
+  readingWeight: number;  // Weight for Chinese→English
+  writingWeight: number;  // Weight for English→Chinese
+  label: string;
+}> = [
+  { value: 0, readingWeight: 3, writingWeight: 1, label: 'Reading focus' },
+  { value: 1, readingWeight: 2, writingWeight: 1, label: 'Balanced (reading)' },
+  { value: 2, readingWeight: 1, writingWeight: 1, label: 'Equal' },
+  { value: 3, readingWeight: 1, writingWeight: 2, label: 'Balanced (writing)' },
+  { value: 4, readingWeight: 1, writingWeight: 3, label: 'Writing focus' },
+];

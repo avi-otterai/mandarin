@@ -1,0 +1,713 @@
+import type { Concept, Modality } from '../types/vocabulary';
+import type { SentenceExercise, SyntaxDirection, ChineseModality, GrammarTemplate } from '../types/syntax';
+import type { SyntaxDirectionRatio } from '../types/settings';
+import { SYNTAX_DIRECTION_OPTIONS } from '../types/settings';
+
+// Generate unique ID
+function generateId(): string {
+  return crypto.randomUUID();
+}
+
+// ============================================================================
+// UTILITY FUNCTIONS
+// ============================================================================
+
+export function shuffleArray<T>(array: T[]): T[] {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
+
+function getRandomItem<T>(array: T[]): T | undefined {
+  if (array.length === 0) return undefined;
+  return array[Math.floor(Math.random() * array.length)];
+}
+
+// ============================================================================
+// SEMANTIC WORD CATEGORIES - Which words make sense together
+// ============================================================================
+
+const SEMANTIC_CATEGORIES: Record<string, string[]> = {
+  // People (subjects of sentences)
+  '我': ['person', 'subject'],
+  '你': ['person', 'subject'],
+  '他': ['person', 'subject'],
+  '她': ['person', 'subject'],
+  '我们': ['person', 'subject'],
+  '你们': ['person', 'subject'],
+  '他们': ['person', 'subject'],
+  '爸爸': ['person', 'subject', 'family'],
+  '妈妈': ['person', 'subject', 'family'],
+  '老师': ['person', 'subject', 'profession'],
+  '学生': ['person', 'subject', 'profession'],
+  '医生': ['person', 'subject', 'profession'],
+  '朋友': ['person', 'subject'],
+  '同学': ['person', 'subject'],
+  '儿子': ['person', 'subject', 'family'],
+  '先生': ['person', 'subject'],
+  '小姐': ['person', 'subject'],
+  
+  // Food (can be eaten)
+  '米饭': ['food', 'edible'],
+  '苹果': ['food', 'edible', 'fruit'],
+  '菜': ['food', 'edible'],
+  '水果': ['food', 'edible'],
+  '饭': ['food', 'edible'],
+  '中国菜': ['food', 'edible'],
+  '鱼': ['food', 'edible', 'animal'],
+  
+  // Drinks (can be drunk)
+  '茶': ['drink', 'drinkable'],
+  '水': ['drink', 'drinkable'],
+  
+  // Places (can go to)
+  '学校': ['place', 'destination'],
+  '家': ['place', 'destination'],
+  '医院': ['place', 'destination'],
+  '商店': ['place', 'destination'],
+  '银行': ['place', 'destination'],
+  '饭店': ['place', 'destination'],
+  '大学': ['place', 'destination'],
+  '中国': ['place', 'destination', 'country'],
+  '美国': ['place', 'destination', 'country'],
+  
+  // Time expressions
+  '今天': ['time'],
+  '明天': ['time'],
+  '昨天': ['time'],
+  '上午': ['time'],
+  '下午': ['time'],
+  '中午': ['time'],
+  
+  // Readable/Watchable things
+  '书': ['readable', 'thing'],
+  '电视': ['watchable', 'thing'],
+  '电影': ['watchable', 'thing'],
+  '汉字': ['readable', 'thing'],
+  
+  // Vehicles
+  '车': ['vehicle'],
+  '出租车': ['vehicle'],
+  '飞机': ['vehicle'],
+  
+  // Things that can be described
+  '天气': ['describable', 'nature'],
+  '狗': ['animal', 'describable'],
+  '猫': ['animal', 'describable'],
+  '山': ['nature', 'describable'],
+  
+  // Adjectives for descriptions
+  '好': ['quality_adj'],
+  '大': ['size_adj'],
+  '小': ['size_adj'],
+  '冷': ['temperature_adj', 'weather_adj'],
+  '热': ['temperature_adj', 'weather_adj'],
+  '漂亮': ['appearance_adj'],
+  '高兴': ['emotion_adj'],
+  
+  // Languages
+  '汉语': ['language'],
+};
+
+function getCategories(word: string): string[] {
+  return SEMANTIC_CATEGORIES[word] || [];
+}
+
+// ============================================================================
+// CURATED SENTENCE TEMPLATES - Meaningful sentences only!
+// ============================================================================
+
+interface TemplateSlot {
+  role: string;
+  categories: string[];
+  posFilter?: string[];
+}
+
+interface CuratedTemplate {
+  id: string;
+  name: string;
+  description: string;
+  explanation: string;
+  example: { zh: string; en: string };
+  slots: TemplateSlot[];
+  fixedWords: Array<{
+    word: string;
+    pinyin: string;
+    meaning: string;
+  }>;
+  chineseOrder: string[];
+  englishPattern: string;
+  difficulty: 1 | 2 | 3;
+}
+
+const CURATED_TEMPLATES: CuratedTemplate[] = [
+  // ========== Level 1: Basic patterns ==========
+  {
+    id: 'person_eat_food',
+    name: 'Someone eats something',
+    description: 'Subject + 吃 + Food',
+    explanation: 'Basic SVO order: Subject + Verb + Object (same as English)',
+    example: { zh: '我吃苹果', en: 'I eat apples' },
+    slots: [
+      { role: 'subject', categories: ['person'] },
+      { role: 'object', categories: ['edible'] },
+    ],
+    fixedWords: [
+      { word: '吃', pinyin: 'chī', meaning: 'eat' },
+    ],
+    chineseOrder: ['subject', '吃', 'object'],
+    englishPattern: '{subject} eats {object}',
+    difficulty: 1,
+  },
+  {
+    id: 'person_drink_drink',
+    name: 'Someone drinks something',
+    description: 'Subject + 喝 + Drink',
+    explanation: 'Basic SVO order: Subject + Verb + Object (same as English)',
+    example: { zh: '他喝茶', en: 'He drinks tea' },
+    slots: [
+      { role: 'subject', categories: ['person'] },
+      { role: 'object', categories: ['drinkable'] },
+    ],
+    fixedWords: [
+      { word: '喝', pinyin: 'hē', meaning: 'drink' },
+    ],
+    chineseOrder: ['subject', '喝', 'object'],
+    englishPattern: '{subject} drinks {object}',
+    difficulty: 1,
+  },
+  {
+    id: 'person_go_place',
+    name: 'Someone goes somewhere',
+    description: 'Subject + 去 + Place',
+    explanation: 'Basic SVO order: Subject + Verb + Destination',
+    example: { zh: '我去学校', en: 'I go to school' },
+    slots: [
+      { role: 'subject', categories: ['person'] },
+      { role: 'destination', categories: ['destination'] },
+    ],
+    fixedWords: [
+      { word: '去', pinyin: 'qù', meaning: 'go to' },
+    ],
+    chineseOrder: ['subject', '去', 'destination'],
+    englishPattern: '{subject} goes to {destination}',
+    difficulty: 1,
+  },
+  {
+    id: 'person_like_food',
+    name: 'Someone likes something',
+    description: 'Subject + 喜欢 + Object',
+    explanation: 'Express preferences: Subject + 喜欢 + what you like',
+    example: { zh: '她喜欢苹果', en: 'She likes apples' },
+    slots: [
+      { role: 'subject', categories: ['person'] },
+      { role: 'object', categories: ['edible', 'drinkable'] },
+    ],
+    fixedWords: [
+      { word: '喜欢', pinyin: 'xǐhuan', meaning: 'like' },
+    ],
+    chineseOrder: ['subject', '喜欢', 'object'],
+    englishPattern: '{subject} likes {object}',
+    difficulty: 1,
+  },
+  {
+    id: 'person_at_place',
+    name: 'Someone is at a place',
+    description: 'Subject + 在 + Place',
+    explanation: 'Location: Subject + 在 + where they are',
+    example: { zh: '妈妈在家', en: 'Mom is at home' },
+    slots: [
+      { role: 'subject', categories: ['person'] },
+      { role: 'location', categories: ['destination'] },
+    ],
+    fixedWords: [
+      { word: '在', pinyin: 'zài', meaning: 'at/in' },
+    ],
+    chineseOrder: ['subject', '在', 'location'],
+    englishPattern: '{subject} is at {location}',
+    difficulty: 1,
+  },
+  {
+    id: 'person_read_book',
+    name: 'Someone reads/watches',
+    description: 'Subject + 看 + Readable/Watchable',
+    explanation: '看 (kàn) means both "read" and "watch"',
+    example: { zh: '我看书', en: 'I read books' },
+    slots: [
+      { role: 'subject', categories: ['person'] },
+      { role: 'object', categories: ['readable', 'watchable'] },
+    ],
+    fixedWords: [
+      { word: '看', pinyin: 'kàn', meaning: 'read/watch' },
+    ],
+    chineseOrder: ['subject', '看', 'object'],
+    englishPattern: '{subject} reads {object}',
+    difficulty: 1,
+  },
+  {
+    id: 'thing_very_adj',
+    name: 'Something is [adjective]',
+    description: 'Subject + 很 + Adjective',
+    explanation: 'In Chinese, use 很 before adjectives (even when not "very")',
+    example: { zh: '天气好', en: 'The weather is good' },
+    slots: [
+      { role: 'subject', categories: ['describable', 'nature', 'animal', 'person'] },
+      { role: 'adjective', categories: ['quality_adj', 'size_adj', 'appearance_adj', 'emotion_adj'] },
+    ],
+    fixedWords: [
+      { word: '很', pinyin: 'hěn', meaning: 'very' },
+    ],
+    chineseOrder: ['subject', '很', 'adjective'],
+    englishPattern: '{subject} is very {adjective}',
+    difficulty: 1,
+  },
+  
+  // ========== Level 2: Questions and Negation ==========
+  {
+    id: 'person_eat_question',
+    name: 'Do you eat...?',
+    description: 'Yes/No question with 吗',
+    explanation: 'Add 吗 at the end to turn a statement into a yes/no question',
+    example: { zh: '你吃苹果吗', en: 'Do you eat apples?' },
+    slots: [
+      { role: 'subject', categories: ['person'] },
+      { role: 'object', categories: ['edible'] },
+    ],
+    fixedWords: [
+      { word: '吃', pinyin: 'chī', meaning: 'eat' },
+      { word: '吗', pinyin: 'ma', meaning: '(question)' },
+    ],
+    chineseOrder: ['subject', '吃', 'object', '吗'],
+    englishPattern: 'Does {subject} eat {object}?',
+    difficulty: 2,
+  },
+  {
+    id: 'person_drink_question',
+    name: 'Do you drink...?',
+    description: 'Yes/No question with 吗',
+    explanation: 'Add 吗 at the end to turn a statement into a yes/no question',
+    example: { zh: '他喝茶吗', en: 'Does he drink tea?' },
+    slots: [
+      { role: 'subject', categories: ['person'] },
+      { role: 'object', categories: ['drinkable'] },
+    ],
+    fixedWords: [
+      { word: '喝', pinyin: 'hē', meaning: 'drink' },
+      { word: '吗', pinyin: 'ma', meaning: '(question)' },
+    ],
+    chineseOrder: ['subject', '喝', 'object', '吗'],
+    englishPattern: 'Does {subject} drink {object}?',
+    difficulty: 2,
+  },
+  {
+    id: 'person_like_question',
+    name: 'Do you like...?',
+    description: 'Yes/No question with 吗',
+    explanation: 'Add 吗 at the end to turn a statement into a yes/no question',
+    example: { zh: '你喜欢中国菜吗', en: 'Do you like Chinese food?' },
+    slots: [
+      { role: 'subject', categories: ['person'] },
+      { role: 'object', categories: ['edible', 'drinkable', 'readable', 'watchable'] },
+    ],
+    fixedWords: [
+      { word: '喜欢', pinyin: 'xǐhuan', meaning: 'like' },
+      { word: '吗', pinyin: 'ma', meaning: '(question)' },
+    ],
+    chineseOrder: ['subject', '喜欢', 'object', '吗'],
+    englishPattern: 'Does {subject} like {object}?',
+    difficulty: 2,
+  },
+  {
+    id: 'person_not_eat',
+    name: "Someone doesn't eat",
+    description: 'Negation with 不',
+    explanation: '不 (bù) goes before the verb to negate present/future actions',
+    example: { zh: '我不吃鱼', en: "I don't eat fish" },
+    slots: [
+      { role: 'subject', categories: ['person'] },
+      { role: 'object', categories: ['edible'] },
+    ],
+    fixedWords: [
+      { word: '不', pinyin: 'bù', meaning: 'not' },
+      { word: '吃', pinyin: 'chī', meaning: 'eat' },
+    ],
+    chineseOrder: ['subject', '不', '吃', 'object'],
+    englishPattern: "{subject} doesn't eat {object}",
+    difficulty: 2,
+  },
+  {
+    id: 'person_not_drink',
+    name: "Someone doesn't drink",
+    description: 'Negation with 不',
+    explanation: '不 (bù) goes before the verb to negate present/future actions',
+    example: { zh: '他不喝水', en: "He doesn't drink water" },
+    slots: [
+      { role: 'subject', categories: ['person'] },
+      { role: 'object', categories: ['drinkable'] },
+    ],
+    fixedWords: [
+      { word: '不', pinyin: 'bù', meaning: 'not' },
+      { word: '喝', pinyin: 'hē', meaning: 'drink' },
+    ],
+    chineseOrder: ['subject', '不', '喝', 'object'],
+    englishPattern: "{subject} doesn't drink {object}",
+    difficulty: 2,
+  },
+  {
+    id: 'person_not_go',
+    name: "Someone doesn't go",
+    description: 'Negation with 不',
+    explanation: '不 (bù) goes before the verb to negate present/future actions',
+    example: { zh: '她不去学校', en: "She doesn't go to school" },
+    slots: [
+      { role: 'subject', categories: ['person'] },
+      { role: 'destination', categories: ['destination'] },
+    ],
+    fixedWords: [
+      { word: '不', pinyin: 'bù', meaning: 'not' },
+      { word: '去', pinyin: 'qù', meaning: 'go to' },
+    ],
+    chineseOrder: ['subject', '不', '去', 'destination'],
+    englishPattern: "{subject} doesn't go to {destination}",
+    difficulty: 2,
+  },
+  {
+    id: 'person_want_eat',
+    name: 'Someone wants to eat',
+    description: 'Want + Verb with 想',
+    explanation: '想 (xiǎng) + verb = want to do something',
+    example: { zh: '我想吃苹果', en: 'I want to eat apples' },
+    slots: [
+      { role: 'subject', categories: ['person'] },
+      { role: 'object', categories: ['edible'] },
+    ],
+    fixedWords: [
+      { word: '想', pinyin: 'xiǎng', meaning: 'want to' },
+      { word: '吃', pinyin: 'chī', meaning: 'eat' },
+    ],
+    chineseOrder: ['subject', '想', '吃', 'object'],
+    englishPattern: '{subject} wants to eat {object}',
+    difficulty: 2,
+  },
+  {
+    id: 'person_want_drink',
+    name: 'Someone wants to drink',
+    description: 'Want + Verb with 想',
+    explanation: '想 (xiǎng) + verb = want to do something',
+    example: { zh: '她想喝茶', en: 'She wants to drink tea' },
+    slots: [
+      { role: 'subject', categories: ['person'] },
+      { role: 'object', categories: ['drinkable'] },
+    ],
+    fixedWords: [
+      { word: '想', pinyin: 'xiǎng', meaning: 'want to' },
+      { word: '喝', pinyin: 'hē', meaning: 'drink' },
+    ],
+    chineseOrder: ['subject', '想', '喝', 'object'],
+    englishPattern: '{subject} wants to drink {object}',
+    difficulty: 2,
+  },
+  {
+    id: 'person_want_go',
+    name: 'Someone wants to go',
+    description: 'Want + Verb with 想',
+    explanation: '想 (xiǎng) + verb = want to do something',
+    example: { zh: '他想去中国', en: 'He wants to go to China' },
+    slots: [
+      { role: 'subject', categories: ['person'] },
+      { role: 'destination', categories: ['destination'] },
+    ],
+    fixedWords: [
+      { word: '想', pinyin: 'xiǎng', meaning: 'want to' },
+      { word: '去', pinyin: 'qù', meaning: 'go to' },
+    ],
+    chineseOrder: ['subject', '想', '去', 'destination'],
+    englishPattern: '{subject} wants to go to {destination}',
+    difficulty: 2,
+  },
+  
+  // ========== Level 3: Time expressions ==========
+  {
+    id: 'time_person_go',
+    name: 'When someone goes',
+    description: 'Time + Subject + Verb',
+    explanation: 'In Chinese, time words come BEFORE the subject (opposite of English)',
+    example: { zh: '今天我去学校', en: 'Today I go to school' },
+    slots: [
+      { role: 'time', categories: ['time'] },
+      { role: 'subject', categories: ['person'] },
+      { role: 'destination', categories: ['destination'] },
+    ],
+    fixedWords: [
+      { word: '去', pinyin: 'qù', meaning: 'go to' },
+    ],
+    chineseOrder: ['time', 'subject', '去', 'destination'],
+    englishPattern: '{subject} goes to {destination} {time}',
+    difficulty: 3,
+  },
+  {
+    id: 'time_person_eat',
+    name: 'When someone eats',
+    description: 'Time + Subject + Verb + Object',
+    explanation: 'In Chinese, time words come BEFORE the subject (opposite of English)',
+    example: { zh: '明天他吃苹果', en: 'Tomorrow he eats apples' },
+    slots: [
+      { role: 'time', categories: ['time'] },
+      { role: 'subject', categories: ['person'] },
+      { role: 'object', categories: ['edible'] },
+    ],
+    fixedWords: [
+      { word: '吃', pinyin: 'chī', meaning: 'eat' },
+    ],
+    chineseOrder: ['time', 'subject', '吃', 'object'],
+    englishPattern: '{subject} eats {object} {time}',
+    difficulty: 3,
+  },
+  {
+    id: 'time_person_drink',
+    name: 'When someone drinks',
+    description: 'Time + Subject + Verb + Object',
+    explanation: 'In Chinese, time words come BEFORE the subject (opposite of English)',
+    example: { zh: '上午我喝茶', en: 'In the morning I drink tea' },
+    slots: [
+      { role: 'time', categories: ['time'] },
+      { role: 'subject', categories: ['person'] },
+      { role: 'object', categories: ['drinkable'] },
+    ],
+    fixedWords: [
+      { word: '喝', pinyin: 'hē', meaning: 'drink' },
+    ],
+    chineseOrder: ['time', 'subject', '喝', 'object'],
+    englishPattern: '{subject} drinks {object} {time}',
+    difficulty: 3,
+  },
+];
+
+// ============================================================================
+// TEMPLATE LOOKUP - For the GrammarTemplate interface
+// ============================================================================
+
+// Convert curated templates to GrammarTemplate format for display
+function curatedToGrammar(ct: CuratedTemplate): GrammarTemplate {
+  return {
+    id: ct.id,
+    name: ct.name,
+    slots: ct.slots.map(s => ({
+      role: s.role,
+      pos: s.posFilter as any || ['pronoun', 'noun', 'adjective'],
+    })),
+    englishPattern: ct.englishPattern,
+    example: ct.example,
+    explanation: ct.explanation,
+    difficulty: ct.difficulty,
+  };
+}
+
+export function getTemplateById(id: string): GrammarTemplate | null {
+  const template = CURATED_TEMPLATES.find(t => t.id === id);
+  return template ? curatedToGrammar(template) : null;
+}
+
+// ============================================================================
+// SENTENCE GENERATION
+// ============================================================================
+
+function findMatchingWords(
+  knownVocab: Concept[],
+  slot: TemplateSlot,
+  usedWords: Set<string>
+): Concept[] {
+  return knownVocab.filter(word => {
+    if (usedWords.has(word.word)) return false;
+    if (word.paused) return false;
+    
+    const wordCategories = getCategories(word.word);
+    const hasMatch = slot.categories.some(cat => wordCategories.includes(cat));
+    
+    if (!hasMatch) return false;
+    
+    if (slot.posFilter && slot.posFilter.length > 0) {
+      if (!slot.posFilter.includes(word.part_of_speech)) return false;
+    }
+    
+    return true;
+  });
+}
+
+function canFillTemplate(knownVocab: Concept[], template: CuratedTemplate): boolean {
+  const usedWords = new Set<string>();
+  
+  for (const slot of template.slots) {
+    const matches = findMatchingWords(knownVocab, slot, usedWords);
+    if (matches.length === 0) return false;
+    usedWords.add(matches[0].word);
+  }
+  
+  return true;
+}
+
+export function getAvailableTemplates(knownVocab: Concept[]): CuratedTemplate[] {
+  return CURATED_TEMPLATES.filter(template => canFillTemplate(knownVocab, template));
+}
+
+// ============================================================================
+// UNLOCK STATUS
+// ============================================================================
+
+export interface UnlockStatus {
+  unlocked: boolean;
+  availableTemplates: number;
+  totalTemplates: number;
+  missingRoles: string[];
+}
+
+export function checkSyntaxUnlock(knownVocab: Concept[]): UnlockStatus {
+  const availableTemplates = getAvailableTemplates(knownVocab);
+  const unlocked = availableTemplates.length >= 1;
+  
+  // Find which categories are missing
+  const allCategories = new Set<string>();
+  const availableCategories = new Set<string>();
+  
+  CURATED_TEMPLATES.forEach(t => {
+    t.slots.forEach(s => s.categories.forEach(c => allCategories.add(c)));
+  });
+  
+  knownVocab.filter(w => !w.paused).forEach(word => {
+    getCategories(word.word).forEach(c => availableCategories.add(c));
+  });
+  
+  const missingRoles = [...allCategories].filter(c => !availableCategories.has(c));
+  
+  return {
+    unlocked,
+    availableTemplates: availableTemplates.length,
+    totalTemplates: CURATED_TEMPLATES.length,
+    missingRoles,
+  };
+}
+
+// ============================================================================
+// MODALITY SELECTION
+// ============================================================================
+
+function pickChineseModality(learningFocus: Record<Modality, number>): ChineseModality {
+  // Map learning focus to chinese modality weights
+  const weights = {
+    character: learningFocus.character || 0,
+    pinyin: learningFocus.pinyin || 0,
+    audio: learningFocus.audio || 0,
+  };
+  
+  const total = weights.character + weights.pinyin + weights.audio;
+  if (total === 0) return 'character';
+  
+  let random = Math.random() * total;
+  
+  if (random < weights.character) return 'character';
+  random -= weights.character;
+  if (random < weights.pinyin) return 'pinyin';
+  return 'audio';
+}
+
+function pickDirection(directionRatio: SyntaxDirectionRatio): SyntaxDirection {
+  const option = SYNTAX_DIRECTION_OPTIONS.find(o => o.value === directionRatio);
+  if (!option) return 'english_to_chinese';
+  
+  const total = option.readingWeight + option.writingWeight;
+  const random = Math.random() * total;
+  
+  // "reading" = Chinese→English (you read Chinese, produce English)
+  // "writing" = English→Chinese (you read English, produce/write Chinese)
+  // So readingWeight favors chinese_to_english
+  // And writingWeight favors english_to_chinese
+  if (random < option.writingWeight) {
+    return 'english_to_chinese';
+  }
+  return 'chinese_to_english';
+}
+
+// ============================================================================
+// MAIN EXERCISE GENERATOR
+// ============================================================================
+
+export function generateSentenceExercise(
+  knownVocab: Concept[],
+  learningFocus: Record<Modality, number>,
+  directionRatio: SyntaxDirectionRatio
+): SentenceExercise | null {
+  const availableTemplates = getAvailableTemplates(knownVocab);
+  
+  if (availableTemplates.length === 0) {
+    return null;
+  }
+  
+  // Pick a random template
+  const template = getRandomItem(availableTemplates);
+  if (!template) return null;
+  
+  // Fill the slots
+  const filledSlots: Map<string, Concept> = new Map();
+  const usedWords = new Set<string>();
+  
+  for (const slot of template.slots) {
+    const matches = findMatchingWords(knownVocab, slot, usedWords);
+    if (matches.length === 0) return null;
+    
+    const selected = getRandomItem(matches);
+    if (!selected) return null;
+    
+    filledSlots.set(slot.role, selected);
+    usedWords.add(selected.word);
+  }
+  
+  // Build Chinese sentence
+  const chineseWords: string[] = [];
+  const pinyinWords: string[] = [];
+  const vocabularyIds: string[] = [];
+  
+  for (const item of template.chineseOrder) {
+    const slotWord = filledSlots.get(item);
+    if (slotWord) {
+      chineseWords.push(slotWord.word);
+      pinyinWords.push(slotWord.pinyin);
+      vocabularyIds.push(slotWord.id);
+    } else {
+      // Fixed word
+      const fixedWord = template.fixedWords.find(fw => fw.word === item);
+      if (fixedWord) {
+        chineseWords.push(fixedWord.word);
+        pinyinWords.push(fixedWord.pinyin);
+      }
+    }
+  }
+  
+  // Build English sentence
+  let english = template.englishPattern;
+  filledSlots.forEach((concept, role) => {
+    english = english.replace(`{${role}}`, concept.meaning);
+  });
+  english = english.charAt(0).toUpperCase() + english.slice(1);
+  
+  // Pick direction and modality
+  const direction = pickDirection(directionRatio);
+  const chineseModality = pickChineseModality(learningFocus);
+  
+  return {
+    id: generateId(),
+    templateId: template.id,
+    english,
+    chineseWords,
+    pinyinWords,
+    vocabularyIds,
+    difficulty: template.difficulty,
+    direction,
+    chineseModality,
+  };
+}
+
+// Legacy exports
+export const GRAMMAR_TEMPLATES: GrammarTemplate[] = CURATED_TEMPLATES.map(curatedToGrammar);

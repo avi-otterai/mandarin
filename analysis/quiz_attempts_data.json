@@ -6793,5 +6793,2860 @@
       "predictedCorrect": 62,
       "daysSinceLastAttempt": null
     }
+  },
+  {
+    "correct": true,
+    "question_modality": "character",
+    "answer_modality": "pinyin",
+    "context": {
+      "settings": {
+        "optionSelection": "hard",
+        "questionSelection": "random"
+      },
+      "optionIds": [
+        "288de389-b111-4b22-9bad-121df8620c6d",
+        "b71a2330-e3fb-48ee-9475-57d2767cdbb5",
+        "06335653-b972-4f92-b5ce-d2939edf553c",
+        "ab1509e6-9f1d-4b73-a436-2f94cc593b03"
+      ],
+      "distractors": [
+        {
+          "id": "288de389-b111-4b22-9bad-121df8620c6d",
+          "knowledge": 70
+        },
+        {
+          "id": "b71a2330-e3fb-48ee-9475-57d2767cdbb5",
+          "knowledge": 61
+        },
+        {
+          "id": "ab1509e6-9f1d-4b73-a436-2f94cc593b03",
+          "knowledge": 71
+        }
+      ],
+      "userAverages": {
+        "audio": 67,
+        "pinyin": 69,
+        "meaning": 69,
+        "character": 63
+      },
+      "selectedIndex": 2,
+      "conceptKnowledge": {
+        "overall": 63,
+        "answerModality": 69,
+        "questionModality": 59
+      },
+      "predictedCorrect": 69,
+      "daysSinceLastAttempt": 0.1
+    }
+  },
+  {
+    "correct": true,
+    "question_modality": "character",
+    "answer_modality": "pinyin",
+    "context": {
+      "settings": {
+        "optionSelection": "hard",
+        "questionSelection": "random"
+      },
+      "optionIds": [
+        "fc6b1549-0da9-47ab-b4de-659d840e5611",
+        "e4365ddc-2cba-4d39-9134-4f357dc81754",
+        "d4ba8da5-b520-464c-bcee-0a8114fb9d9c",
+        "8e43ff56-c19d-42d6-b855-eb190a9dc35b"
+      ],
+      "distractors": [
+        {
+          "id": "fc6b1549-0da9-47ab-b4de-659d840e5611",
+          "knowledge": 74
+        },
+        {
+          "id": "e4365ddc-2cba-4d39-9134-4f357dc81754",
+          "knowledge": 72
+        },
+        {
+          "id": "8e43ff56-c19d-42d6-b855-eb190a9dc35b",
+          "knowledge": 75
+        }
+      ],
+      "userAverages": {
+        "audio": 67,
+        "pinyin": 69,
+        "meaning": 69,
+        "character": 63
+      },
+      "selectedIndex": 2,
+      "conceptKnowledge": {
+        "overall": 79,
+        "answerModality": 77,
+        "questionModality": 78
+      },
+      "predictedCorrect": 77,
+      "daysSinceLastAttempt": 0.1
+    }
+  },
+  {
+    "correct": true,
+    "question_modality": "audio",
+    "answer_modality": "meaning",
+    "context": {
+      "settings": {
+        "optionSelection": "hard",
+        "questionSelection": "random"
+      },
+      "optionIds": [
+        "46270186-55b2-4d2a-b534-f5cfc056d160",
+        "d25eed5c-6435-45db-aa2e-aceb92afd754",
+        "3713d278-7b09-4622-86c2-d8b021b90841",
+        "a2569d32-7e5b-4a48-9e97-d4b910ff1bbf"
+      ],
+      "distractors": [
+        {
+          "id": "d25eed5c-6435-45db-aa2e-aceb92afd754",
+          "knowledge": 71
+        },
+        {
+          "id": "3713d278-7b09-4622-86c2-d8b021b90841",
+          "knowledge": 63
+        },
+        {
+          "id": "a2569d32-7e5b-4a48-9e97-d4b910ff1bbf",
+          "knowledge": 76
+        }
+      ],
+      "userAverages": {
+        "audio": 67,
+        "pinyin": 69,
+        "meaning": 69,
+        "character": 63
+      },
+      "selectedIndex": 0,
+      "conceptKnowledge": {
+        "overall": 73,
+        "answerModality": 74,
+        "questionModality": 78
+      },
+      "predictedCorrect": 74,
+      "daysSinceLastAttempt": 0.1
+    }
+  },
+  {
+    "correct": true,
+    "question_modality": "pinyin",
+    "answer_modality": "audio",
+    "context": {
+      "settings": {
+        "optionSelection": "expert",
+        "questionSelection": "random"
+      },
+      "optionIds": [
+        "3713d278-7b09-4622-86c2-d8b021b90841",
+        "20844405-a8dc-4ef3-a59f-727e54ab4437",
+        "2ba37be8-6ab8-4fdd-8337-3a72beaf4023",
+        "c825bc8f-9546-40fc-9873-246d2c71d801"
+      ],
+      "distractors": [
+        {
+          "id": "3713d278-7b09-4622-86c2-d8b021b90841",
+          "knowledge": 63
+        },
+        {
+          "id": "20844405-a8dc-4ef3-a59f-727e54ab4437",
+          "knowledge": 64
+        },
+        {
+          "id": "c825bc8f-9546-40fc-9873-246d2c71d801",
+          "knowledge": 74
+        }
+      ],
+      "userAverages": {
+        "audio": 67,
+        "pinyin": 69,
+        "meaning": 69,
+        "character": 63
+      },
+      "selectedIndex": 2,
+      "conceptKnowledge": {
+        "overall": 66,
+        "answerModality": 61,
+        "questionModality": 71
+      },
+      "predictedCorrect": 61,
+      "daysSinceLastAttempt": null
+    }
+  },
+  {
+    "correct": true,
+    "question_modality": "meaning",
+    "answer_modality": "pinyin",
+    "context": {
+      "settings": {
+        "optionSelection": "expert",
+        "questionSelection": "random"
+      },
+      "optionIds": [
+        "4abbb833-f322-4821-bba6-558f93b05470",
+        "66202336-b9d6-41d4-b0d7-4e056bea4487",
+        "b237ec0b-d724-4007-909c-85967db87067",
+        "c597ccce-9369-4689-ad91-21c461cd8bc0"
+      ],
+      "distractors": [
+        {
+          "id": "4abbb833-f322-4821-bba6-558f93b05470",
+          "knowledge": 70
+        },
+        {
+          "id": "b237ec0b-d724-4007-909c-85967db87067",
+          "knowledge": 69
+        },
+        {
+          "id": "c597ccce-9369-4689-ad91-21c461cd8bc0",
+          "knowledge": 66
+        }
+      ],
+      "userAverages": {
+        "audio": 67,
+        "pinyin": 69,
+        "meaning": 69,
+        "character": 63
+      },
+      "selectedIndex": 1,
+      "conceptKnowledge": {
+        "overall": 63,
+        "answerModality": 69,
+        "questionModality": 59
+      },
+      "predictedCorrect": 69,
+      "daysSinceLastAttempt": 3.4
+    }
+  },
+  {
+    "correct": true,
+    "question_modality": "meaning",
+    "answer_modality": "pinyin",
+    "context": {
+      "settings": {
+        "optionSelection": "expert",
+        "questionSelection": "random"
+      },
+      "optionIds": [
+        "065bff24-bb92-457e-acb7-c833bde0f77a",
+        "9810f487-cf39-4ab8-8def-842a43d0b545",
+        "2a822402-9e25-4670-956d-ff6ed4e88753",
+        "2ba37be8-6ab8-4fdd-8337-3a72beaf4023"
+      ],
+      "distractors": [
+        {
+          "id": "065bff24-bb92-457e-acb7-c833bde0f77a",
+          "knowledge": 52
+        },
+        {
+          "id": "9810f487-cf39-4ab8-8def-842a43d0b545",
+          "knowledge": 71
+        },
+        {
+          "id": "2ba37be8-6ab8-4fdd-8337-3a72beaf4023",
+          "knowledge": 66
+        }
+      ],
+      "userAverages": {
+        "audio": 67,
+        "pinyin": 70,
+        "meaning": 69,
+        "character": 63
+      },
+      "selectedIndex": 2,
+      "conceptKnowledge": {
+        "overall": 77,
+        "answerModality": 78,
+        "questionModality": 77
+      },
+      "predictedCorrect": 78,
+      "daysSinceLastAttempt": 0.1
+    }
+  },
+  {
+    "correct": true,
+    "question_modality": "meaning",
+    "answer_modality": "audio",
+    "context": {
+      "settings": {
+        "optionSelection": "hard",
+        "questionSelection": "random"
+      },
+      "optionIds": [
+        "3f8f972c-b1a5-4573-b42e-390a00d1b51a",
+        "4218a455-0111-4525-92e9-944e13a30efb",
+        "9f4962b7-4c00-4a35-8001-dbeb1a801863",
+        "5a9a7ed0-e7b9-41c0-83a0-a5c88730eb29",
+        "28b39171-0596-4951-a20f-b2dd0ba78dda",
+        "7441b9cf-66b3-4d47-a60b-9910b15a873d"
+      ],
+      "distractors": [
+        {
+          "id": "3f8f972c-b1a5-4573-b42e-390a00d1b51a",
+          "knowledge": 70
+        },
+        {
+          "id": "9f4962b7-4c00-4a35-8001-dbeb1a801863",
+          "knowledge": 67
+        },
+        {
+          "id": "5a9a7ed0-e7b9-41c0-83a0-a5c88730eb29",
+          "knowledge": 67
+        },
+        {
+          "id": "28b39171-0596-4951-a20f-b2dd0ba78dda",
+          "knowledge": 73
+        },
+        {
+          "id": "7441b9cf-66b3-4d47-a60b-9910b15a873d",
+          "knowledge": 72
+        }
+      ],
+      "userAverages": {
+        "audio": 67,
+        "pinyin": 70,
+        "meaning": 69,
+        "character": 63
+      },
+      "selectedIndex": 1,
+      "conceptKnowledge": {
+        "overall": 71,
+        "answerModality": 67,
+        "questionModality": 67
+      },
+      "predictedCorrect": 67,
+      "daysSinceLastAttempt": 3.4
+    }
+  },
+  {
+    "correct": false,
+    "question_modality": "character",
+    "answer_modality": "pinyin",
+    "context": {
+      "settings": {
+        "optionSelection": "hard",
+        "questionSelection": "random"
+      },
+      "optionIds": [
+        "66202336-b9d6-41d4-b0d7-4e056bea4487",
+        "bae726e3-d9de-49bc-baae-6a97aa5c4345",
+        "fa4a6be6-7a7e-4b15-94a1-1b127ef25147",
+        "c597ccce-9369-4689-ad91-21c461cd8bc0",
+        "68ef55a1-384c-4853-8127-b8470097d173",
+        "4abbb833-f322-4821-bba6-558f93b05470"
+      ],
+      "distractors": [
+        {
+          "id": "66202336-b9d6-41d4-b0d7-4e056bea4487",
+          "knowledge": 68
+        },
+        {
+          "id": "bae726e3-d9de-49bc-baae-6a97aa5c4345",
+          "knowledge": 67
+        },
+        {
+          "id": "fa4a6be6-7a7e-4b15-94a1-1b127ef25147",
+          "knowledge": 66
+        },
+        {
+          "id": "68ef55a1-384c-4853-8127-b8470097d173",
+          "knowledge": 65
+        },
+        {
+          "id": "4abbb833-f322-4821-bba6-558f93b05470",
+          "knowledge": 70
+        }
+      ],
+      "userAverages": {
+        "audio": 67,
+        "pinyin": 70,
+        "meaning": 69,
+        "character": 63
+      },
+      "selectedIndex": 1,
+      "conceptKnowledge": {
+        "overall": 66,
+        "answerModality": 75,
+        "questionModality": 56
+      },
+      "predictedCorrect": 75,
+      "daysSinceLastAttempt": 0.1
+    }
+  },
+  {
+    "correct": true,
+    "question_modality": "pinyin",
+    "answer_modality": "character",
+    "context": {
+      "settings": {
+        "optionSelection": "hard",
+        "questionSelection": "random"
+      },
+      "optionIds": [
+        "f81f892f-7908-4565-8363-6d746b9020e8",
+        "a2569d32-7e5b-4a48-9e97-d4b910ff1bbf",
+        "d25eed5c-6435-45db-aa2e-aceb92afd754",
+        "46270186-55b2-4d2a-b534-f5cfc056d160",
+        "c825bc8f-9546-40fc-9873-246d2c71d801",
+        "2ba37be8-6ab8-4fdd-8337-3a72beaf4023"
+      ],
+      "distractors": [
+        {
+          "id": "f81f892f-7908-4565-8363-6d746b9020e8",
+          "knowledge": 76
+        },
+        {
+          "id": "a2569d32-7e5b-4a48-9e97-d4b910ff1bbf",
+          "knowledge": 76
+        },
+        {
+          "id": "d25eed5c-6435-45db-aa2e-aceb92afd754",
+          "knowledge": 71
+        },
+        {
+          "id": "c825bc8f-9546-40fc-9873-246d2c71d801",
+          "knowledge": 74
+        },
+        {
+          "id": "2ba37be8-6ab8-4fdd-8337-3a72beaf4023",
+          "knowledge": 69
+        }
+      ],
+      "userAverages": {
+        "audio": 67,
+        "pinyin": 69,
+        "meaning": 69,
+        "character": 62
+      },
+      "selectedIndex": 3,
+      "conceptKnowledge": {
+        "overall": 76,
+        "answerModality": 70,
+        "questionModality": 70
+      },
+      "predictedCorrect": 70,
+      "daysSinceLastAttempt": null
+    }
+  },
+  {
+    "correct": true,
+    "question_modality": "character",
+    "answer_modality": "meaning",
+    "context": {
+      "settings": {
+        "optionSelection": "hard",
+        "questionSelection": "random"
+      },
+      "optionIds": [
+        "66202336-b9d6-41d4-b0d7-4e056bea4487",
+        "1a319b3d-d3cd-43fd-a18e-792b1aacd605",
+        "9810f487-cf39-4ab8-8def-842a43d0b545",
+        "b71a2330-e3fb-48ee-9475-57d2767cdbb5",
+        "2a822402-9e25-4670-956d-ff6ed4e88753",
+        "013f8951-01cb-4bb3-a514-3671564b99b2"
+      ],
+      "distractors": [
+        {
+          "id": "66202336-b9d6-41d4-b0d7-4e056bea4487",
+          "knowledge": 68
+        },
+        {
+          "id": "1a319b3d-d3cd-43fd-a18e-792b1aacd605",
+          "knowledge": 64
+        },
+        {
+          "id": "b71a2330-e3fb-48ee-9475-57d2767cdbb5",
+          "knowledge": 61
+        },
+        {
+          "id": "2a822402-9e25-4670-956d-ff6ed4e88753",
+          "knowledge": 80
+        },
+        {
+          "id": "013f8951-01cb-4bb3-a514-3671564b99b2",
+          "knowledge": 78
+        }
+      ],
+      "userAverages": {
+        "audio": 67,
+        "pinyin": 69,
+        "meaning": 69,
+        "character": 63
+      },
+      "selectedIndex": 2,
+      "conceptKnowledge": {
+        "overall": 71,
+        "answerModality": 68,
+        "questionModality": 64
+      },
+      "predictedCorrect": 68,
+      "daysSinceLastAttempt": 0.1
+    }
+  },
+  {
+    "correct": true,
+    "question_modality": "audio",
+    "answer_modality": "meaning",
+    "context": {
+      "settings": {
+        "optionSelection": "hard",
+        "questionSelection": "random"
+      },
+      "optionIds": [
+        "065bff24-bb92-457e-acb7-c833bde0f77a",
+        "c5d9a095-2f33-4752-8501-69fd06d20356",
+        "2a822402-9e25-4670-956d-ff6ed4e88753",
+        "b71a2330-e3fb-48ee-9475-57d2767cdbb5",
+        "fed52acd-b4c4-4e38-8c57-c6775caae226",
+        "9810f487-cf39-4ab8-8def-842a43d0b545"
+      ],
+      "distractors": [
+        {
+          "id": "c5d9a095-2f33-4752-8501-69fd06d20356",
+          "knowledge": 53
+        },
+        {
+          "id": "2a822402-9e25-4670-956d-ff6ed4e88753",
+          "knowledge": 80
+        },
+        {
+          "id": "b71a2330-e3fb-48ee-9475-57d2767cdbb5",
+          "knowledge": 61
+        },
+        {
+          "id": "fed52acd-b4c4-4e38-8c57-c6775caae226",
+          "knowledge": 55
+        },
+        {
+          "id": "9810f487-cf39-4ab8-8def-842a43d0b545",
+          "knowledge": 71
+        }
+      ],
+      "userAverages": {
+        "audio": 67,
+        "pinyin": 69,
+        "meaning": 69,
+        "character": 63
+      },
+      "selectedIndex": 0,
+      "conceptKnowledge": {
+        "overall": 52,
+        "answerModality": 60,
+        "questionModality": 47
+      },
+      "predictedCorrect": 60,
+      "daysSinceLastAttempt": 0.4
+    }
+  },
+  {
+    "correct": true,
+    "question_modality": "character",
+    "answer_modality": "meaning",
+    "context": {
+      "settings": {
+        "optionSelection": "hard",
+        "questionSelection": "random"
+      },
+      "optionIds": [
+        "288de389-b111-4b22-9bad-121df8620c6d",
+        "917417d3-2079-4d3b-974e-1b467bef218d",
+        "60bf7be8-dd84-4282-b329-367a247e4691",
+        "18626e03-5db9-41f7-94ee-a193744e79d3",
+        "ab1509e6-9f1d-4b73-a436-2f94cc593b03",
+        "fa4a6be6-7a7e-4b15-94a1-1b127ef25147"
+      ],
+      "distractors": [
+        {
+          "id": "288de389-b111-4b22-9bad-121df8620c6d",
+          "knowledge": 70
+        },
+        {
+          "id": "917417d3-2079-4d3b-974e-1b467bef218d",
+          "knowledge": 67
+        },
+        {
+          "id": "60bf7be8-dd84-4282-b329-367a247e4691",
+          "knowledge": 71
+        },
+        {
+          "id": "18626e03-5db9-41f7-94ee-a193744e79d3",
+          "knowledge": 73
+        },
+        {
+          "id": "ab1509e6-9f1d-4b73-a436-2f94cc593b03",
+          "knowledge": 71
+        }
+      ],
+      "userAverages": {
+        "audio": 67,
+        "pinyin": 69,
+        "meaning": 69,
+        "character": 63
+      },
+      "selectedIndex": 5,
+      "conceptKnowledge": {
+        "overall": 66,
+        "answerModality": 73,
+        "questionModality": 69
+      },
+      "predictedCorrect": 73,
+      "daysSinceLastAttempt": 0.4
+    }
+  },
+  {
+    "correct": true,
+    "question_modality": "audio",
+    "answer_modality": "meaning",
+    "context": {
+      "settings": {
+        "optionSelection": "hard",
+        "questionSelection": "random"
+      },
+      "optionIds": [
+        "b237ec0b-d724-4007-909c-85967db87067",
+        "4abbb833-f322-4821-bba6-558f93b05470",
+        "c597ccce-9369-4689-ad91-21c461cd8bc0",
+        "66202336-b9d6-41d4-b0d7-4e056bea4487",
+        "18e0d5fe-b0af-4849-ac88-9ed61040adda",
+        "0af30ca8-940b-40ee-8dc1-554d8f571452"
+      ],
+      "distractors": [
+        {
+          "id": "b237ec0b-d724-4007-909c-85967db87067",
+          "knowledge": 69
+        },
+        {
+          "id": "4abbb833-f322-4821-bba6-558f93b05470",
+          "knowledge": 70
+        },
+        {
+          "id": "c597ccce-9369-4689-ad91-21c461cd8bc0",
+          "knowledge": 66
+        },
+        {
+          "id": "18e0d5fe-b0af-4849-ac88-9ed61040adda",
+          "knowledge": 64
+        },
+        {
+          "id": "0af30ca8-940b-40ee-8dc1-554d8f571452",
+          "knowledge": 69
+        }
+      ],
+      "userAverages": {
+        "audio": 67,
+        "pinyin": 69,
+        "meaning": 69,
+        "character": 63
+      },
+      "selectedIndex": 3,
+      "conceptKnowledge": {
+        "overall": 68,
+        "answerModality": 64,
+        "questionModality": 64
+      },
+      "predictedCorrect": 64,
+      "daysSinceLastAttempt": 0
+    }
+  },
+  {
+    "correct": true,
+    "question_modality": "meaning",
+    "answer_modality": "character",
+    "context": {
+      "settings": {
+        "optionSelection": "hard",
+        "questionSelection": "random"
+      },
+      "optionIds": [
+        "9810f487-cf39-4ab8-8def-842a43d0b545",
+        "f14043c9-0711-40ba-8543-7cbf13538830",
+        "db8cf700-d6a3-4583-b216-867010a8fad0",
+        "46270186-55b2-4d2a-b534-f5cfc056d160",
+        "de75207b-963e-4c84-afb3-e53cdd4c25c2",
+        "2a822402-9e25-4670-956d-ff6ed4e88753"
+      ],
+      "distractors": [
+        {
+          "id": "9810f487-cf39-4ab8-8def-842a43d0b545",
+          "knowledge": 71
+        },
+        {
+          "id": "f14043c9-0711-40ba-8543-7cbf13538830",
+          "knowledge": 76
+        },
+        {
+          "id": "db8cf700-d6a3-4583-b216-867010a8fad0",
+          "knowledge": 74
+        },
+        {
+          "id": "46270186-55b2-4d2a-b534-f5cfc056d160",
+          "knowledge": 76
+        },
+        {
+          "id": "de75207b-963e-4c84-afb3-e53cdd4c25c2",
+          "knowledge": 74
+        }
+      ],
+      "userAverages": {
+        "audio": 67,
+        "pinyin": 69,
+        "meaning": 69,
+        "character": 63
+      },
+      "selectedIndex": 5,
+      "conceptKnowledge": {
+        "overall": 80,
+        "answerModality": 70,
+        "questionModality": 80
+      },
+      "predictedCorrect": 70,
+      "daysSinceLastAttempt": null
+    }
+  },
+  {
+    "correct": true,
+    "question_modality": "meaning",
+    "answer_modality": "character",
+    "context": {
+      "settings": {
+        "optionSelection": "hard",
+        "questionSelection": "random"
+      },
+      "optionIds": [
+        "6681845d-7b8b-4f53-bfd5-69c16f7995c8",
+        "7441b9cf-66b3-4d47-a60b-9910b15a873d",
+        "f14043c9-0711-40ba-8543-7cbf13538830",
+        "18626e03-5db9-41f7-94ee-a193744e79d3",
+        "917417d3-2079-4d3b-974e-1b467bef218d",
+        "60bf7be8-dd84-4282-b329-367a247e4691"
+      ],
+      "distractors": [
+        {
+          "id": "7441b9cf-66b3-4d47-a60b-9910b15a873d",
+          "knowledge": 72
+        },
+        {
+          "id": "f14043c9-0711-40ba-8543-7cbf13538830",
+          "knowledge": 76
+        },
+        {
+          "id": "18626e03-5db9-41f7-94ee-a193744e79d3",
+          "knowledge": 73
+        },
+        {
+          "id": "917417d3-2079-4d3b-974e-1b467bef218d",
+          "knowledge": 67
+        },
+        {
+          "id": "60bf7be8-dd84-4282-b329-367a247e4691",
+          "knowledge": 71
+        }
+      ],
+      "userAverages": {
+        "audio": 67,
+        "pinyin": 69,
+        "meaning": 69,
+        "character": 63
+      },
+      "selectedIndex": 0,
+      "conceptKnowledge": {
+        "overall": 80,
+        "answerModality": 69,
+        "questionModality": 80
+      },
+      "predictedCorrect": 69,
+      "daysSinceLastAttempt": 3.4
+    }
+  },
+  {
+    "correct": true,
+    "question_modality": "audio",
+    "answer_modality": "meaning",
+    "context": {
+      "settings": {
+        "optionSelection": "hard",
+        "questionSelection": "random"
+      },
+      "optionIds": [
+        "e2fa2074-cb55-4604-b428-ec225ad5d030",
+        "5a9a7ed0-e7b9-41c0-83a0-a5c88730eb29",
+        "6b1bc671-db4c-4e2b-a7cf-7e5dae5532bf",
+        "c2a27f6c-58b5-4eeb-b5de-27dbfc415087",
+        "7441b9cf-66b3-4d47-a60b-9910b15a873d",
+        "fc6b1549-0da9-47ab-b4de-659d840e5611"
+      ],
+      "distractors": [
+        {
+          "id": "5a9a7ed0-e7b9-41c0-83a0-a5c88730eb29",
+          "knowledge": 67
+        },
+        {
+          "id": "6b1bc671-db4c-4e2b-a7cf-7e5dae5532bf",
+          "knowledge": 68
+        },
+        {
+          "id": "c2a27f6c-58b5-4eeb-b5de-27dbfc415087",
+          "knowledge": 75
+        },
+        {
+          "id": "7441b9cf-66b3-4d47-a60b-9910b15a873d",
+          "knowledge": 72
+        },
+        {
+          "id": "fc6b1549-0da9-47ab-b4de-659d840e5611",
+          "knowledge": 74
+        }
+      ],
+      "userAverages": {
+        "audio": 67,
+        "pinyin": 69,
+        "meaning": 69,
+        "character": 63
+      },
+      "selectedIndex": 0,
+      "conceptKnowledge": {
+        "overall": 76,
+        "answerModality": 80,
+        "questionModality": 74
+      },
+      "predictedCorrect": 80,
+      "daysSinceLastAttempt": 0.1
+    }
+  },
+  {
+    "correct": true,
+    "question_modality": "meaning",
+    "answer_modality": "pinyin",
+    "context": {
+      "settings": {
+        "optionSelection": "hard",
+        "questionSelection": "random"
+      },
+      "optionIds": [
+        "540abab8-8682-46bf-a036-2ad0f52e7846",
+        "de75207b-963e-4c84-afb3-e53cdd4c25c2",
+        "db8cf700-d6a3-4583-b216-867010a8fad0",
+        "7e2a14ea-ef3d-4b82-b929-e2361dffaf0b",
+        "90521ba3-d4f7-464e-86c6-a3d26a679a7a",
+        "14039142-6a09-4a5a-89c2-5e37beaf4f21"
+      ],
+      "distractors": [
+        {
+          "id": "540abab8-8682-46bf-a036-2ad0f52e7846",
+          "knowledge": 74
+        },
+        {
+          "id": "db8cf700-d6a3-4583-b216-867010a8fad0",
+          "knowledge": 74
+        },
+        {
+          "id": "7e2a14ea-ef3d-4b82-b929-e2361dffaf0b",
+          "knowledge": 66
+        },
+        {
+          "id": "90521ba3-d4f7-464e-86c6-a3d26a679a7a",
+          "knowledge": 66
+        },
+        {
+          "id": "14039142-6a09-4a5a-89c2-5e37beaf4f21",
+          "knowledge": 73
+        }
+      ],
+      "userAverages": {
+        "audio": 67,
+        "pinyin": 69,
+        "meaning": 70,
+        "character": 64
+      },
+      "selectedIndex": 1,
+      "conceptKnowledge": {
+        "overall": 74,
+        "answerModality": 68,
+        "questionModality": 79
+      },
+      "predictedCorrect": 68,
+      "daysSinceLastAttempt": null
+    }
+  },
+  {
+    "correct": true,
+    "question_modality": "pinyin",
+    "answer_modality": "character",
+    "context": {
+      "settings": {
+        "optionSelection": "hard",
+        "questionSelection": "random"
+      },
+      "optionIds": [
+        "252731bf-fcb5-4795-a19b-b2aab70773bf",
+        "edb5a6f9-1e87-4576-99b7-c1a6f137ee5c",
+        "92fe6162-f6bd-4ecc-98fe-95f8410a029a",
+        "54fd90a5-f91f-4e49-b76a-316dc5a2f796",
+        "5a62cf64-b321-45a2-b011-bdafee48e581",
+        "e89120ea-8b2e-4a95-9c22-099f011859b1"
+      ],
+      "distractors": [
+        {
+          "id": "252731bf-fcb5-4795-a19b-b2aab70773bf",
+          "knowledge": 68
+        },
+        {
+          "id": "edb5a6f9-1e87-4576-99b7-c1a6f137ee5c",
+          "knowledge": 58
+        },
+        {
+          "id": "92fe6162-f6bd-4ecc-98fe-95f8410a029a",
+          "knowledge": 63
+        },
+        {
+          "id": "5a62cf64-b321-45a2-b011-bdafee48e581",
+          "knowledge": 47
+        },
+        {
+          "id": "e89120ea-8b2e-4a95-9c22-099f011859b1",
+          "knowledge": 53
+        }
+      ],
+      "userAverages": {
+        "audio": 67,
+        "pinyin": 70,
+        "meaning": 70,
+        "character": 64
+      },
+      "selectedIndex": 3,
+      "conceptKnowledge": {
+        "overall": 50,
+        "answerModality": 47,
+        "questionModality": 47
+      },
+      "predictedCorrect": 47,
+      "daysSinceLastAttempt": null
+    }
+  },
+  {
+    "correct": false,
+    "question_modality": "pinyin",
+    "answer_modality": "character",
+    "context": {
+      "settings": {
+        "optionSelection": "hard",
+        "questionSelection": "random"
+      },
+      "optionIds": [
+        "615632a8-db22-4f5b-a7c2-5ca0a6f5646f",
+        "32f4ae0d-9e48-43cb-9c5d-b60148f2076f",
+        "dca2280e-14d8-4dfa-8cc6-213d0eefcf10",
+        "5218c582-e720-4460-8c8b-8aa452a0358d",
+        "b237ec0b-d724-4007-909c-85967db87067",
+        "fecc08cf-76d1-4280-9f02-936321c9d521"
+      ],
+      "distractors": [
+        {
+          "id": "615632a8-db22-4f5b-a7c2-5ca0a6f5646f",
+          "knowledge": 60
+        },
+        {
+          "id": "dca2280e-14d8-4dfa-8cc6-213d0eefcf10",
+          "knowledge": 55
+        },
+        {
+          "id": "5218c582-e720-4460-8c8b-8aa452a0358d",
+          "knowledge": 68
+        },
+        {
+          "id": "b237ec0b-d724-4007-909c-85967db87067",
+          "knowledge": 69
+        },
+        {
+          "id": "fecc08cf-76d1-4280-9f02-936321c9d521",
+          "knowledge": 65
+        }
+      ],
+      "userAverages": {
+        "audio": 67,
+        "pinyin": 69,
+        "meaning": 70,
+        "character": 64
+      },
+      "selectedIndex": 5,
+      "conceptKnowledge": {
+        "overall": 60,
+        "answerModality": 49,
+        "questionModality": 60
+      },
+      "predictedCorrect": 49,
+      "daysSinceLastAttempt": 3.4
+    }
+  },
+  {
+    "correct": true,
+    "question_modality": "pinyin",
+    "answer_modality": "meaning",
+    "context": {
+      "settings": {
+        "optionSelection": "hard",
+        "questionSelection": "random"
+      },
+      "optionIds": [
+        "32f4ae0d-9e48-43cb-9c5d-b60148f2076f",
+        "013f8951-01cb-4bb3-a514-3671564b99b2",
+        "fc6b1549-0da9-47ab-b4de-659d840e5611",
+        "b237ec0b-d724-4007-909c-85967db87067",
+        "5218c582-e720-4460-8c8b-8aa452a0358d",
+        "8e43ff56-c19d-42d6-b855-eb190a9dc35b"
+      ],
+      "distractors": [
+        {
+          "id": "32f4ae0d-9e48-43cb-9c5d-b60148f2076f",
+          "knowledge": 60
+        },
+        {
+          "id": "fc6b1549-0da9-47ab-b4de-659d840e5611",
+          "knowledge": 74
+        },
+        {
+          "id": "b237ec0b-d724-4007-909c-85967db87067",
+          "knowledge": 69
+        },
+        {
+          "id": "5218c582-e720-4460-8c8b-8aa452a0358d",
+          "knowledge": 68
+        },
+        {
+          "id": "8e43ff56-c19d-42d6-b855-eb190a9dc35b",
+          "knowledge": 75
+        }
+      ],
+      "userAverages": {
+        "audio": 67,
+        "pinyin": 69,
+        "meaning": 70,
+        "character": 63
+      },
+      "selectedIndex": 1,
+      "conceptKnowledge": {
+        "overall": 78,
+        "answerModality": 77,
+        "questionModality": 85
+      },
+      "predictedCorrect": 77,
+      "daysSinceLastAttempt": 0.4
+    }
+  },
+  {
+    "correct": true,
+    "question_modality": "pinyin",
+    "answer_modality": "character",
+    "context": {
+      "settings": {
+        "optionSelection": "hard",
+        "questionSelection": "random"
+      },
+      "optionIds": [
+        "fecc08cf-76d1-4280-9f02-936321c9d521",
+        "8e43ff56-c19d-42d6-b855-eb190a9dc35b",
+        "fc6b1549-0da9-47ab-b4de-659d840e5611",
+        "013f8951-01cb-4bb3-a514-3671564b99b2",
+        "d4ba8da5-b520-464c-bcee-0a8114fb9d9c",
+        "e4365ddc-2cba-4d39-9134-4f357dc81754"
+      ],
+      "distractors": [
+        {
+          "id": "fecc08cf-76d1-4280-9f02-936321c9d521",
+          "knowledge": 65
+        },
+        {
+          "id": "8e43ff56-c19d-42d6-b855-eb190a9dc35b",
+          "knowledge": 75
+        },
+        {
+          "id": "fc6b1549-0da9-47ab-b4de-659d840e5611",
+          "knowledge": 74
+        },
+        {
+          "id": "013f8951-01cb-4bb3-a514-3671564b99b2",
+          "knowledge": 78
+        },
+        {
+          "id": "d4ba8da5-b520-464c-bcee-0a8114fb9d9c",
+          "knowledge": 81
+        }
+      ],
+      "userAverages": {
+        "audio": 67,
+        "pinyin": 69,
+        "meaning": 70,
+        "character": 64
+      },
+      "selectedIndex": 5,
+      "conceptKnowledge": {
+        "overall": 72,
+        "answerModality": 79,
+        "questionModality": 74
+      },
+      "predictedCorrect": 79,
+      "daysSinceLastAttempt": 1.2
+    }
+  },
+  {
+    "correct": false,
+    "question_modality": "meaning",
+    "answer_modality": "character",
+    "context": {
+      "settings": {
+        "optionSelection": "hard",
+        "questionSelection": "random"
+      },
+      "optionIds": [
+        "989a8efb-a747-407c-8223-4415f5d88cb3",
+        "7e2a14ea-ef3d-4b82-b929-e2361dffaf0b",
+        "51356948-9f3d-4df2-b40b-0c3979f617de",
+        "d80ae9f0-3d8d-4cb9-ba8f-a91a31d75f79",
+        "90521ba3-d4f7-464e-86c6-a3d26a679a7a",
+        "68ef55a1-384c-4853-8127-b8470097d173"
+      ],
+      "distractors": [
+        {
+          "id": "7e2a14ea-ef3d-4b82-b929-e2361dffaf0b",
+          "knowledge": 66
+        },
+        {
+          "id": "51356948-9f3d-4df2-b40b-0c3979f617de",
+          "knowledge": 61
+        },
+        {
+          "id": "d80ae9f0-3d8d-4cb9-ba8f-a91a31d75f79",
+          "knowledge": 62
+        },
+        {
+          "id": "90521ba3-d4f7-464e-86c6-a3d26a679a7a",
+          "knowledge": 66
+        },
+        {
+          "id": "68ef55a1-384c-4853-8127-b8470097d173",
+          "knowledge": 65
+        }
+      ],
+      "userAverages": {
+        "audio": 67,
+        "pinyin": 69,
+        "meaning": 70,
+        "character": 63
+      },
+      "selectedIndex": 3,
+      "conceptKnowledge": {
+        "overall": 57,
+        "answerModality": 50,
+        "questionModality": 52
+      },
+      "predictedCorrect": 50,
+      "daysSinceLastAttempt": null
+    }
+  },
+  {
+    "correct": true,
+    "question_modality": "audio",
+    "answer_modality": "meaning",
+    "context": {
+      "settings": {
+        "optionSelection": "hard",
+        "questionSelection": "random"
+      },
+      "optionIds": [
+        "811a30a6-6c6b-4421-b294-58556f94679a",
+        "db8cf700-d6a3-4583-b216-867010a8fad0",
+        "8f999a74-2b7d-488a-a798-ff212bef16f9",
+        "90521ba3-d4f7-464e-86c6-a3d26a679a7a",
+        "de75207b-963e-4c84-afb3-e53cdd4c25c2",
+        "14039142-6a09-4a5a-89c2-5e37beaf4f21"
+      ],
+      "distractors": [
+        {
+          "id": "db8cf700-d6a3-4583-b216-867010a8fad0",
+          "knowledge": 74
+        },
+        {
+          "id": "8f999a74-2b7d-488a-a798-ff212bef16f9",
+          "knowledge": 76
+        },
+        {
+          "id": "90521ba3-d4f7-464e-86c6-a3d26a679a7a",
+          "knowledge": 66
+        },
+        {
+          "id": "de75207b-963e-4c84-afb3-e53cdd4c25c2",
+          "knowledge": 74
+        },
+        {
+          "id": "14039142-6a09-4a5a-89c2-5e37beaf4f21",
+          "knowledge": 73
+        }
+      ],
+      "userAverages": {
+        "audio": 67,
+        "pinyin": 69,
+        "meaning": 70,
+        "character": 63
+      },
+      "selectedIndex": 0,
+      "conceptKnowledge": {
+        "overall": 74,
+        "answerModality": 78,
+        "questionModality": 74
+      },
+      "predictedCorrect": 78,
+      "daysSinceLastAttempt": 0.5
+    }
+  },
+  {
+    "correct": true,
+    "question_modality": "pinyin",
+    "answer_modality": "meaning",
+    "context": {
+      "settings": {
+        "optionSelection": "hard",
+        "questionSelection": "random"
+      },
+      "optionIds": [
+        "917417d3-2079-4d3b-974e-1b467bef218d",
+        "60bf7be8-dd84-4282-b329-367a247e4691",
+        "288de389-b111-4b22-9bad-121df8620c6d",
+        "18626e03-5db9-41f7-94ee-a193744e79d3",
+        "6681845d-7b8b-4f53-bfd5-69c16f7995c8",
+        "fa4a6be6-7a7e-4b15-94a1-1b127ef25147"
+      ],
+      "distractors": [
+        {
+          "id": "917417d3-2079-4d3b-974e-1b467bef218d",
+          "knowledge": 67
+        },
+        {
+          "id": "288de389-b111-4b22-9bad-121df8620c6d",
+          "knowledge": 70
+        },
+        {
+          "id": "18626e03-5db9-41f7-94ee-a193744e79d3",
+          "knowledge": 73
+        },
+        {
+          "id": "6681845d-7b8b-4f53-bfd5-69c16f7995c8",
+          "knowledge": 80
+        },
+        {
+          "id": "fa4a6be6-7a7e-4b15-94a1-1b127ef25147",
+          "knowledge": 66
+        }
+      ],
+      "userAverages": {
+        "audio": 67,
+        "pinyin": 69,
+        "meaning": 70,
+        "character": 63
+      },
+      "selectedIndex": 1,
+      "conceptKnowledge": {
+        "overall": 71,
+        "answerModality": 71,
+        "questionModality": 72
+      },
+      "predictedCorrect": 71,
+      "daysSinceLastAttempt": 0.1
+    }
+  },
+  {
+    "correct": true,
+    "question_modality": "meaning",
+    "answer_modality": "character",
+    "context": {
+      "settings": {
+        "optionSelection": "hard",
+        "questionSelection": "random"
+      },
+      "optionIds": [
+        "c2a27f6c-58b5-4eeb-b5de-27dbfc415087",
+        "28b39171-0596-4951-a20f-b2dd0ba78dda",
+        "4218a455-0111-4525-92e9-944e13a30efb",
+        "7441b9cf-66b3-4d47-a60b-9910b15a873d",
+        "89ad263e-fd1e-41c1-9a9a-7ca0315bb20d",
+        "5a9a7ed0-e7b9-41c0-83a0-a5c88730eb29"
+      ],
+      "distractors": [
+        {
+          "id": "c2a27f6c-58b5-4eeb-b5de-27dbfc415087",
+          "knowledge": 75
+        },
+        {
+          "id": "4218a455-0111-4525-92e9-944e13a30efb",
+          "knowledge": 71
+        },
+        {
+          "id": "7441b9cf-66b3-4d47-a60b-9910b15a873d",
+          "knowledge": 72
+        },
+        {
+          "id": "89ad263e-fd1e-41c1-9a9a-7ca0315bb20d",
+          "knowledge": 68
+        },
+        {
+          "id": "5a9a7ed0-e7b9-41c0-83a0-a5c88730eb29",
+          "knowledge": 67
+        }
+      ],
+      "userAverages": {
+        "audio": 67,
+        "pinyin": 69,
+        "meaning": 70,
+        "character": 63
+      },
+      "selectedIndex": 1,
+      "conceptKnowledge": {
+        "overall": 73,
+        "answerModality": 79,
+        "questionModality": 75
+      },
+      "predictedCorrect": 79,
+      "daysSinceLastAttempt": 1.2
+    }
+  },
+  {
+    "correct": true,
+    "question_modality": "character",
+    "answer_modality": "pinyin",
+    "context": {
+      "settings": {
+        "optionSelection": "hard",
+        "questionSelection": "random"
+      },
+      "optionIds": [
+        "6b1bc671-db4c-4e2b-a7cf-7e5dae5532bf",
+        "f14043c9-0711-40ba-8543-7cbf13538830",
+        "18626e03-5db9-41f7-94ee-a193744e79d3",
+        "917417d3-2079-4d3b-974e-1b467bef218d",
+        "60bf7be8-dd84-4282-b329-367a247e4691",
+        "6681845d-7b8b-4f53-bfd5-69c16f7995c8"
+      ],
+      "distractors": [
+        {
+          "id": "6b1bc671-db4c-4e2b-a7cf-7e5dae5532bf",
+          "knowledge": 68
+        },
+        {
+          "id": "18626e03-5db9-41f7-94ee-a193744e79d3",
+          "knowledge": 73
+        },
+        {
+          "id": "917417d3-2079-4d3b-974e-1b467bef218d",
+          "knowledge": 67
+        },
+        {
+          "id": "60bf7be8-dd84-4282-b329-367a247e4691",
+          "knowledge": 71
+        },
+        {
+          "id": "6681845d-7b8b-4f53-bfd5-69c16f7995c8",
+          "knowledge": 80
+        }
+      ],
+      "userAverages": {
+        "audio": 67,
+        "pinyin": 69,
+        "meaning": 70,
+        "character": 63
+      },
+      "selectedIndex": 1,
+      "conceptKnowledge": {
+        "overall": 76,
+        "answerModality": 84,
+        "questionModality": 74
+      },
+      "predictedCorrect": 84,
+      "daysSinceLastAttempt": 0.1
+    }
+  },
+  {
+    "correct": true,
+    "question_modality": "audio",
+    "answer_modality": "pinyin",
+    "context": {
+      "settings": {
+        "optionSelection": "hard",
+        "questionSelection": "random"
+      },
+      "optionIds": [
+        "065bff24-bb92-457e-acb7-c833bde0f77a",
+        "c5d9a095-2f33-4752-8501-69fd06d20356",
+        "5f0f82cb-5690-4bd4-bbf9-1aa553fc92dc",
+        "a0659ad7-8d8b-4718-9e64-50a61cbd2113",
+        "cc63fd64-d1d7-4ab2-bdfb-3e959d066a20",
+        "e4a0a048-f95d-48d4-a11b-858186b77d3f"
+      ],
+      "distractors": [
+        {
+          "id": "065bff24-bb92-457e-acb7-c833bde0f77a",
+          "knowledge": 52
+        },
+        {
+          "id": "c5d9a095-2f33-4752-8501-69fd06d20356",
+          "knowledge": 53
+        },
+        {
+          "id": "a0659ad7-8d8b-4718-9e64-50a61cbd2113",
+          "knowledge": 50
+        },
+        {
+          "id": "cc63fd64-d1d7-4ab2-bdfb-3e959d066a20",
+          "knowledge": 45
+        },
+        {
+          "id": "e4a0a048-f95d-48d4-a11b-858186b77d3f",
+          "knowledge": 45
+        }
+      ],
+      "userAverages": {
+        "audio": 67,
+        "pinyin": 69,
+        "meaning": 70,
+        "character": 63
+      },
+      "selectedIndex": 2,
+      "conceptKnowledge": {
+        "overall": 42,
+        "answerModality": 44,
+        "questionModality": 40
+      },
+      "predictedCorrect": 44,
+      "daysSinceLastAttempt": null
+    }
+  },
+  {
+    "correct": true,
+    "question_modality": "meaning",
+    "answer_modality": "pinyin",
+    "context": {
+      "settings": {
+        "optionSelection": "hard",
+        "questionSelection": "random"
+      },
+      "optionIds": [
+        "18e0d5fe-b0af-4849-ac88-9ed61040adda",
+        "b71a2330-e3fb-48ee-9475-57d2767cdbb5",
+        "fa4a6be6-7a7e-4b15-94a1-1b127ef25147",
+        "288de389-b111-4b22-9bad-121df8620c6d",
+        "06335653-b972-4f92-b5ce-d2939edf553c",
+        "ab1509e6-9f1d-4b73-a436-2f94cc593b03"
+      ],
+      "distractors": [
+        {
+          "id": "18e0d5fe-b0af-4849-ac88-9ed61040adda",
+          "knowledge": 64
+        },
+        {
+          "id": "b71a2330-e3fb-48ee-9475-57d2767cdbb5",
+          "knowledge": 61
+        },
+        {
+          "id": "fa4a6be6-7a7e-4b15-94a1-1b127ef25147",
+          "knowledge": 66
+        },
+        {
+          "id": "288de389-b111-4b22-9bad-121df8620c6d",
+          "knowledge": 70
+        },
+        {
+          "id": "06335653-b972-4f92-b5ce-d2939edf553c",
+          "knowledge": 66
+        }
+      ],
+      "userAverages": {
+        "audio": 67,
+        "pinyin": 69,
+        "meaning": 70,
+        "character": 63
+      },
+      "selectedIndex": 5,
+      "conceptKnowledge": {
+        "overall": 71,
+        "answerModality": 75,
+        "questionModality": 71
+      },
+      "predictedCorrect": 75,
+      "daysSinceLastAttempt": 0.1
+    }
+  },
+  {
+    "correct": true,
+    "question_modality": "character",
+    "answer_modality": "meaning",
+    "context": {
+      "settings": {
+        "optionSelection": "hard",
+        "questionSelection": "random"
+      },
+      "optionIds": [
+        "917417d3-2079-4d3b-974e-1b467bef218d",
+        "ab1509e6-9f1d-4b73-a436-2f94cc593b03",
+        "18e0d5fe-b0af-4849-ac88-9ed61040adda",
+        "288de389-b111-4b22-9bad-121df8620c6d",
+        "b71a2330-e3fb-48ee-9475-57d2767cdbb5",
+        "06335653-b972-4f92-b5ce-d2939edf553c"
+      ],
+      "distractors": [
+        {
+          "id": "917417d3-2079-4d3b-974e-1b467bef218d",
+          "knowledge": 67
+        },
+        {
+          "id": "ab1509e6-9f1d-4b73-a436-2f94cc593b03",
+          "knowledge": 71
+        },
+        {
+          "id": "18e0d5fe-b0af-4849-ac88-9ed61040adda",
+          "knowledge": 64
+        },
+        {
+          "id": "b71a2330-e3fb-48ee-9475-57d2767cdbb5",
+          "knowledge": 61
+        },
+        {
+          "id": "06335653-b972-4f92-b5ce-d2939edf553c",
+          "knowledge": 66
+        }
+      ],
+      "userAverages": {
+        "audio": 67,
+        "pinyin": 69,
+        "meaning": 70,
+        "character": 63
+      },
+      "selectedIndex": 3,
+      "conceptKnowledge": {
+        "overall": 70,
+        "answerModality": 83,
+        "questionModality": 67
+      },
+      "predictedCorrect": 83,
+      "daysSinceLastAttempt": 0.1
+    }
+  },
+  {
+    "correct": true,
+    "question_modality": "meaning",
+    "answer_modality": "pinyin",
+    "context": {
+      "settings": {
+        "optionSelection": "hard",
+        "questionSelection": "random"
+      },
+      "optionIds": [
+        "252731bf-fcb5-4795-a19b-b2aab70773bf",
+        "037be4b9-93c6-4552-bdfe-5d128463ca6c",
+        "d8e0c497-719e-4acc-b52c-4659fa3488ad",
+        "edb5a6f9-1e87-4576-99b7-c1a6f137ee5c",
+        "abe0aeba-476a-4b76-bb70-4a62579f1f90",
+        "31e654ec-75f7-4a96-a5c5-294d24f1c4cd"
+      ],
+      "distractors": [
+        {
+          "id": "252731bf-fcb5-4795-a19b-b2aab70773bf",
+          "knowledge": 68
+        },
+        {
+          "id": "037be4b9-93c6-4552-bdfe-5d128463ca6c",
+          "knowledge": 64
+        },
+        {
+          "id": "d8e0c497-719e-4acc-b52c-4659fa3488ad",
+          "knowledge": 61
+        },
+        {
+          "id": "edb5a6f9-1e87-4576-99b7-c1a6f137ee5c",
+          "knowledge": 58
+        },
+        {
+          "id": "31e654ec-75f7-4a96-a5c5-294d24f1c4cd",
+          "knowledge": 60
+        }
+      ],
+      "userAverages": {
+        "audio": 67,
+        "pinyin": 69,
+        "meaning": 70,
+        "character": 63
+      },
+      "selectedIndex": 4,
+      "conceptKnowledge": {
+        "overall": 60,
+        "answerModality": 65,
+        "questionModality": 53
+      },
+      "predictedCorrect": 65,
+      "daysSinceLastAttempt": 1.2
+    }
+  },
+  {
+    "correct": true,
+    "question_modality": "meaning",
+    "answer_modality": "pinyin",
+    "context": {
+      "settings": {
+        "optionSelection": "hard",
+        "questionSelection": "random"
+      },
+      "optionIds": [
+        "32f4ae0d-9e48-43cb-9c5d-b60148f2076f",
+        "447e6398-f25d-4834-966a-3fd0b19c5009",
+        "fecc08cf-76d1-4280-9f02-936321c9d521",
+        "dca2280e-14d8-4dfa-8cc6-213d0eefcf10",
+        "5218c582-e720-4460-8c8b-8aa452a0358d",
+        "6f0df3d7-5b8c-4cc2-a996-f03dab7c7eb3"
+      ],
+      "distractors": [
+        {
+          "id": "32f4ae0d-9e48-43cb-9c5d-b60148f2076f",
+          "knowledge": 60
+        },
+        {
+          "id": "447e6398-f25d-4834-966a-3fd0b19c5009",
+          "knowledge": 61
+        },
+        {
+          "id": "dca2280e-14d8-4dfa-8cc6-213d0eefcf10",
+          "knowledge": 55
+        },
+        {
+          "id": "5218c582-e720-4460-8c8b-8aa452a0358d",
+          "knowledge": 68
+        },
+        {
+          "id": "6f0df3d7-5b8c-4cc2-a996-f03dab7c7eb3",
+          "knowledge": 62
+        }
+      ],
+      "userAverages": {
+        "audio": 67,
+        "pinyin": 69,
+        "meaning": 70,
+        "character": 63
+      },
+      "selectedIndex": 2,
+      "conceptKnowledge": {
+        "overall": 65,
+        "answerModality": 61,
+        "questionModality": 75
+      },
+      "predictedCorrect": 61,
+      "daysSinceLastAttempt": 0.5
+    }
+  },
+  {
+    "correct": true,
+    "question_modality": "pinyin",
+    "answer_modality": "meaning",
+    "context": {
+      "settings": {
+        "optionSelection": "hard",
+        "questionSelection": "random"
+      },
+      "optionIds": [
+        "e4a0a048-f95d-48d4-a11b-858186b77d3f",
+        "18e0d5fe-b0af-4849-ac88-9ed61040adda",
+        "c5d9a095-2f33-4752-8501-69fd06d20356",
+        "cc63fd64-d1d7-4ab2-bdfb-3e959d066a20",
+        "54fd90a5-f91f-4e49-b76a-316dc5a2f796",
+        "a0659ad7-8d8b-4718-9e64-50a61cbd2113"
+      ],
+      "distractors": [
+        {
+          "id": "e4a0a048-f95d-48d4-a11b-858186b77d3f",
+          "knowledge": 45
+        },
+        {
+          "id": "18e0d5fe-b0af-4849-ac88-9ed61040adda",
+          "knowledge": 64
+        },
+        {
+          "id": "c5d9a095-2f33-4752-8501-69fd06d20356",
+          "knowledge": 53
+        },
+        {
+          "id": "54fd90a5-f91f-4e49-b76a-316dc5a2f796",
+          "knowledge": 50
+        },
+        {
+          "id": "a0659ad7-8d8b-4718-9e64-50a61cbd2113",
+          "knowledge": 50
+        }
+      ],
+      "userAverages": {
+        "audio": 67,
+        "pinyin": 70,
+        "meaning": 70,
+        "character": 63
+      },
+      "selectedIndex": 3,
+      "conceptKnowledge": {
+        "overall": 45,
+        "answerModality": 38,
+        "questionModality": 61
+      },
+      "predictedCorrect": 38,
+      "daysSinceLastAttempt": 0.1
+    }
+  },
+  {
+    "correct": true,
+    "question_modality": "pinyin",
+    "answer_modality": "meaning",
+    "context": {
+      "settings": {
+        "optionSelection": "hard",
+        "questionSelection": "random"
+      },
+      "optionIds": [
+        "90521ba3-d4f7-464e-86c6-a3d26a679a7a",
+        "db8cf700-d6a3-4583-b216-867010a8fad0",
+        "de75207b-963e-4c84-afb3-e53cdd4c25c2",
+        "14039142-6a09-4a5a-89c2-5e37beaf4f21",
+        "8f999a74-2b7d-488a-a798-ff212bef16f9",
+        "540abab8-8682-46bf-a036-2ad0f52e7846"
+      ],
+      "distractors": [
+        {
+          "id": "90521ba3-d4f7-464e-86c6-a3d26a679a7a",
+          "knowledge": 66
+        },
+        {
+          "id": "db8cf700-d6a3-4583-b216-867010a8fad0",
+          "knowledge": 74
+        },
+        {
+          "id": "de75207b-963e-4c84-afb3-e53cdd4c25c2",
+          "knowledge": 74
+        },
+        {
+          "id": "8f999a74-2b7d-488a-a798-ff212bef16f9",
+          "knowledge": 76
+        },
+        {
+          "id": "540abab8-8682-46bf-a036-2ad0f52e7846",
+          "knowledge": 74
+        }
+      ],
+      "userAverages": {
+        "audio": 67,
+        "pinyin": 70,
+        "meaning": 70,
+        "character": 63
+      },
+      "selectedIndex": 3,
+      "conceptKnowledge": {
+        "overall": 73,
+        "answerModality": 67,
+        "questionModality": 76
+      },
+      "predictedCorrect": 67,
+      "daysSinceLastAttempt": 0.5
+    }
+  },
+  {
+    "correct": true,
+    "question_modality": "audio",
+    "answer_modality": "pinyin",
+    "context": {
+      "settings": {
+        "optionSelection": "hard",
+        "questionSelection": "random"
+      },
+      "optionIds": [
+        "a0659ad7-8d8b-4718-9e64-50a61cbd2113",
+        "c5d9a095-2f33-4752-8501-69fd06d20356",
+        "cc63fd64-d1d7-4ab2-bdfb-3e959d066a20",
+        "e89120ea-8b2e-4a95-9c22-099f011859b1",
+        "e4a0a048-f95d-48d4-a11b-858186b77d3f",
+        "b71a2330-e3fb-48ee-9475-57d2767cdbb5"
+      ],
+      "distractors": [
+        {
+          "id": "c5d9a095-2f33-4752-8501-69fd06d20356",
+          "knowledge": 53
+        },
+        {
+          "id": "cc63fd64-d1d7-4ab2-bdfb-3e959d066a20",
+          "knowledge": 45
+        },
+        {
+          "id": "e89120ea-8b2e-4a95-9c22-099f011859b1",
+          "knowledge": 53
+        },
+        {
+          "id": "e4a0a048-f95d-48d4-a11b-858186b77d3f",
+          "knowledge": 45
+        },
+        {
+          "id": "b71a2330-e3fb-48ee-9475-57d2767cdbb5",
+          "knowledge": 61
+        }
+      ],
+      "userAverages": {
+        "audio": 68,
+        "pinyin": 70,
+        "meaning": 70,
+        "character": 63
+      },
+      "selectedIndex": 0,
+      "conceptKnowledge": {
+        "overall": 50,
+        "answerModality": 58,
+        "questionModality": 36
+      },
+      "predictedCorrect": 58,
+      "daysSinceLastAttempt": 0.5
+    }
+  },
+  {
+    "correct": true,
+    "question_modality": "audio",
+    "answer_modality": "character",
+    "context": {
+      "settings": {
+        "optionSelection": "hard",
+        "questionSelection": "random"
+      },
+      "optionIds": [
+        "46270186-55b2-4d2a-b534-f5cfc056d160",
+        "c825bc8f-9546-40fc-9873-246d2c71d801",
+        "f81f892f-7908-4565-8363-6d746b9020e8",
+        "2ba37be8-6ab8-4fdd-8337-3a72beaf4023",
+        "d25eed5c-6435-45db-aa2e-aceb92afd754",
+        "a2569d32-7e5b-4a48-9e97-d4b910ff1bbf"
+      ],
+      "distractors": [
+        {
+          "id": "46270186-55b2-4d2a-b534-f5cfc056d160",
+          "knowledge": 76
+        },
+        {
+          "id": "c825bc8f-9546-40fc-9873-246d2c71d801",
+          "knowledge": 74
+        },
+        {
+          "id": "2ba37be8-6ab8-4fdd-8337-3a72beaf4023",
+          "knowledge": 69
+        },
+        {
+          "id": "d25eed5c-6435-45db-aa2e-aceb92afd754",
+          "knowledge": 71
+        },
+        {
+          "id": "a2569d32-7e5b-4a48-9e97-d4b910ff1bbf",
+          "knowledge": 76
+        }
+      ],
+      "userAverages": {
+        "audio": 67,
+        "pinyin": 70,
+        "meaning": 70,
+        "character": 63
+      },
+      "selectedIndex": 2,
+      "conceptKnowledge": {
+        "overall": 76,
+        "answerModality": 74,
+        "questionModality": 78
+      },
+      "predictedCorrect": 74,
+      "daysSinceLastAttempt": 1.2
+    }
+  },
+  {
+    "correct": true,
+    "question_modality": "character",
+    "answer_modality": "pinyin",
+    "context": {
+      "settings": {
+        "optionSelection": "hard",
+        "questionSelection": "random"
+      },
+      "optionIds": [
+        "46270186-55b2-4d2a-b534-f5cfc056d160",
+        "a2569d32-7e5b-4a48-9e97-d4b910ff1bbf",
+        "3713d278-7b09-4622-86c2-d8b021b90841",
+        "2ba37be8-6ab8-4fdd-8337-3a72beaf4023",
+        "f81f892f-7908-4565-8363-6d746b9020e8",
+        "c825bc8f-9546-40fc-9873-246d2c71d801"
+      ],
+      "distractors": [
+        {
+          "id": "46270186-55b2-4d2a-b534-f5cfc056d160",
+          "knowledge": 76
+        },
+        {
+          "id": "3713d278-7b09-4622-86c2-d8b021b90841",
+          "knowledge": 63
+        },
+        {
+          "id": "2ba37be8-6ab8-4fdd-8337-3a72beaf4023",
+          "knowledge": 69
+        },
+        {
+          "id": "f81f892f-7908-4565-8363-6d746b9020e8",
+          "knowledge": 76
+        },
+        {
+          "id": "c825bc8f-9546-40fc-9873-246d2c71d801",
+          "knowledge": 74
+        }
+      ],
+      "userAverages": {
+        "audio": 67,
+        "pinyin": 70,
+        "meaning": 70,
+        "character": 64
+      },
+      "selectedIndex": 1,
+      "conceptKnowledge": {
+        "overall": 76,
+        "answerModality": 70,
+        "questionModality": 70
+      },
+      "predictedCorrect": 70,
+      "daysSinceLastAttempt": null
+    }
+  },
+  {
+    "correct": true,
+    "question_modality": "pinyin",
+    "answer_modality": "character",
+    "context": {
+      "settings": {
+        "optionSelection": "hard",
+        "questionSelection": "random"
+      },
+      "optionIds": [
+        "f14043c9-0711-40ba-8543-7cbf13538830",
+        "6b1bc671-db4c-4e2b-a7cf-7e5dae5532bf",
+        "917417d3-2079-4d3b-974e-1b467bef218d",
+        "fa4a6be6-7a7e-4b15-94a1-1b127ef25147",
+        "18626e03-5db9-41f7-94ee-a193744e79d3",
+        "60bf7be8-dd84-4282-b329-367a247e4691"
+      ],
+      "distractors": [
+        {
+          "id": "f14043c9-0711-40ba-8543-7cbf13538830",
+          "knowledge": 76
+        },
+        {
+          "id": "917417d3-2079-4d3b-974e-1b467bef218d",
+          "knowledge": 67
+        },
+        {
+          "id": "fa4a6be6-7a7e-4b15-94a1-1b127ef25147",
+          "knowledge": 66
+        },
+        {
+          "id": "18626e03-5db9-41f7-94ee-a193744e79d3",
+          "knowledge": 73
+        },
+        {
+          "id": "60bf7be8-dd84-4282-b329-367a247e4691",
+          "knowledge": 71
+        }
+      ],
+      "userAverages": {
+        "audio": 67,
+        "pinyin": 70,
+        "meaning": 70,
+        "character": 64
+      },
+      "selectedIndex": 1,
+      "conceptKnowledge": {
+        "overall": 68,
+        "answerModality": 64,
+        "questionModality": 73
+      },
+      "predictedCorrect": 64,
+      "daysSinceLastAttempt": null
+    }
+  },
+  {
+    "correct": true,
+    "question_modality": "pinyin",
+    "answer_modality": "audio",
+    "context": {
+      "settings": {
+        "optionSelection": "hard",
+        "questionSelection": "random"
+      },
+      "optionIds": [
+        "811a30a6-6c6b-4421-b294-58556f94679a",
+        "540abab8-8682-46bf-a036-2ad0f52e7846",
+        "0af30ca8-940b-40ee-8dc1-554d8f571452",
+        "7e2a14ea-ef3d-4b82-b929-e2361dffaf0b",
+        "14039142-6a09-4a5a-89c2-5e37beaf4f21",
+        "8f999a74-2b7d-488a-a798-ff212bef16f9"
+      ],
+      "distractors": [
+        {
+          "id": "811a30a6-6c6b-4421-b294-58556f94679a",
+          "knowledge": 74
+        },
+        {
+          "id": "540abab8-8682-46bf-a036-2ad0f52e7846",
+          "knowledge": 74
+        },
+        {
+          "id": "0af30ca8-940b-40ee-8dc1-554d8f571452",
+          "knowledge": 69
+        },
+        {
+          "id": "7e2a14ea-ef3d-4b82-b929-e2361dffaf0b",
+          "knowledge": 66
+        },
+        {
+          "id": "14039142-6a09-4a5a-89c2-5e37beaf4f21",
+          "knowledge": 73
+        }
+      ],
+      "userAverages": {
+        "audio": 67,
+        "pinyin": 70,
+        "meaning": 70,
+        "character": 64
+      },
+      "selectedIndex": 5,
+      "conceptKnowledge": {
+        "overall": 76,
+        "answerModality": 87,
+        "questionModality": 72
+      },
+      "predictedCorrect": 87,
+      "daysSinceLastAttempt": 0.5
+    }
+  },
+  {
+    "correct": false,
+    "question_modality": "character",
+    "answer_modality": "meaning",
+    "context": {
+      "settings": {
+        "optionSelection": "hard",
+        "questionSelection": "random"
+      },
+      "optionIds": [
+        "32f4ae0d-9e48-43cb-9c5d-b60148f2076f",
+        "dca2280e-14d8-4dfa-8cc6-213d0eefcf10",
+        "6f0df3d7-5b8c-4cc2-a996-f03dab7c7eb3",
+        "fecc08cf-76d1-4280-9f02-936321c9d521",
+        "615632a8-db22-4f5b-a7c2-5ca0a6f5646f",
+        "90f3dd73-fc16-43f1-845f-75de272a53f9"
+      ],
+      "distractors": [
+        {
+          "id": "32f4ae0d-9e48-43cb-9c5d-b60148f2076f",
+          "knowledge": 60
+        },
+        {
+          "id": "6f0df3d7-5b8c-4cc2-a996-f03dab7c7eb3",
+          "knowledge": 62
+        },
+        {
+          "id": "fecc08cf-76d1-4280-9f02-936321c9d521",
+          "knowledge": 65
+        },
+        {
+          "id": "615632a8-db22-4f5b-a7c2-5ca0a6f5646f",
+          "knowledge": 60
+        },
+        {
+          "id": "90f3dd73-fc16-43f1-845f-75de272a53f9",
+          "knowledge": 64
+        }
+      ],
+      "userAverages": {
+        "audio": 67,
+        "pinyin": 70,
+        "meaning": 70,
+        "character": 63
+      },
+      "selectedIndex": 2,
+      "conceptKnowledge": {
+        "overall": 55,
+        "answerModality": 65,
+        "questionModality": 49
+      },
+      "predictedCorrect": 65,
+      "daysSinceLastAttempt": 0.1
+    }
+  },
+  {
+    "correct": true,
+    "question_modality": "meaning",
+    "answer_modality": "character",
+    "context": {
+      "settings": {
+        "optionSelection": "hard",
+        "questionSelection": "random"
+      },
+      "optionIds": [
+        "20844405-a8dc-4ef3-a59f-727e54ab4437",
+        "bae726e3-d9de-49bc-baae-6a97aa5c4345",
+        "46270186-55b2-4d2a-b534-f5cfc056d160",
+        "2ba37be8-6ab8-4fdd-8337-3a72beaf4023",
+        "d25eed5c-6435-45db-aa2e-aceb92afd754",
+        "c825bc8f-9546-40fc-9873-246d2c71d801"
+      ],
+      "distractors": [
+        {
+          "id": "20844405-a8dc-4ef3-a59f-727e54ab4437",
+          "knowledge": 64
+        },
+        {
+          "id": "46270186-55b2-4d2a-b534-f5cfc056d160",
+          "knowledge": 76
+        },
+        {
+          "id": "2ba37be8-6ab8-4fdd-8337-3a72beaf4023",
+          "knowledge": 69
+        },
+        {
+          "id": "d25eed5c-6435-45db-aa2e-aceb92afd754",
+          "knowledge": 71
+        },
+        {
+          "id": "c825bc8f-9546-40fc-9873-246d2c71d801",
+          "knowledge": 74
+        }
+      ],
+      "userAverages": {
+        "audio": 67,
+        "pinyin": 70,
+        "meaning": 70,
+        "character": 63
+      },
+      "selectedIndex": 1,
+      "conceptKnowledge": {
+        "overall": 67,
+        "answerModality": 59,
+        "questionModality": 69
+      },
+      "predictedCorrect": 59,
+      "daysSinceLastAttempt": null
+    }
+  },
+  {
+    "correct": true,
+    "question_modality": "character",
+    "answer_modality": "audio",
+    "context": {
+      "settings": {
+        "optionSelection": "hard",
+        "questionSelection": "random"
+      },
+      "optionIds": [
+        "5a62cf64-b321-45a2-b011-bdafee48e581",
+        "037be4b9-93c6-4552-bdfe-5d128463ca6c",
+        "54fd90a5-f91f-4e49-b76a-316dc5a2f796",
+        "d8e0c497-719e-4acc-b52c-4659fa3488ad",
+        "e89120ea-8b2e-4a95-9c22-099f011859b1",
+        "edb5a6f9-1e87-4576-99b7-c1a6f137ee5c"
+      ],
+      "distractors": [
+        {
+          "id": "037be4b9-93c6-4552-bdfe-5d128463ca6c",
+          "knowledge": 64
+        },
+        {
+          "id": "54fd90a5-f91f-4e49-b76a-316dc5a2f796",
+          "knowledge": 50
+        },
+        {
+          "id": "d8e0c497-719e-4acc-b52c-4659fa3488ad",
+          "knowledge": 61
+        },
+        {
+          "id": "e89120ea-8b2e-4a95-9c22-099f011859b1",
+          "knowledge": 53
+        },
+        {
+          "id": "edb5a6f9-1e87-4576-99b7-c1a6f137ee5c",
+          "knowledge": 58
+        }
+      ],
+      "userAverages": {
+        "audio": 67,
+        "pinyin": 70,
+        "meaning": 70,
+        "character": 63
+      },
+      "selectedIndex": 0,
+      "conceptKnowledge": {
+        "overall": 47,
+        "answerModality": 44,
+        "questionModality": 45
+      },
+      "predictedCorrect": 44,
+      "daysSinceLastAttempt": 0.1
+    }
+  },
+  {
+    "correct": true,
+    "question_modality": "meaning",
+    "answer_modality": "character",
+    "context": {
+      "settings": {
+        "optionSelection": "hard",
+        "questionSelection": "random"
+      },
+      "optionIds": [
+        "037be4b9-93c6-4552-bdfe-5d128463ca6c",
+        "c2a27f6c-58b5-4eeb-b5de-27dbfc415087",
+        "28b39171-0596-4951-a20f-b2dd0ba78dda",
+        "3f8f972c-b1a5-4573-b42e-390a00d1b51a",
+        "7441b9cf-66b3-4d47-a60b-9910b15a873d",
+        "5a9a7ed0-e7b9-41c0-83a0-a5c88730eb29"
+      ],
+      "distractors": [
+        {
+          "id": "037be4b9-93c6-4552-bdfe-5d128463ca6c",
+          "knowledge": 64
+        },
+        {
+          "id": "c2a27f6c-58b5-4eeb-b5de-27dbfc415087",
+          "knowledge": 75
+        },
+        {
+          "id": "28b39171-0596-4951-a20f-b2dd0ba78dda",
+          "knowledge": 73
+        },
+        {
+          "id": "3f8f972c-b1a5-4573-b42e-390a00d1b51a",
+          "knowledge": 70
+        },
+        {
+          "id": "5a9a7ed0-e7b9-41c0-83a0-a5c88730eb29",
+          "knowledge": 67
+        }
+      ],
+      "userAverages": {
+        "audio": 68,
+        "pinyin": 70,
+        "meaning": 70,
+        "character": 63
+      },
+      "selectedIndex": 4,
+      "conceptKnowledge": {
+        "overall": 72,
+        "answerModality": 72,
+        "questionModality": 67
+      },
+      "predictedCorrect": 72,
+      "daysSinceLastAttempt": 0.1
+    }
+  },
+  {
+    "correct": true,
+    "question_modality": "character",
+    "answer_modality": "meaning",
+    "context": {
+      "settings": {
+        "optionSelection": "hard",
+        "questionSelection": "random"
+      },
+      "optionIds": [
+        "edb5a6f9-1e87-4576-99b7-c1a6f137ee5c",
+        "18e0d5fe-b0af-4849-ac88-9ed61040adda",
+        "89ad263e-fd1e-41c1-9a9a-7ca0315bb20d",
+        "9f4962b7-4c00-4a35-8001-dbeb1a801863",
+        "037be4b9-93c6-4552-bdfe-5d128463ca6c",
+        "31e654ec-75f7-4a96-a5c5-294d24f1c4cd"
+      ],
+      "distractors": [
+        {
+          "id": "edb5a6f9-1e87-4576-99b7-c1a6f137ee5c",
+          "knowledge": 58
+        },
+        {
+          "id": "18e0d5fe-b0af-4849-ac88-9ed61040adda",
+          "knowledge": 64
+        },
+        {
+          "id": "89ad263e-fd1e-41c1-9a9a-7ca0315bb20d",
+          "knowledge": 68
+        },
+        {
+          "id": "9f4962b7-4c00-4a35-8001-dbeb1a801863",
+          "knowledge": 67
+        },
+        {
+          "id": "037be4b9-93c6-4552-bdfe-5d128463ca6c",
+          "knowledge": 64
+        }
+      ],
+      "userAverages": {
+        "audio": 68,
+        "pinyin": 70,
+        "meaning": 70,
+        "character": 64
+      },
+      "selectedIndex": 5,
+      "conceptKnowledge": {
+        "overall": 60,
+        "answerModality": 61,
+        "questionModality": 56
+      },
+      "predictedCorrect": 61,
+      "daysSinceLastAttempt": 3.4
+    }
+  },
+  {
+    "correct": true,
+    "question_modality": "pinyin",
+    "answer_modality": "audio",
+    "context": {
+      "settings": {
+        "optionSelection": "hard",
+        "questionSelection": "random"
+      },
+      "optionIds": [
+        "5218c582-e720-4460-8c8b-8aa452a0358d",
+        "615632a8-db22-4f5b-a7c2-5ca0a6f5646f",
+        "90f3dd73-fc16-43f1-845f-75de272a53f9",
+        "6f0df3d7-5b8c-4cc2-a996-f03dab7c7eb3",
+        "dca2280e-14d8-4dfa-8cc6-213d0eefcf10",
+        "fecc08cf-76d1-4280-9f02-936321c9d521"
+      ],
+      "distractors": [
+        {
+          "id": "5218c582-e720-4460-8c8b-8aa452a0358d",
+          "knowledge": 68
+        },
+        {
+          "id": "90f3dd73-fc16-43f1-845f-75de272a53f9",
+          "knowledge": 64
+        },
+        {
+          "id": "6f0df3d7-5b8c-4cc2-a996-f03dab7c7eb3",
+          "knowledge": 62
+        },
+        {
+          "id": "dca2280e-14d8-4dfa-8cc6-213d0eefcf10",
+          "knowledge": 55
+        },
+        {
+          "id": "fecc08cf-76d1-4280-9f02-936321c9d521",
+          "knowledge": 65
+        }
+      ],
+      "userAverages": {
+        "audio": 67,
+        "pinyin": 70,
+        "meaning": 70,
+        "character": 64
+      },
+      "selectedIndex": 1,
+      "conceptKnowledge": {
+        "overall": 60,
+        "answerModality": 69,
+        "questionModality": 59
+      },
+      "predictedCorrect": 69,
+      "daysSinceLastAttempt": 0.1
+    }
+  },
+  {
+    "correct": false,
+    "question_modality": "character",
+    "answer_modality": "audio",
+    "context": {
+      "settings": {
+        "optionSelection": "hard",
+        "questionSelection": "random"
+      },
+      "optionIds": [
+        "6f0df3d7-5b8c-4cc2-a996-f03dab7c7eb3",
+        "90f3dd73-fc16-43f1-845f-75de272a53f9",
+        "615632a8-db22-4f5b-a7c2-5ca0a6f5646f",
+        "dca2280e-14d8-4dfa-8cc6-213d0eefcf10",
+        "fecc08cf-76d1-4280-9f02-936321c9d521",
+        "32f4ae0d-9e48-43cb-9c5d-b60148f2076f"
+      ],
+      "distractors": [
+        {
+          "id": "6f0df3d7-5b8c-4cc2-a996-f03dab7c7eb3",
+          "knowledge": 62
+        },
+        {
+          "id": "615632a8-db22-4f5b-a7c2-5ca0a6f5646f",
+          "knowledge": 60
+        },
+        {
+          "id": "dca2280e-14d8-4dfa-8cc6-213d0eefcf10",
+          "knowledge": 55
+        },
+        {
+          "id": "fecc08cf-76d1-4280-9f02-936321c9d521",
+          "knowledge": 65
+        },
+        {
+          "id": "32f4ae0d-9e48-43cb-9c5d-b60148f2076f",
+          "knowledge": 60
+        }
+      ],
+      "userAverages": {
+        "audio": 67,
+        "pinyin": 70,
+        "meaning": 70,
+        "character": 64
+      },
+      "selectedIndex": 3,
+      "conceptKnowledge": {
+        "overall": 64,
+        "answerModality": 53,
+        "questionModality": 53
+      },
+      "predictedCorrect": 53,
+      "daysSinceLastAttempt": null
+    }
+  },
+  {
+    "correct": false,
+    "question_modality": "meaning",
+    "answer_modality": "character",
+    "context": {
+      "settings": {
+        "optionSelection": "hard",
+        "questionSelection": "random"
+      },
+      "optionIds": [
+        "1a319b3d-d3cd-43fd-a18e-792b1aacd605",
+        "fecc08cf-76d1-4280-9f02-936321c9d521",
+        "447e6398-f25d-4834-966a-3fd0b19c5009",
+        "615632a8-db22-4f5b-a7c2-5ca0a6f5646f",
+        "90f3dd73-fc16-43f1-845f-75de272a53f9",
+        "dca2280e-14d8-4dfa-8cc6-213d0eefcf10"
+      ],
+      "distractors": [
+        {
+          "id": "fecc08cf-76d1-4280-9f02-936321c9d521",
+          "knowledge": 65
+        },
+        {
+          "id": "447e6398-f25d-4834-966a-3fd0b19c5009",
+          "knowledge": 61
+        },
+        {
+          "id": "615632a8-db22-4f5b-a7c2-5ca0a6f5646f",
+          "knowledge": 60
+        },
+        {
+          "id": "90f3dd73-fc16-43f1-845f-75de272a53f9",
+          "knowledge": 64
+        },
+        {
+          "id": "dca2280e-14d8-4dfa-8cc6-213d0eefcf10",
+          "knowledge": 55
+        }
+      ],
+      "userAverages": {
+        "audio": 67,
+        "pinyin": 70,
+        "meaning": 71,
+        "character": 64
+      },
+      "selectedIndex": 5,
+      "conceptKnowledge": {
+        "overall": 64,
+        "answerModality": 46,
+        "questionModality": 71
+      },
+      "predictedCorrect": 46,
+      "daysSinceLastAttempt": 1.2
+    }
+  },
+  {
+    "correct": true,
+    "question_modality": "meaning",
+    "answer_modality": "pinyin",
+    "context": {
+      "settings": {
+        "optionSelection": "hard",
+        "questionSelection": "random"
+      },
+      "optionIds": [
+        "fecc08cf-76d1-4280-9f02-936321c9d521",
+        "e4365ddc-2cba-4d39-9134-4f357dc81754",
+        "fc6b1549-0da9-47ab-b4de-659d840e5611",
+        "b237ec0b-d724-4007-909c-85967db87067",
+        "8e43ff56-c19d-42d6-b855-eb190a9dc35b",
+        "013f8951-01cb-4bb3-a514-3671564b99b2"
+      ],
+      "distractors": [
+        {
+          "id": "fecc08cf-76d1-4280-9f02-936321c9d521",
+          "knowledge": 65
+        },
+        {
+          "id": "e4365ddc-2cba-4d39-9134-4f357dc81754",
+          "knowledge": 72
+        },
+        {
+          "id": "fc6b1549-0da9-47ab-b4de-659d840e5611",
+          "knowledge": 74
+        },
+        {
+          "id": "b237ec0b-d724-4007-909c-85967db87067",
+          "knowledge": 69
+        },
+        {
+          "id": "013f8951-01cb-4bb3-a514-3671564b99b2",
+          "knowledge": 78
+        }
+      ],
+      "userAverages": {
+        "audio": 67,
+        "pinyin": 70,
+        "meaning": 70,
+        "character": 64
+      },
+      "selectedIndex": 4,
+      "conceptKnowledge": {
+        "overall": 75,
+        "answerModality": 79,
+        "questionModality": 76
+      },
+      "predictedCorrect": 79,
+      "daysSinceLastAttempt": 1.2
+    }
+  },
+  {
+    "correct": true,
+    "question_modality": "audio",
+    "answer_modality": "meaning",
+    "context": {
+      "settings": {
+        "optionSelection": "hard",
+        "questionSelection": "random"
+      },
+      "optionIds": [
+        "cc63fd64-d1d7-4ab2-bdfb-3e959d066a20",
+        "c5d9a095-2f33-4752-8501-69fd06d20356",
+        "a0659ad7-8d8b-4718-9e64-50a61cbd2113",
+        "18e0d5fe-b0af-4849-ac88-9ed61040adda",
+        "e4a0a048-f95d-48d4-a11b-858186b77d3f",
+        "54fd90a5-f91f-4e49-b76a-316dc5a2f796"
+      ],
+      "distractors": [
+        {
+          "id": "cc63fd64-d1d7-4ab2-bdfb-3e959d066a20",
+          "knowledge": 45
+        },
+        {
+          "id": "c5d9a095-2f33-4752-8501-69fd06d20356",
+          "knowledge": 53
+        },
+        {
+          "id": "a0659ad7-8d8b-4718-9e64-50a61cbd2113",
+          "knowledge": 50
+        },
+        {
+          "id": "18e0d5fe-b0af-4849-ac88-9ed61040adda",
+          "knowledge": 64
+        },
+        {
+          "id": "54fd90a5-f91f-4e49-b76a-316dc5a2f796",
+          "knowledge": 50
+        }
+      ],
+      "userAverages": {
+        "audio": 67,
+        "pinyin": 70,
+        "meaning": 71,
+        "character": 64
+      },
+      "selectedIndex": 4,
+      "conceptKnowledge": {
+        "overall": 45,
+        "answerModality": 46,
+        "questionModality": 54
+      },
+      "predictedCorrect": 46,
+      "daysSinceLastAttempt": 0.5
+    }
+  },
+  {
+    "correct": true,
+    "question_modality": "meaning",
+    "answer_modality": "character",
+    "context": {
+      "settings": {
+        "optionSelection": "hard",
+        "questionSelection": "random"
+      },
+      "optionIds": [
+        "2ba37be8-6ab8-4fdd-8337-3a72beaf4023",
+        "d25eed5c-6435-45db-aa2e-aceb92afd754",
+        "c825bc8f-9546-40fc-9873-246d2c71d801",
+        "bae726e3-d9de-49bc-baae-6a97aa5c4345",
+        "20844405-a8dc-4ef3-a59f-727e54ab4437",
+        "3713d278-7b09-4622-86c2-d8b021b90841"
+      ],
+      "distractors": [
+        {
+          "id": "2ba37be8-6ab8-4fdd-8337-3a72beaf4023",
+          "knowledge": 69
+        },
+        {
+          "id": "d25eed5c-6435-45db-aa2e-aceb92afd754",
+          "knowledge": 71
+        },
+        {
+          "id": "c825bc8f-9546-40fc-9873-246d2c71d801",
+          "knowledge": 74
+        },
+        {
+          "id": "bae726e3-d9de-49bc-baae-6a97aa5c4345",
+          "knowledge": 67
+        },
+        {
+          "id": "3713d278-7b09-4622-86c2-d8b021b90841",
+          "knowledge": 63
+        }
+      ],
+      "userAverages": {
+        "audio": 67,
+        "pinyin": 70,
+        "meaning": 71,
+        "character": 64
+      },
+      "selectedIndex": 4,
+      "conceptKnowledge": {
+        "overall": 64,
+        "answerModality": 59,
+        "questionModality": 69
+      },
+      "predictedCorrect": 59,
+      "daysSinceLastAttempt": null
+    }
+  },
+  {
+    "correct": true,
+    "question_modality": "pinyin",
+    "answer_modality": "meaning",
+    "context": {
+      "settings": {
+        "optionSelection": "hard",
+        "questionSelection": "random"
+      },
+      "optionIds": [
+        "46270186-55b2-4d2a-b534-f5cfc056d160",
+        "2ba37be8-6ab8-4fdd-8337-3a72beaf4023",
+        "a2569d32-7e5b-4a48-9e97-d4b910ff1bbf",
+        "c825bc8f-9546-40fc-9873-246d2c71d801",
+        "20844405-a8dc-4ef3-a59f-727e54ab4437",
+        "f81f892f-7908-4565-8363-6d746b9020e8"
+      ],
+      "distractors": [
+        {
+          "id": "46270186-55b2-4d2a-b534-f5cfc056d160",
+          "knowledge": 76
+        },
+        {
+          "id": "2ba37be8-6ab8-4fdd-8337-3a72beaf4023",
+          "knowledge": 69
+        },
+        {
+          "id": "a2569d32-7e5b-4a48-9e97-d4b910ff1bbf",
+          "knowledge": 76
+        },
+        {
+          "id": "20844405-a8dc-4ef3-a59f-727e54ab4437",
+          "knowledge": 64
+        },
+        {
+          "id": "f81f892f-7908-4565-8363-6d746b9020e8",
+          "knowledge": 76
+        }
+      ],
+      "userAverages": {
+        "audio": 67,
+        "pinyin": 70,
+        "meaning": 70,
+        "character": 64
+      },
+      "selectedIndex": 3,
+      "conceptKnowledge": {
+        "overall": 74,
+        "answerModality": 70,
+        "questionModality": 78
+      },
+      "predictedCorrect": 70,
+      "daysSinceLastAttempt": null
+    }
+  },
+  {
+    "correct": true,
+    "question_modality": "meaning",
+    "answer_modality": "character",
+    "context": {
+      "settings": {
+        "optionSelection": "hard",
+        "questionSelection": "random"
+      },
+      "optionIds": [
+        "c5d9a095-2f33-4752-8501-69fd06d20356",
+        "ab1509e6-9f1d-4b73-a436-2f94cc593b03",
+        "b71a2330-e3fb-48ee-9475-57d2767cdbb5",
+        "06335653-b972-4f92-b5ce-d2939edf553c",
+        "288de389-b111-4b22-9bad-121df8620c6d",
+        "18e0d5fe-b0af-4849-ac88-9ed61040adda"
+      ],
+      "distractors": [
+        {
+          "id": "c5d9a095-2f33-4752-8501-69fd06d20356",
+          "knowledge": 53
+        },
+        {
+          "id": "ab1509e6-9f1d-4b73-a436-2f94cc593b03",
+          "knowledge": 71
+        },
+        {
+          "id": "06335653-b972-4f92-b5ce-d2939edf553c",
+          "knowledge": 66
+        },
+        {
+          "id": "288de389-b111-4b22-9bad-121df8620c6d",
+          "knowledge": 70
+        },
+        {
+          "id": "18e0d5fe-b0af-4849-ac88-9ed61040adda",
+          "knowledge": 64
+        }
+      ],
+      "userAverages": {
+        "audio": 67,
+        "pinyin": 70,
+        "meaning": 70,
+        "character": 64
+      },
+      "selectedIndex": 2,
+      "conceptKnowledge": {
+        "overall": 61,
+        "answerModality": 69,
+        "questionModality": 59
+      },
+      "predictedCorrect": 69,
+      "daysSinceLastAttempt": 0.1
+    }
+  },
+  {
+    "correct": true,
+    "question_modality": "pinyin",
+    "answer_modality": "meaning",
+    "context": {
+      "settings": {
+        "optionSelection": "hard",
+        "questionSelection": "random"
+      },
+      "optionIds": [
+        "f787cc28-8969-45a4-bfbc-0b2886efb454",
+        "b4cc881e-2f88-4ebd-ac0c-e26e27d0348a",
+        "2ba37be8-6ab8-4fdd-8337-3a72beaf4023",
+        "20844405-a8dc-4ef3-a59f-727e54ab4437",
+        "3713d278-7b09-4622-86c2-d8b021b90841",
+        "72df6282-0d49-42cc-82a4-a07ad601b7ac"
+      ],
+      "distractors": [
+        {
+          "id": "f787cc28-8969-45a4-bfbc-0b2886efb454",
+          "knowledge": 50
+        },
+        {
+          "id": "2ba37be8-6ab8-4fdd-8337-3a72beaf4023",
+          "knowledge": 69
+        },
+        {
+          "id": "20844405-a8dc-4ef3-a59f-727e54ab4437",
+          "knowledge": 64
+        },
+        {
+          "id": "3713d278-7b09-4622-86c2-d8b021b90841",
+          "knowledge": 63
+        },
+        {
+          "id": "72df6282-0d49-42cc-82a4-a07ad601b7ac",
+          "knowledge": 50
+        }
+      ],
+      "userAverages": {
+        "audio": 67,
+        "pinyin": 70,
+        "meaning": 70,
+        "character": 64
+      },
+      "selectedIndex": 1,
+      "conceptKnowledge": {
+        "overall": 50,
+        "answerModality": 70,
+        "questionModality": 70
+      },
+      "predictedCorrect": 70,
+      "daysSinceLastAttempt": null
+    }
+  },
+  {
+    "correct": true,
+    "question_modality": "audio",
+    "answer_modality": "character",
+    "context": {
+      "settings": {
+        "optionSelection": "hard",
+        "questionSelection": "random"
+      },
+      "optionIds": [
+        "51356948-9f3d-4df2-b40b-0c3979f617de",
+        "d80ae9f0-3d8d-4cb9-ba8f-a91a31d75f79",
+        "54fd90a5-f91f-4e49-b76a-316dc5a2f796",
+        "989a8efb-a747-407c-8223-4415f5d88cb3",
+        "e89120ea-8b2e-4a95-9c22-099f011859b1",
+        "fe5ae7cd-9add-486b-833d-eee1a03744d2"
+      ],
+      "distractors": [
+        {
+          "id": "51356948-9f3d-4df2-b40b-0c3979f617de",
+          "knowledge": 61
+        },
+        {
+          "id": "d80ae9f0-3d8d-4cb9-ba8f-a91a31d75f79",
+          "knowledge": 62
+        },
+        {
+          "id": "54fd90a5-f91f-4e49-b76a-316dc5a2f796",
+          "knowledge": 50
+        },
+        {
+          "id": "989a8efb-a747-407c-8223-4415f5d88cb3",
+          "knowledge": 57
+        },
+        {
+          "id": "e89120ea-8b2e-4a95-9c22-099f011859b1",
+          "knowledge": 53
+        }
+      ],
+      "userAverages": {
+        "audio": 67,
+        "pinyin": 70,
+        "meaning": 71,
+        "character": 64
+      },
+      "selectedIndex": 5,
+      "conceptKnowledge": {
+        "overall": 48,
+        "answerModality": 41,
+        "questionModality": 41
+      },
+      "predictedCorrect": 41,
+      "daysSinceLastAttempt": null
+    }
   }
 ]

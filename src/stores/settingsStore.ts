@@ -1,6 +1,6 @@
 // Settings store with localStorage persistence + Supabase cloud sync
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import type { UserSettings, ThemeType, FocusLevel, LearningFocus, AudioSettings, QuizSettings } from '../types/settings';
+import type { UserSettings, ThemeType, FocusLevel, LearningFocus, AudioSettings, QuizSettings, SyntaxSettings } from '../types/settings';
 import { DEFAULT_SETTINGS } from '../types/settings';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 
@@ -48,6 +48,7 @@ export interface SettingsStore {
   setLearningFocus: (field: keyof LearningFocus, level: FocusLevel) => void;
   setAudioSettings: (partial: Partial<AudioSettings>) => void;
   setQuizSettings: (partial: Partial<QuizSettings>) => void;
+  setSyntaxSettings: (partial: Partial<SyntaxSettings>) => void;
   resetToDefaults: () => void;
   
   // Cloud sync
@@ -156,6 +157,13 @@ export function useSettingsStore(): SettingsStore {
     }));
   }, []);
 
+  const setSyntaxSettings = useCallback((partial: Partial<SyntaxSettings>) => {
+    setSettings(prev => ({
+      ...prev,
+      syntax: { ...prev.syntax, ...partial },
+    }));
+  }, []);
+
   const resetToDefaults = useCallback(() => {
     setSettings(DEFAULT_SETTINGS);
   }, []);
@@ -261,6 +269,7 @@ export function useSettingsStore(): SettingsStore {
     setLearningFocus,
     setAudioSettings,
     setQuizSettings,
+    setSyntaxSettings,
     resetToDefaults,
     syncToCloud,
     loadFromCloud,

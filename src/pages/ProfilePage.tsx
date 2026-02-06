@@ -20,6 +20,7 @@ import {
   HelpCircle,
   TrendingUp,
   BarChart3,
+  Layers,
 } from 'lucide-react';
 import type { SettingsStore } from '../stores/settingsStore';
 import type { VocabularyStore } from '../stores/vocabularyStore';
@@ -29,7 +30,8 @@ import type {
   LearningFocus, 
   PinyinDisplay,
 } from '../types/settings';
-import { FOCUS_LABELS, FOCUS_DESCRIPTIONS, THEME_META, SPEECH_RATE_PRESETS } from '../types/settings';
+import { FOCUS_LABELS, FOCUS_DESCRIPTIONS, THEME_META, SPEECH_RATE_PRESETS, SYNTAX_DIRECTION_OPTIONS } from '../types/settings';
+import type { SyntaxDirectionRatio } from '../types/settings';
 import { MODALITY_INFO, type Modality } from '../types/vocabulary';
 import { 
   getChineseVoices, 
@@ -470,6 +472,73 @@ export function ProfilePage({ settingsStore, vocabStore, onSave, onLogout, userE
                 </div>
               </div>
             ))}
+          </div>
+        </section>
+
+        {/* ========== SYNTAX SETTINGS ========== */}
+        <section className="space-y-4">
+          <h2 className="text-lg font-semibold flex items-center gap-2">
+            <Layers className="w-5 h-5 text-accent" />
+            Syntax Practice
+          </h2>
+          
+          {/* Reading vs Writing balance */}
+          <div className="bg-base-200 rounded-xl p-4">
+            <div className="mb-3">
+              <h3 className="font-medium">Exercise Direction</h3>
+              <p className="text-sm text-base-content/60">
+                Balance between comprehension (reading) and production (writing)
+              </p>
+            </div>
+            
+            {/* Slider with labels */}
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm text-base-content/70">
+                <span className="flex items-center gap-1">
+                  📖 Reading
+                  <span className="text-xs text-base-content/50">(CN→EN)</span>
+                </span>
+                <span className="flex items-center gap-1">
+                  <span className="text-xs text-base-content/50">(EN→CN)</span>
+                  Writing ✍️
+                </span>
+              </div>
+              
+              <input
+                type="range"
+                min="0"
+                max="4"
+                step="1"
+                value={settings.syntax?.directionRatio ?? 1}
+                onChange={(e) => settingsStore.setSyntaxSettings({ 
+                  directionRatio: Number(e.target.value) as SyntaxDirectionRatio 
+                })}
+                className="range range-accent range-sm w-full"
+              />
+              
+              {/* Tick marks */}
+              <div className="flex justify-between px-1">
+                {SYNTAX_DIRECTION_OPTIONS.map((_, idx) => (
+                  <span 
+                    key={idx}
+                    className={`text-xs ${
+                      (settings.syntax?.directionRatio ?? 1) === idx 
+                        ? 'text-accent font-medium' 
+                        : 'text-base-content/40'
+                    }`}
+                  >
+                    |
+                  </span>
+                ))}
+              </div>
+              
+              {/* Current selection label */}
+              <div className="text-center">
+                <span className="badge badge-accent badge-sm">
+                  {SYNTAX_DIRECTION_OPTIONS[settings.syntax?.directionRatio ?? 1]?.label ?? 'Balanced'}
+                </span>
+              </div>
+            </div>
           </div>
         </section>
 

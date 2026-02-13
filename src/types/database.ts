@@ -135,6 +135,46 @@ export interface Database {
           created_at?: string;
         };
       };
+
+      // Web push subscriptions per user/device
+      push_subscriptions: {
+        Row: {
+          id: number;
+          user_id: string;
+          endpoint: string;
+          p256dh_key: string;
+          auth_key: string;
+          user_agent: string | null;
+          is_active: boolean;
+          last_tested_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: number;
+          user_id: string;
+          endpoint: string;
+          p256dh_key: string;
+          auth_key: string;
+          user_agent?: string | null;
+          is_active?: boolean;
+          last_tested_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: number;
+          user_id?: string;
+          endpoint?: string;
+          p256dh_key?: string;
+          auth_key?: string;
+          user_agent?: string | null;
+          is_active?: boolean;
+          last_tested_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
     };
   };
 }
@@ -147,3 +187,4 @@ export type UserProgressInsert = Database['public']['Tables']['user_progress']['
 export type UserSettingsRow = Database['public']['Tables']['user_settings']['Row'];
 export type QuizAttemptRow = Database['public']['Tables']['quiz_attempts']['Row'];
 export type QuizAttemptInsert = Database['public']['Tables']['quiz_attempts']['Insert'];
+export type PushSubscriptionRow = Database['public']['Tables']['push_subscriptions']['Row'];

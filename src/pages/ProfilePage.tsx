@@ -21,6 +21,8 @@ import {
   TrendingUp,
   BarChart3,
   Layers,
+  Bell,
+  BellOff,
 } from 'lucide-react';
 import type { SettingsStore } from '../stores/settingsStore';
 import type { VocabularyStore } from '../stores/vocabularyStore';
@@ -44,6 +46,13 @@ import {
   type BrowserType,
 } from '../services/ttsService';
 import { ProgressTimeline } from '../components/ProgressTimeline';
+import {
+  isReminderSupported,
+  getReminderStatus,
+  enableReminders,
+  disableReminders,
+  sendTestReminder,
+} from '../lib/pwaReminderService';
 
 interface ProfilePageProps {
   settingsStore: SettingsStore;
@@ -100,6 +109,11 @@ export function ProfilePage({ settingsStore, vocabStore, onSave, onLogout, userE
   
   // Progress refresh state
   const [isRefreshingProgress, setIsRefreshingProgress] = useState(false);
+  const [reminderSupported] = useState<boolean>(() => isReminderSupported());
+  const [reminderEnabled, setReminderEnabled] = useState(false);
+  const [reminderBusy, setReminderBusy] = useState(false);
+  const [reminderError, setReminderError] = useState<string | null>(null);
+  const [reminderMessage, setReminderMessage] = useState<string | null>(null);
   
   // Progress stats (computed from cached/current data)
   const progressStats = useMemo(() => {
@@ -137,6 +151,74 @@ export function ProfilePage({ settingsStore, vocabStore, onSave, onLogout, userE
   useEffect(() => {
     handleRefreshProgress();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!userId || isGuest || !reminderSupported) return;
+    let isMounted = true;
+
+    getReminderStatus(userId)
+      .then((enabled) => {
+        if (isMounted) {
+          setReminderEnabled(enabled);
+        }
+      })
+      .catch((error) => {
+        if (isMounted) {
+          setReminderError(error instanceof Error ? error.message : 'Failed to load reminder status.');
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [userId, isGuest, reminderSupported]);
+
+  const handleEnableReminders = async () => {
+    if (!userId) return;
+    setReminderBusy(true);
+    setReminderError(null);
+    setReminderMessage(null);
+    try {
+      await enableReminders(userId);
+      setReminderEnabled(true);
+      setReminderMessage('Reminders enabled. You can now send a test push.');
+    } catch (error) {
+      setReminderError(error instanceof Error ? error.message : 'Failed to enable reminders.');
+    } finally {
+      setReminderBusy(false);
+    }
+  };
+
+  const handleDisableReminders = async () => {
+    if (!userId) return;
+    setReminderBusy(true);
+    setReminderError(null);
+    setReminderMessage(null);
+    try {
+      await disableReminders(userId);
+      setReminderEnabled(false);
+      setReminderMessage('Reminders disabled on this device.');
+    } catch (error) {
+      setReminderError(error instanceof Error ? error.message : 'Failed to disable reminders.');
+    } finally {
+      setReminderBusy(false);
+    }
+  };
+
+  const handleSendTestReminder = async () => {
+    if (!userId) return;
+    setReminderBusy(true);
+    setReminderError(null);
+    setReminderMessage(null);
+    try {
+      await sendTestReminder(userId);
+      setReminderMessage('Test reminder requested. Check your phone notifications in a few seconds.');
+    } catch (error) {
+      setReminderError(error instanceof Error ? error.message : 'Failed to trigger test reminder.');
+    } finally {
+      setReminderBusy(false);
+    }
+  };
   
   // Get current voice for this browser
   const getCurrentVoiceId = (): string => {
@@ -732,6 +814,90 @@ export function ProfilePage({ settingsStore, vocabStore, onSave, onLogout, userE
             </>
           )}
         </section>
+
+        {/* ========== ACCOUNT ========== */}
+        {!isGuest && (
+          <section className="space-y-4">
+            <h2 className="text-lg font-semibold flex items-center gap-2">
+              {reminderEnabled ? (
+                <Bell className="w-5 h-5 text-success" />
+              ) : (
+                <BellOff className="w-5 h-5 text-base-content/60" />
+              )}
+              PWA Reminders
+            </h2>
+
+            <div className="bg-base-200 rounded-xl p-4 space-y-3">
+              {!reminderSupported ? (
+                <div className="alert alert-warning py-2">
+                  <AlertTriangle className="w-4 h-4" />
+                  <span className="text-sm">Push notifications are not supported in this browser.</span>
+                </div>
+              ) : (
+                <>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-base-content/70">Status</span>
+                    <span className={`badge ${reminderEnabled ? 'badge-success' : 'badge-ghost'}`}>
+                      {reminderEnabled ? 'Enabled' : 'Disabled'}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-base-content/70">Permission</span>
+                    <span className="text-sm font-medium capitalize">
+                      {typeof Notification !== 'undefined' ? Notification.permission : 'unknown'}
+                    </span>
+                  </div>
+                  <p className="text-xs text-base-content/60">
+                    Install this app on Android Chrome for the best reminder behavior.
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {!reminderEnabled ? (
+                      <button
+                        className="btn btn-primary btn-sm"
+                        onClick={handleEnableReminders}
+                        disabled={reminderBusy}
+                      >
+                        {reminderBusy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Bell className="w-4 h-4" />}
+                        Enable reminders
+                      </button>
+                    ) : (
+                      <button
+                        className="btn btn-outline btn-sm"
+                        onClick={handleDisableReminders}
+                        disabled={reminderBusy}
+                      >
+                        {reminderBusy ? <Loader2 className="w-4 h-4 animate-spin" /> : <BellOff className="w-4 h-4" />}
+                        Disable
+                      </button>
+                    )}
+
+                    <button
+                      className="btn btn-secondary btn-sm"
+                      onClick={handleSendTestReminder}
+                      disabled={!reminderEnabled || reminderBusy}
+                    >
+                      {reminderBusy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Bell className="w-4 h-4" />}
+                      Send test push
+                    </button>
+                  </div>
+
+                  {reminderMessage && (
+                    <div className="alert alert-success py-2">
+                      <Check className="w-4 h-4" />
+                      <span className="text-sm">{reminderMessage}</span>
+                    </div>
+                  )}
+                  {reminderError && (
+                    <div className="alert alert-error py-2">
+                      <AlertTriangle className="w-4 h-4" />
+                      <span className="text-sm">{reminderError}</span>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          </section>
+        )}
 
         {/* ========== ACCOUNT ========== */}
         <section className="space-y-4">

@@ -151,15 +151,6 @@ export function QuizPage({ store, settingsStore, onShowHelp }: QuizPageProps) {
     }
   }, [currentQuestion, ttsSupported, isPlaying, settings?.audio]);
   
-  // Auto-play audio for audio questions
-  useEffect(() => {
-    if (currentQuestion && modalityNeedsAudio(currentQuestion.questionModality) && ttsSupported && !showResult) {
-      // Small delay to let UI render
-      const timer = setTimeout(playQuestionAudio, 300);
-      return () => clearTimeout(timer);
-    }
-  }, [currentQuestion?.concept.id, currentQuestion?.questionModality, showResult]);
-  
   // Play audio for an answer option (for audio answer modality)
   const playOptionAudio = useCallback(async (option: Concept, index: number) => {
     if (!ttsSupported) return;

@@ -1,6 +1,15 @@
 import { supabase, isSupabaseConfigured } from './supabase';
 
 const SW_PATH = '/sw.js';
+const DEFAULT_REMINDER_HOUR = 16;
+const DEFAULT_REMINDER_MINUTE = 0;
+
+export interface ReminderSettings {
+  enabled: boolean;
+  timezone: string;
+  hour: number;
+  minute: number;
+}
 
 export function isReminderSupported(): boolean {
   if (typeof window === 'undefined') return false;
@@ -42,23 +51,91 @@ function getSubscriptionKeys(subscription: PushSubscription): {
   return { p256dh, auth };
 }
 
-export async function getReminderStatus(userId: string): Promise<boolean> {
-  if (!isSupabaseConfigured()) return false;
+function getInferredTimezone(): string {
+  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  return tz || 'UTC';
+}
 
-  const { count, error } = await supabase
+function isValidTimezone(value: string): boolean {
+  try {
+    Intl.DateTimeFormat('en-US', { timeZone: value }).format();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function normalizeHour(value: number | undefined): number {
+  if (!Number.isFinite(value)) return DEFAULT_REMINDER_HOUR;
+  return Math.max(0, Math.min(23, Math.floor(value as number)));
+}
+
+function normalizeMinute(value: number | undefined): number {
+  if (!Number.isFinite(value)) return DEFAULT_REMINDER_MINUTE;
+  return Math.max(0, Math.min(59, Math.floor(value as number)));
+}
+
+async function getCurrentSubscriptionEndpoint(): Promise<string | null> {
+  if (!isReminderSupported()) return null;
+  const registration = await navigator.serviceWorker.ready;
+  const subscription = await registration.pushManager.getSubscription();
+  return subscription?.endpoint ?? null;
+}
+
+export async function getReminderSettings(userId: string): Promise<ReminderSettings> {
+  if (!isSupabaseConfigured()) {
+    return {
+      enabled: false,
+      timezone: getInferredTimezone(),
+      hour: DEFAULT_REMINDER_HOUR,
+      minute: DEFAULT_REMINDER_MINUTE,
+    };
+  }
+
+  const endpoint = await getCurrentSubscriptionEndpoint();
+
+  let query = supabase
     .from('push_subscriptions')
-    .select('id', { count: 'exact', head: true })
-    .eq('user_id', userId)
-    .eq('is_active', true);
+    .select('is_active, reminder_timezone, reminder_hour_local, reminder_minute_local')
+    .eq('user_id', userId);
+
+  if (endpoint) {
+    query = query.eq('endpoint', endpoint);
+  } else {
+    query = query.eq('is_active', true);
+  }
+
+  const { data, error } = await query.limit(1).maybeSingle();
 
   if (error) {
     throw new Error(error.message);
   }
 
-  return Boolean((count ?? 0) > 0);
+  if (!data) {
+    return {
+      enabled: false,
+      timezone: getInferredTimezone(),
+      hour: DEFAULT_REMINDER_HOUR,
+      minute: DEFAULT_REMINDER_MINUTE,
+    };
+  }
+
+  return {
+    enabled: Boolean(data.is_active),
+    timezone: data.reminder_timezone || getInferredTimezone(),
+    hour: Number.isFinite(data.reminder_hour_local)
+      ? data.reminder_hour_local
+      : DEFAULT_REMINDER_HOUR,
+    minute: Number.isFinite(data.reminder_minute_local)
+      ? data.reminder_minute_local
+      : DEFAULT_REMINDER_MINUTE,
+  };
 }
 
-export async function enableReminders(userId: string): Promise<void> {
+export async function enableReminders(
+  userId: string,
+  schedule?: { timezone?: string; hour?: number; minute?: number }
+): Promise<void> {
   if (!isReminderSupported()) {
     throw new Error('This browser does not support push notifications.');
   }
@@ -89,6 +166,12 @@ export async function enableReminders(userId: string): Promise<void> {
     throw new Error('Supabase is not configured.');
   }
 
+  const timezone = schedule?.timezone && isValidTimezone(schedule.timezone)
+    ? schedule.timezone
+    : getInferredTimezone();
+  const hour = normalizeHour(schedule?.hour);
+  const minute = normalizeMinute(schedule?.minute);
+
   const { error } = await supabase.from('push_subscriptions').upsert(
     {
       user_id: userId,
@@ -97,6 +180,9 @@ export async function enableReminders(userId: string): Promise<void> {
       auth_key: keys.auth,
       user_agent: navigator.userAgent,
       is_active: true,
+      reminder_timezone: timezone,
+      reminder_hour_local: hour,
+      reminder_minute_local: minute,
       updated_at: new Date().toISOString(),
       last_tested_at: new Date().toISOString(),
     },
@@ -128,6 +214,46 @@ export async function disableReminders(userId: string): Promise<void> {
       throw new Error(error.message);
     }
   }
+}
+
+export async function updateReminderSchedule(
+  userId: string,
+  schedule: { timezone: string; hour: number; minute: number }
+): Promise<void> {
+  if (!isSupabaseConfigured()) {
+    throw new Error('Supabase is not configured.');
+  }
+
+  if (!isValidTimezone(schedule.timezone)) {
+    throw new Error('Invalid timezone.');
+  }
+
+  const endpoint = await getCurrentSubscriptionEndpoint();
+  if (!endpoint) {
+    throw new Error('Enable reminders on this device first.');
+  }
+
+  const hour = normalizeHour(schedule.hour);
+  const minute = normalizeMinute(schedule.minute);
+
+  const { error } = await supabase
+    .from('push_subscriptions')
+    .update({
+      reminder_timezone: schedule.timezone,
+      reminder_hour_local: hour,
+      reminder_minute_local: minute,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('user_id', userId)
+    .eq('endpoint', endpoint);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+}
+
+export function getBrowserTimezone(): string {
+  return getInferredTimezone();
 }
 
 export async function sendTestReminder(userId: string): Promise<void> {

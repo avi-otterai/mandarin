@@ -48,10 +48,12 @@ import {
 import { ProgressTimeline } from '../components/ProgressTimeline';
 import {
   isReminderSupported,
-  getReminderStatus,
+  getReminderSettings,
   enableReminders,
   disableReminders,
+  updateReminderSchedule,
   sendTestReminder,
+  getBrowserTimezone,
 } from '../lib/pwaReminderService';
 
 interface ProfilePageProps {
@@ -114,6 +116,8 @@ export function ProfilePage({ settingsStore, vocabStore, onSave, onLogout, userE
   const [reminderBusy, setReminderBusy] = useState(false);
   const [reminderError, setReminderError] = useState<string | null>(null);
   const [reminderMessage, setReminderMessage] = useState<string | null>(null);
+  const [reminderTime, setReminderTime] = useState('16:00');
+  const [reminderTimezone, setReminderTimezone] = useState(() => getBrowserTimezone());
   
   // Progress stats (computed from cached/current data)
   const progressStats = useMemo(() => {
@@ -156,10 +160,14 @@ export function ProfilePage({ settingsStore, vocabStore, onSave, onLogout, userE
     if (!userId || isGuest || !reminderSupported) return;
     let isMounted = true;
 
-    getReminderStatus(userId)
-      .then((enabled) => {
+    getReminderSettings(userId)
+      .then((reminderSettings) => {
         if (isMounted) {
-          setReminderEnabled(enabled);
+          setReminderEnabled(reminderSettings.enabled);
+          const hh = String(reminderSettings.hour).padStart(2, '0');
+          const mm = String(reminderSettings.minute).padStart(2, '0');
+          setReminderTime(`${hh}:${mm}`);
+          setReminderTimezone(reminderSettings.timezone || getBrowserTimezone());
         }
       })
       .catch((error) => {
@@ -179,7 +187,12 @@ export function ProfilePage({ settingsStore, vocabStore, onSave, onLogout, userE
     setReminderError(null);
     setReminderMessage(null);
     try {
-      await enableReminders(userId);
+      const [hourRaw, minuteRaw] = reminderTime.split(':');
+      await enableReminders(userId, {
+        timezone: reminderTimezone,
+        hour: Number(hourRaw),
+        minute: Number(minuteRaw),
+      });
       setReminderEnabled(true);
       setReminderMessage('Reminders enabled. You can now send a test push.');
     } catch (error) {
@@ -200,6 +213,26 @@ export function ProfilePage({ settingsStore, vocabStore, onSave, onLogout, userE
       setReminderMessage('Reminders disabled on this device.');
     } catch (error) {
       setReminderError(error instanceof Error ? error.message : 'Failed to disable reminders.');
+    } finally {
+      setReminderBusy(false);
+    }
+  };
+
+  const handleSaveReminderSchedule = async () => {
+    if (!userId) return;
+    setReminderBusy(true);
+    setReminderError(null);
+    setReminderMessage(null);
+    try {
+      const [hourRaw, minuteRaw] = reminderTime.split(':');
+      await updateReminderSchedule(userId, {
+        timezone: reminderTimezone.trim(),
+        hour: Number(hourRaw),
+        minute: Number(minuteRaw),
+      });
+      setReminderMessage('Reminder schedule saved for this device.');
+    } catch (error) {
+      setReminderError(error instanceof Error ? error.message : 'Failed to save reminder schedule.');
     } finally {
       setReminderBusy(false);
     }
@@ -850,6 +883,48 @@ export function ProfilePage({ settingsStore, vocabStore, onSave, onLogout, userE
                   <p className="text-xs text-base-content/60">
                     Install this app on Android Chrome for the best reminder behavior.
                   </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <label className="form-control">
+                      <span className="label-text text-xs text-base-content/60 mb-1">Daily reminder time</span>
+                      <input
+                        type="time"
+                        className="input input-bordered input-sm"
+                        value={reminderTime}
+                        onChange={(e) => setReminderTime(e.target.value)}
+                        disabled={reminderBusy}
+                      />
+                    </label>
+                    <label className="form-control">
+                      <span className="label-text text-xs text-base-content/60 mb-1">Timezone (IANA)</span>
+                      <input
+                        type="text"
+                        className="input input-bordered input-sm"
+                        value={reminderTimezone}
+                        onChange={(e) => setReminderTimezone(e.target.value)}
+                        placeholder="Asia/Kolkata"
+                        disabled={reminderBusy}
+                      />
+                    </label>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      className="btn btn-ghost btn-xs"
+                      type="button"
+                      onClick={() => setReminderTimezone(getBrowserTimezone())}
+                      disabled={reminderBusy}
+                    >
+                      Use device timezone
+                    </button>
+                    <button
+                      className="btn btn-accent btn-xs"
+                      type="button"
+                      onClick={handleSaveReminderSchedule}
+                      disabled={!reminderEnabled || reminderBusy}
+                    >
+                      {reminderBusy ? <Loader2 className="w-3 h-3 animate-spin" /> : null}
+                      Save schedule
+                    </button>
+                  </div>
                   <div className="flex flex-wrap gap-2">
                     {!reminderEnabled ? (
                       <button

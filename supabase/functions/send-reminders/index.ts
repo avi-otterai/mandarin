@@ -13,6 +13,10 @@ interface PushRow {
   endpoint: string;
   p256dh_key: string;
   auth_key: string;
+  reminder_hour_local: number | null;
+  reminder_minute_local: number | null;
+  reminder_timezone: string | null;
+  last_sent_at: string | null;
 }
 
 function json(status: number, body: unknown): Response {
@@ -23,6 +27,64 @@ function json(status: number, body: unknown): Response {
       'Content-Type': 'application/json',
     },
   });
+}
+
+function getLocalParts(date: Date, timeZone: string): {
+  hour: number;
+  minute: number;
+  localDate: string;
+} {
+  const formatter = new Intl.DateTimeFormat('en-CA', {
+    timeZone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  });
+
+  const parts = formatter.formatToParts(date);
+  const get = (type: string) => parts.find((p) => p.type === type)?.value ?? '';
+  const hour = Number(get('hour'));
+  const minute = Number(get('minute'));
+  const localDate = `${get('year')}-${get('month')}-${get('day')}`;
+  return { hour, minute, localDate };
+}
+
+function shouldSendNow(
+  row: PushRow,
+  now: Date,
+  checkWindowMinutes: number
+): { send: boolean; timezone: string } {
+  const timezone = row.reminder_timezone || 'UTC';
+  const targetHour = Number.isFinite(row.reminder_hour_local ?? NaN) ? (row.reminder_hour_local as number) : 16;
+  const targetMinute = Number.isFinite(row.reminder_minute_local ?? NaN) ? (row.reminder_minute_local as number) : 0;
+  let nowLocal: ReturnType<typeof getLocalParts>;
+  let effectiveTimezone = timezone;
+  try {
+    nowLocal = getLocalParts(now, timezone);
+  } catch {
+    effectiveTimezone = 'UTC';
+    nowLocal = getLocalParts(now, effectiveTimezone);
+  }
+  const nowMinutes = nowLocal.hour * 60 + nowLocal.minute;
+  const targetMinutes = targetHour * 60 + targetMinute;
+
+  if (nowMinutes < targetMinutes || nowMinutes > targetMinutes + checkWindowMinutes) {
+    return { send: false, timezone: effectiveTimezone };
+  }
+
+  if (!row.last_sent_at) {
+    return { send: true, timezone: effectiveTimezone };
+  }
+
+  const lastSentLocalDate = getLocalParts(new Date(row.last_sent_at), effectiveTimezone).localDate;
+  if (lastSentLocalDate === nowLocal.localDate) {
+    return { send: false, timezone: effectiveTimezone };
+  }
+
+  return { send: true, timezone: effectiveTimezone };
 }
 
 Deno.serve(async (req) => {
@@ -41,7 +103,7 @@ Deno.serve(async (req) => {
   const vapidPrivateKey = Deno.env.get('VAPID_PRIVATE_KEY');
   const vapidSubject = Deno.env.get('VAPID_SUBJECT') ?? 'mailto:notifications@example.com';
   const cronSecret = Deno.env.get('CRON_SECRET') ?? '';
-  const reminderHour = Number(Deno.env.get('REMINDER_HOUR_UTC') ?? 18);
+  const checkWindowMinutes = Number(Deno.env.get('REMINDER_CHECK_WINDOW_MINUTES') ?? 10);
 
   if (
     !supabaseUrl ||
@@ -90,20 +152,11 @@ Deno.serve(async (req) => {
     return json(401, { error: 'Unauthorized. Provide a valid JWT or cron secret.' });
   }
 
-  const currentUtcHour = new Date().getUTCHours();
-  if (!force && !isCronCall && currentUtcHour !== reminderHour) {
-    return json(200, {
-      sent: 0,
-      skipped: true,
-      reason: `Current UTC hour ${currentUtcHour} does not match REMINDER_HOUR_UTC ${reminderHour}.`,
-    });
-  }
-
   const targetUserId = authenticatedUserId ?? suppliedUserId ?? null;
 
   let query = admin
     .from('push_subscriptions')
-    .select('id, user_id, endpoint, p256dh_key, auth_key')
+    .select('id, user_id, endpoint, p256dh_key, auth_key, reminder_hour_local, reminder_minute_local, reminder_timezone, last_sent_at')
     .eq('is_active', true);
 
   if (targetUserId) {
@@ -125,10 +178,21 @@ Deno.serve(async (req) => {
   const url = payload.url ?? '/study';
   const notificationPayload = JSON.stringify({ title, body, url });
 
+  const now = new Date();
   let sent = 0;
+  let skippedBySchedule = 0;
   const deactivateIds: number[] = [];
+  const sentIds: number[] = [];
 
   for (const row of rows) {
+    if (!force) {
+      const scheduleDecision = shouldSendNow(row, now, Math.max(0, checkWindowMinutes));
+      if (!scheduleDecision.send) {
+        skippedBySchedule += 1;
+        continue;
+      }
+    }
+
     const subscription = {
       endpoint: row.endpoint,
       keys: {
@@ -142,6 +206,7 @@ Deno.serve(async (req) => {
         TTL: 60,
       });
       sent += 1;
+      sentIds.push(row.id);
     } catch (error) {
       const statusCode =
         typeof error === 'object' && error !== null && 'statusCode' in error
@@ -160,11 +225,18 @@ Deno.serve(async (req) => {
       .in('id', deactivateIds);
   }
 
+  if (sentIds.length > 0) {
+    await admin
+      .from('push_subscriptions')
+      .update({ last_sent_at: now.toISOString(), updated_at: now.toISOString() })
+      .in('id', sentIds);
+  }
+
   return json(200, {
     sent,
     attempted: rows.length,
+    skippedBySchedule,
     deactivated: deactivateIds.length,
-    scheduledHourUtc: reminderHour,
-    currentUtcHour,
+    force,
   });
 });

@@ -197,6 +197,7 @@ Weight meaning: `0` skip, `1` low, `2` medium, `3` high.
 - pinyin style
 - TTS voice/rate/auto-play
 - quiz difficulty/selection strategy controls
+- PWA reminders (per-device local time + timezone, default 4:00 PM)
 
 ---
 

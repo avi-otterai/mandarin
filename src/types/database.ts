@@ -146,7 +146,11 @@ export interface Database {
           auth_key: string;
           user_agent: string | null;
           is_active: boolean;
+          reminder_hour_local: number;
+          reminder_minute_local: number;
+          reminder_timezone: string;
           last_tested_at: string | null;
+          last_sent_at: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -158,7 +162,11 @@ export interface Database {
           auth_key: string;
           user_agent?: string | null;
           is_active?: boolean;
+          reminder_hour_local?: number;
+          reminder_minute_local?: number;
+          reminder_timezone?: string;
           last_tested_at?: string | null;
+          last_sent_at?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -170,7 +178,11 @@ export interface Database {
           auth_key?: string;
           user_agent?: string | null;
           is_active?: boolean;
+          reminder_hour_local?: number;
+          reminder_minute_local?: number;
+          reminder_timezone?: string;
           last_tested_at?: string | null;
+          last_sent_at?: string | null;
           created_at?: string;
           updated_at?: string;
         };
